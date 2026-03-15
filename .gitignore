@@ -1,0 +1,13 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Old site
+PCBcraft.html
+
+# IDE
+.vscode/
+.idea/
+
+# Vercel
+.vercel/

@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElectroTrical — Customer Dashboard</title>
+<meta name="description" content="Manage your PCB design projects, upload schematics, and track design progress with ElectroTrical.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #0066FF;
+  --primary-light: #3388FF;
+  --primary-dark: #0044CC;
+  --cyan: #00D4FF;
+  --accent: #00E5A0;
+  --warning: #FFB400;
+  --danger: #FF4D4D;
+  --dark-900: #0A0E1A;
+  --dark-800: #0F1424;
+  --dark-700: #151B2E;
+  --dark-600: #1C2340;
+  --dark-500: #242C4A;
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  --text: #E8ECF4;
+  --text-secondary: #8B95B0;
+  --text-muted: #5A6380;
+  --white: #FFFFFF;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.3);
+  --shadow-lg: 0 16px 64px rgba(0,0,0,0.4);
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-sans);
+  background: var(--dark-900);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grid Background */
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-image:
+    linear-gradient(rgba(0,102,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,102,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none; z-index: 0;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ══════════════════════════════════════════
+   NAVBAR
+   ══════════════════════════════════════════ */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(10, 14, 26, 0.92);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--border);
+  height: 72px;
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 72px;
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+  font-weight: 700; font-size: 20px; color: var(--white);
+}
+.nav-brand-accent { color: var(--cyan); }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-link {
+  background: none; border: none; color: var(--text-secondary);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  padding: 8px 16px; border-radius: var(--radius-sm); cursor: pointer;
+  transition: var(--transition);
+}
+.nav-link:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+.nav-link.active { color: var(--cyan); }
+.nav-user {
+  display: flex; align-items: center; gap: 12px;
+}
+.nav-user-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(0,102,255,0.15); border: 2px solid rgba(0,102,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: var(--primary-light); cursor: pointer;
+}
+.nav-user-name {
+  font-size: 14px; font-weight: 500; color: var(--white); cursor: pointer;
+}
+.btn-logout {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-secondary); font-family: var(--font-sans);
+  font-size: 12px; font-weight: 500; padding: 6px 14px;
+  border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);
+}
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ══════════════════════════════════════════
+   AUTH VIEWS
+   ══════════════════════════════════════════ */
+.view { display: none; position: relative; z-index: 1; }
+.view.active { display: block; }
+
+.auth-container {
+  max-width: 440px; margin: 0 auto;
+  padding: 8rem 2rem 4rem;
+}
+.auth-card {
+  background: var(--dark-800);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  position: relative; overflow: hidden;
+}
+.auth-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--cyan));
+}
+.auth-title {
+  font-size: 24px; font-weight: 700; color: var(--white);
+  margin-bottom: 6px; letter-spacing: -0.5px;
+}
+.auth-sub {
+  font-size: 14px; color: var(--text-secondary); margin-bottom: 2rem;
+}
+.auth-tabs {
+  display: flex; background: var(--dark-700);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 4px;
+  margin-bottom: 2rem; gap: 4px;
+}
+.auth-tab {
+  flex: 1; background: none; border: none;
+  color: var(--text-secondary); font-family: var(--font-sans);
+  font-size: 14px; font-weight: 500; padding: 10px;
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: var(--transition);
+}
+.auth-tab.active {
+  background: var(--dark-600); color: var(--white);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Form Elements */
+.form-group {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 16px;
+}
+.form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.form-label {
+  font-size: 12px; color: var(--text-muted); font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.form-input {
+  background: var(--dark-700); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--font-sans); font-size: 14px;
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  outline: none; transition: var(--transition); width: 100%;
+}
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
+}
+.form-input::placeholder { color: var(--text-muted); }
+.form-hint {
+  font-size: 12px; color: var(--text-muted); margin-top: 2px;
+}
+
+.btn {
+  font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+  padding: 13px 28px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition);
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; border: none; width: 100%;
+}
+.btn-primary {
+  background: var(--primary); color: var(--white);
+}
+.btn-primary:hover {
+  background: var(--primary-light); transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0,102,255,0.35);
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.05); color: var(--text);
+  border: 1px solid var(--border-hover);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.08); }
+.btn-success {
+  background: var(--accent); color: var(--dark-900);
+}
+.btn-success:hover {
+  background: #33EAAF; transform: translateY(-1px);
+}
+.btn-warning {
+  background: var(--warning); color: var(--dark-900);
+}
+.btn-danger-outline {
+  background: transparent; color: var(--danger);
+  border: 1px solid rgba(255,77,77,0.3);
+}
+.btn-danger-outline:hover { background: rgba(255,77,77,0.1); }
+.btn-sm { font-size: 13px; padding: 8px 18px; width: auto; }
+.btn-xs { font-size: 12px; padding: 6px 14px; width: auto; }
+
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 1.5rem 0;
+}
+.auth-divider-line { flex: 1; height: 1px; background: var(--border); }
+.auth-divider span { font-size: 12px; color: var(--text-muted); }
+
+.auth-footer {
+  text-align: center; margin-top: 1.25rem;
+  font-size: 13px; color: var(--text-muted);
+}
+.auth-footer a { color: var(--cyan); cursor: pointer; }
+.auth-footer a:hover { text-decoration: underline; }
+
+/* ══════════════════════════════════════════
+   DASHBOARD LAYOUT
+   ══════════════════════════════════════════ */
+.dashboard {
+  padding: 6rem 2rem 4rem;
+  max-width: 1200px; margin: 0 auto;
+}
+.dash-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.dash-title {
+  font-size: 28px; font-weight: 700; color: var(--white);
+  letter-spacing: -0.5px;
+}
+.dash-subtitle {
+  font-size: 15px; color: var(--text-secondary); margin-top: 4px;
+}
+
+/* Tab Navigation */
+.dash-tabs {
+  display: flex; gap: 4px; margin-bottom: 2rem;
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 4px;
+  overflow-x: auto;
+}
+.dash-tab {
+  background: none; border: none; color: var(--text-secondary);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition); white-space: nowrap;
+}
+.dash-tab.active {
+  background: var(--primary); color: var(--white);
+}
+.dash-tab:hover:not(.active) {
+  background: rgba(255,255,255,0.05); color: var(--white);
+}
+
+/* ══════════════════════════════════════════
+   PROJECTS LIST
+   ══════════════════════════════════════════ */
+.projects-empty {
+  text-align: center; padding: 4rem 2rem;
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.projects-empty-icon {
+  width: 72px; height: 72px; margin: 0 auto 1.5rem;
+  background: rgba(0,102,255,0.08); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.projects-empty-title {
+  font-size: 20px; font-weight: 600; color: var(--white);
+  margin-bottom: 8px;
+}
+.projects-empty-desc {
+  font-size: 14px; color: var(--text-secondary);
+  max-width: 400px; margin: 0 auto 1.5rem; line-height: 1.7;
+}
+
+.project-card {
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.75rem;
+  margin-bottom: 16px; transition: var(--transition);
+  cursor: pointer; position: relative; overflow: hidden;
+}
+.project-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.project-card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 1.25rem; gap: 1rem;
+}
+.project-card-title {
+  font-size: 18px; font-weight: 600; color: var(--white);
+  margin-bottom: 4px;
+}
+.project-card-id {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--text-muted);
+}
+.project-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 5px 12px;
+  border-radius: 20px; white-space: nowrap;
+}
+.status-active {
+  background: rgba(0,102,255,0.1); color: var(--primary-light);
+  border: 1px solid rgba(0,102,255,0.2);
+}
+.status-review {
+  background: rgba(255,180,0,0.1); color: var(--warning);
+  border: 1px solid rgba(255,180,0,0.2);
+}
+.status-completed {
+  background: rgba(0,229,160,0.1); color: var(--accent);
+  border: 1px solid rgba(0,229,160,0.2);
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+}
+.status-active .status-dot { background: var(--primary-light); }
+.status-review .status-dot { background: var(--warning); animation: pulse 2s infinite; }
+.status-completed .status-dot { background: var(--accent); }
+@keyframes pulse {
+  0%,100% { opacity:1; } 50% { opacity:0.4; }
+}
+
+/* ══════════════════════════════════════════
+   MILESTONE TRACKER
+   ══════════════════════════════════════════ */
+.milestone-tracker {
+  display: flex; align-items: flex-start; gap: 0;
+  margin-bottom: 1rem; position: relative;
+  padding: 0 8px;
+}
+.milestone-step {
+  flex: 1; text-align: center; position: relative;
+}
+.milestone-step::before {
+  content: ''; position: absolute;
+  top: 18px; left: 50%; right: -50%;
+  height: 2px; background: var(--border);
+  z-index: 0;
+}
+.milestone-step:last-child::before { display: none; }
+.milestone-step.completed::before {
+  background: var(--accent);
+}
+.milestone-step.active::before {
+  background: linear-gradient(90deg, var(--primary), var(--border));
+}
+.milestone-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px; position: relative; z-index: 1;
+  font-size: 14px; font-weight: 700; transition: var(--transition);
+}
+.milestone-step.pending .milestone-dot {
+  background: var(--dark-600); border: 2px solid var(--border);
+  color: var(--text-muted);
+}
+.milestone-step.active .milestone-dot {
+  background: var(--primary); border: 2px solid var(--primary-light);
+  color: var(--white);
+  box-shadow: 0 0 20px rgba(0,102,255,0.4);
+  animation: glowPulse 2s infinite;
+}
+@keyframes glowPulse {
+  0%,100% { box-shadow: 0 0 20px rgba(0,102,255,0.4); }
+  50% { box-shadow: 0 0 30px rgba(0,102,255,0.6); }
+}
+.milestone-step.review .milestone-dot {
+  background: var(--warning); border: 2px solid rgba(255,180,0,0.5);
+  color: var(--dark-900);
+  box-shadow: 0 0 20px rgba(255,180,0,0.3);
+}
+.milestone-step.completed .milestone-dot {
+  background: var(--accent); border: 2px solid rgba(0,229,160,0.5);
+  color: var(--dark-900);
+}
+.milestone-label {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+.milestone-step.active .milestone-label { color: var(--primary-light); }
+.milestone-step.review .milestone-label { color: var(--warning); }
+.milestone-step.completed .milestone-label { color: var(--accent); }
+.milestone-sublabel {
+  font-size: 11px; color: var(--text-muted); margin-top: 2px;
+}
+
+/* ══════════════════════════════════════════
+   PROJECT DETAIL VIEW
+   ══════════════════════════════════════════ */
+.project-detail-grid {
+  display: grid; grid-template-columns: 1fr 380px;
+  gap: 24px; align-items: start;
+}
+.detail-card {
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+  margin-bottom: 20px;
+}
+.detail-card-title {
+  font-size: 16px; font-weight: 600; color: var(--white);
+  margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;
+}
+.detail-card-title svg { flex-shrink: 0; }
+
+/* File Upload Zone */
+.upload-zone {
+  border: 2px dashed var(--border-hover);
+  border-radius: var(--radius-md);
+  padding: 2rem; text-align: center;
+  cursor: pointer; transition: var(--transition);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--primary);
+  background: rgba(0,102,255,0.04);
+}
+.upload-zone-icon {
+  width: 48px; height: 48px; margin: 0 auto 1rem;
+  background: rgba(0,102,255,0.08); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.upload-zone-title {
+  font-size: 15px; font-weight: 600; color: var(--white);
+  margin-bottom: 4px;
+}
+.upload-zone-desc {
+  font-size: 13px; color: var(--text-muted);
+}
+.upload-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+
+/* File List */
+.file-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; background: var(--dark-700);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 8px; transition: var(--transition);
+}
+.file-item:hover { border-color: var(--border-hover); }
+.file-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.file-icon-sch { background: rgba(0,102,255,0.12); color: var(--primary-light); }
+.file-icon-pcb { background: rgba(0,212,255,0.12); color: var(--cyan); }
+.file-icon-gerber { background: rgba(0,229,160,0.12); color: var(--accent); }
+.file-icon-pdf { background: rgba(255,77,77,0.12); color: var(--danger); }
+.file-icon-img { background: rgba(255,180,0,0.12); color: var(--warning); }
+.file-icon-zip { background: rgba(138,100,255,0.12); color: #8A64FF; }
+.file-info { flex: 1; min-width: 0; }
+.file-name {
+  font-size: 14px; font-weight: 500; color: var(--white);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-meta { font-size: 12px; color: var(--text-muted); }
+.file-actions { display: flex; gap: 6px; }
+.file-action-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-secondary); width: 32px; height: 32px;
+  border-radius: var(--radius-sm); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.file-action-btn:hover {
+  border-color: var(--primary); color: var(--primary-light);
+  background: rgba(0,102,255,0.08);
+}
+
+/* Milestone Detail Panel */
+.milestone-detail {
+  background: var(--dark-700); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 1.5rem;
+  margin-bottom: 12px; transition: var(--transition);
+}
+.milestone-detail.current {
+  border-color: rgba(0,102,255,0.3);
+  box-shadow: 0 0 20px rgba(0,102,255,0.08);
+}
+.milestone-detail.needs-review {
+  border-color: rgba(255,180,0,0.3);
+  box-shadow: 0 0 20px rgba(255,180,0,0.08);
+}
+.milestone-detail-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.milestone-detail-title {
+  font-size: 15px; font-weight: 600; color: var(--white);
+  display: flex; align-items: center; gap: 8px;
+}
+.milestone-detail-status {
+  font-size: 11px; font-weight: 600; padding: 4px 10px;
+  border-radius: 20px;
+}
+.ms-pending { background: var(--dark-600); color: var(--text-muted); }
+.ms-in-progress { background: rgba(0,102,255,0.15); color: var(--primary-light); }
+.ms-awaiting { background: rgba(255,180,0,0.15); color: var(--warning); }
+.ms-approved { background: rgba(0,229,160,0.15); color: var(--accent); }
+.ms-rejected { background: rgba(255,77,77,0.15); color: var(--danger); }
+
+.milestone-detail-desc {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+  margin-bottom: 12px;
+}
+.milestone-detail-files {
+  margin-bottom: 12px;
+}
+.milestone-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.review-comment {
+  width: 100%; background: var(--dark-600);
+  border: 1px solid var(--border); color: var(--text);
+  font-family: var(--font-sans); font-size: 13px;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  outline: none; resize: vertical; min-height: 70px;
+  margin-bottom: 10px; transition: var(--transition);
+}
+.review-comment:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
+}
+.review-comment::placeholder { color: var(--text-muted); }
+
+/* Project Info Sidebar */
+.project-info-row {
+  display: flex; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.project-info-row:last-child { border-bottom: none; }
+.project-info-label { color: var(--text-secondary); }
+.project-info-value { color: var(--white); font-weight: 500; }
+
+/* ══════════════════════════════════════════
+   NEW PROJECT MODAL
+   ══════════════════════════════════════════ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  z-index: 2000; align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+  width: 100%; max-width: 520px; max-height: 90vh;
+  overflow-y: auto; position: relative;
+}
+.modal::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--cyan));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.modal-title {
+  font-size: 20px; font-weight: 700; color: var(--white);
+  margin-bottom: 6px;
+}
+.modal-sub {
+  font-size: 14px; color: var(--text-secondary); margin-bottom: 2rem;
+}
+.modal-close {
+  position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; padding: 4px; transition: var(--transition);
+}
+.modal-close:hover { color: var(--white); }
+
+/* ══════════════════════════════════════════
+   ADMIN MODE INDICATOR
+   ══════════════════════════════════════════ */
+.admin-bar {
+  background: linear-gradient(90deg, rgba(0,102,255,0.15), rgba(0,212,255,0.1));
+  border: 1px solid rgba(0,102,255,0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px; margin-bottom: 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.admin-bar-text {
+  font-size: 13px; color: var(--primary-light); font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+}
+.admin-badge {
+  font-size: 11px; font-weight: 700; color: var(--dark-900);
+  background: var(--cyan); padding: 2px 8px; border-radius: 4px;
+}
+
+/* ══════════════════════════════════════════
+   ACTIVITY LOG
+   ══════════════════════════════════════════ */
+.activity-item {
+  display: flex; gap: 12px; padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  margin-top: 6px; flex-shrink: 0;
+}
+.activity-dot-blue { background: var(--primary); }
+.activity-dot-green { background: var(--accent); }
+.activity-dot-yellow { background: var(--warning); }
+.activity-dot-red { background: var(--danger); }
+.activity-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.activity-text strong { color: var(--white); font-weight: 600; }
+.activity-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ══════════════════════════════════════════
+   NOTIFICATIONS
+   ══════════════════════════════════════════ */
+.notif-bell {
+  position: relative; background: none; border: 1px solid var(--border);
+  color: var(--text-secondary); width: 36px; height: 36px;
+  border-radius: var(--radius-sm); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.notif-bell:hover { border-color: var(--primary); color: var(--primary-light); }
+.notif-badge-count {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--danger); color: var(--white);
+  font-size: 10px; font-weight: 700; min-width: 18px; height: 18px;
+  border-radius: 9px; display: flex; align-items: center;
+  justify-content: center; padding: 0 4px;
+}
+.notif-dropdown {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  width: 380px; max-height: 480px; overflow-y: auto;
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  z-index: 2000;
+}
+.notif-dropdown.open { display: block; }
+.notif-dropdown-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.notif-dropdown-title { font-size: 15px; font-weight: 600; color: var(--white); }
+.notif-mark-read {
+  font-size: 12px; color: var(--primary-light); cursor: pointer;
+  background: none; border: none; font-family: var(--font-sans);
+}
+.notif-mark-read:hover { text-decoration: underline; }
+.notif-item {
+  display: flex; gap: 12px; padding: 14px 20px;
+  border-bottom: 1px solid var(--border); cursor: pointer;
+  transition: var(--transition);
+}
+.notif-item:hover { background: rgba(255,255,255,0.02); }
+.notif-item.unread { background: rgba(0,102,255,0.04); }
+.notif-item:last-child { border-bottom: none; }
+.notif-icon-wrap {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.notif-icon-blue { background: rgba(0,102,255,0.12); }
+.notif-icon-green { background: rgba(0,229,160,0.12); }
+.notif-icon-yellow { background: rgba(255,180,0,0.12); }
+.notif-icon-red { background: rgba(255,77,77,0.12); }
+.notif-content { flex: 1; min-width: 0; }
+.notif-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+.notif-text strong { font-weight: 600; }
+.notif-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.notif-empty {
+  padding: 2rem; text-align: center;
+  font-size: 13px; color: var(--text-muted);
+}
+
+/* Email Preview Modal */
+.email-preview {
+  background: var(--white); border-radius: var(--radius-lg);
+  overflow: hidden; max-width: 560px; width: 100%;
+  box-shadow: var(--shadow-lg);
+}
+.email-header-bar {
+  background: #F3F4F6; padding: 16px 24px;
+  border-bottom: 1px solid #E5E7EB;
+}
+.email-from { font-size: 13px; color: #6B7280; }
+.email-from strong { color: #111827; }
+.email-subject { font-size: 15px; font-weight: 600; color: #111827; margin-top: 4px; }
+.email-body { padding: 28px 24px; background: var(--white); color: #374151; font-size: 14px; line-height: 1.8; }
+.email-body h2 { color: #111827; font-size: 20px; margin-bottom: 12px; }
+.email-body .email-highlight {
+  background: #EEF2FF; border: 1px solid #C7D2FE;
+  border-radius: 8px; padding: 16px; margin: 16px 0;
+  color: #3730A3;
+}
+.email-body .email-btn {
+  display: inline-block; background: #0066FF; color: #FFFFFF;
+  padding: 12px 28px; border-radius: 8px; font-weight: 600;
+  text-decoration: none; margin: 16px 0;
+}
+.email-footer-bar {
+  background: #F9FAFB; padding: 16px 24px;
+  border-top: 1px solid #E5E7EB;
+  font-size: 12px; color: #9CA3AF; text-align: center;
+}
+
+@media (max-width: 480px) {
+  .notif-dropdown { width: calc(100vw - 2rem); right: -60px; }
+}
+
+/* ══════════════════════════════════════════
+   CHECKOUT VIEW
+   ══════════════════════════════════════════ */
+.checkout-container {
+  max-width: 960px; margin: 0 auto;
+  padding: 6rem 2rem 4rem;
+}
+.checkout-progress {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; margin-bottom: 3rem;
+}
+.checkout-step-ind {
+  display: flex; align-items: center; gap: 8px;
+}
+.checkout-step-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; transition: var(--transition);
+}
+.checkout-step-ind.done .checkout-step-dot { background: var(--accent); color: var(--dark-900); }
+.checkout-step-ind.active .checkout-step-dot { background: var(--primary); color: var(--white); box-shadow: 0 0 20px rgba(0,102,255,0.4); }
+.checkout-step-ind.pending .checkout-step-dot { background: var(--dark-600); color: var(--text-muted); }
+.checkout-step-label { font-size: 13px; font-weight: 600; }
+.checkout-step-ind.done .checkout-step-label { color: var(--accent); }
+.checkout-step-ind.active .checkout-step-label { color: var(--white); }
+.checkout-step-ind.pending .checkout-step-label { color: var(--text-muted); }
+.checkout-connector {
+  width: 60px; height: 2px; margin: 0 8px;
+}
+.checkout-connector.done { background: var(--accent); }
+.checkout-connector.pending { background: var(--dark-600); }
+
+.checkout-grid {
+  display: grid; grid-template-columns: 1fr 380px;
+  gap: 24px; align-items: start;
+}
+.checkout-card {
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem; margin-bottom: 20px;
+}
+.checkout-card-title {
+  font-size: 16px; font-weight: 600; color: var(--white);
+  margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;
+}
+.order-summary-line {
+  display: flex; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.order-summary-line:last-child { border-bottom: none; }
+.order-summary-label { color: var(--text-secondary); }
+.order-summary-val { color: var(--white); font-weight: 500; font-family: var(--font-mono); }
+.order-total-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-top: 1.25rem; margin-top: 0.5rem;
+  border-top: 2px solid rgba(0,102,255,0.2);
+}
+.order-total-label { font-size: 15px; font-weight: 600; color: var(--white); }
+.order-total-val {
+  font-size: 32px; font-weight: 700; letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.payment-methods {
+  display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap;
+}
+.pay-badge {
+  background: var(--dark-700); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 12px; font-size: 11px;
+  color: var(--text-secondary); font-weight: 700; letter-spacing: 0.05em;
+}
+.card-input-row { display: flex; gap: 12px; }
+.card-input-row > .form-group { flex: 1; }
+.trust-row {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem;
+}
+.trust-badge {
+  font-size: 11px; font-weight: 600; padding: 4px 10px;
+  border-radius: 20px;
+}
+.trust-blue { background: rgba(0,102,255,0.1); color: var(--primary-light); border: 1px solid rgba(0,102,255,0.2); }
+.trust-green { background: rgba(0,229,160,0.1); color: var(--accent); border: 1px solid rgba(0,229,160,0.2); }
+
+/* Success View */
+.success-container {
+  max-width: 540px; margin: 0 auto;
+  padding: 6rem 2rem 4rem; text-align: center;
+}
+.success-icon-wrap {
+  width: 80px; height: 80px; margin: 0 auto 2rem;
+  background: rgba(0,229,160,0.1); border: 2px solid rgba(0,229,160,0.3);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  animation: successPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes successPop { from { transform: scale(0.5); opacity:0; } to { transform: scale(1); opacity:1; } }
+.success-title {
+  font-size: 28px; font-weight: 700; color: var(--white);
+  margin-bottom: 10px; letter-spacing: -0.5px;
+}
+.success-desc {
+  font-size: 16px; color: var(--text-secondary); line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.order-id-tag {
+  display: inline-block; font-family: var(--font-mono);
+  font-size: 13px; color: var(--cyan);
+  background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+  border-radius: var(--radius-sm); padding: 10px 20px;
+  letter-spacing: 0.1em; margin-bottom: 2rem;
+}
+.next-steps-card {
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem; text-align: left;
+  margin-bottom: 1.5rem;
+}
+.next-step-row {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.next-step-row:last-child { border-bottom: none; }
+.next-step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.ns-done { background: rgba(0,229,160,0.15); color: var(--accent); }
+.ns-current { background: rgba(0,102,255,0.15); color: var(--primary-light); }
+.ns-pending { background: var(--dark-600); color: var(--text-muted); }
+.next-step-text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+@media (max-width: 768px) {
+  .checkout-grid { grid-template-columns: 1fr; }
+  .checkout-progress { flex-wrap: wrap; gap: 4px; }
+  .checkout-connector { width: 30px; }
+  .card-input-row { flex-direction: column; }
+}
+
+/* ══════════════════════════════════════════
+   TOAST NOTIFICATIONS
+   ══════════════════════════════════════════ */
+.toast-container {
+  position: fixed; top: 84px; right: 24px;
+  z-index: 3000; display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  background: var(--dark-700); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 14px 20px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease;
+  max-width: 400px;
+}
+.toast.success { border-left: 3px solid var(--accent); }
+.toast.warning { border-left: 3px solid var(--warning); }
+.toast.info { border-left: 3px solid var(--primary); }
+.toast-text { font-size: 14px; color: var(--text); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .project-detail-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .dashboard { padding: 5rem 1.25rem 3rem; }
+  .dash-header { flex-direction: column; align-items: flex-start; }
+  .milestone-tracker { overflow-x: auto; padding-bottom: 8px; }
+  .milestone-step { min-width: 100px; }
+  .form-row { grid-template-columns: 1fr; }
+  .milestone-actions { flex-direction: column; }
+  .milestone-actions .btn { width: 100%; }
+  .project-card-header { flex-direction: column; }
+}
+@media (max-width: 480px) {
+  .auth-card { padding: 1.75rem; }
+  .detail-card { padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ══════════════════════ NAVBAR ══════════════════════ -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <svg width="32" height="32" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="34" height="34" rx="8" stroke="#0066FF" stroke-width="1.5" opacity="0.6"/>
+        <rect x="7" y="7" width="8" height="8" rx="2" fill="#0066FF" opacity="0.9"/>
+        <rect x="21" y="7" width="8" height="8" rx="2" fill="#00D4FF" opacity="0.9"/>
+        <rect x="7" y="21" width="8" height="8" rx="2" fill="#00D4FF" opacity="0.9"/>
+        <rect x="21" y="21" width="8" height="8" rx="2" fill="#0066FF" opacity="0.9"/>
+        <line x1="15" y1="11" x2="21" y2="11" stroke="#0066FF" stroke-width="1.2"/>
+        <line x1="25" y1="15" x2="25" y2="21" stroke="#00D4FF" stroke-width="1.2"/>
+        <line x1="11" y1="15" x2="11" y2="21" stroke="#00D4FF" stroke-width="1.2"/>
+        <line x1="15" y1="25" x2="21" y2="25" stroke="#0066FF" stroke-width="1.2"/>
+      </svg>
+      Electro<span class="nav-brand-accent">Trical</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link active" href="dashboard.html">Dashboard</a>
+    </div>
+    <div class="nav-user" id="navUser" style="display:none;">
+      <div style="position:relative;">
+        <button class="notif-bell" onclick="toggleNotifications(event)" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-badge-count" id="notifCount" style="display:none;">0</span>
+        </button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-dropdown-header">
+            <span class="notif-dropdown-title">Notifications</span>
+            <button class="notif-mark-read" onclick="markAllRead()">Mark all read</button>
+          </div>
+          <div id="notifList"></div>
+        </div>
+      </div>
+      <div class="nav-user-avatar" id="navAvatar"></div>
+      <span class="nav-user-name" id="navUserName"></span>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════ AUTH VIEW ══════════════════════ -->
+<div class="view active" id="view-auth">
+  <div class="auth-container">
+    <div style="text-align:center; margin-bottom: 2rem;">
+      <svg width="48" height="48" viewBox="0 0 36 36" fill="none" style="margin-bottom:1rem">
+        <rect x="1" y="1" width="34" height="34" rx="8" stroke="#0066FF" stroke-width="1.5" opacity="0.6"/>
+        <rect x="7" y="7" width="8" height="8" rx="2" fill="#0066FF" opacity="0.9"/>
+        <rect x="21" y="7" width="8" height="8" rx="2" fill="#00D4FF" opacity="0.9"/>
+        <rect x="7" y="21" width="8" height="8" rx="2" fill="#00D4FF" opacity="0.9"/>
+        <rect x="21" y="21" width="8" height="8" rx="2" fill="#0066FF" opacity="0.9"/>
+      </svg>
+    </div>
+    <div class="auth-card">
+      <div class="auth-title">Welcome</div>
+      <div class="auth-sub">Sign in to manage your PCB design projects</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" type="email" id="login-email" placeholder="you@company.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="login-pass" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+        <div class="auth-divider"><div class="auth-divider-line"></div><span>Demo accounts</span><div class="auth-divider-line"></div></div>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn btn-secondary btn-sm" style="flex:1" onclick="demoLogin('customer')">Customer Demo</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="flex:1" onclick="demoLogin('admin')">Admin Demo</button>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" style="display:none;" onsubmit="handleRegister(event)">
+        <div class="form-row" style="margin-bottom:16px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">First Name</label>
+            <input class="form-input" type="text" id="reg-fname" placeholder="Ada" required>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Last Name</label>
+            <input class="form-input" type="text" id="reg-lname" placeholder="Lovelace" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" type="email" id="reg-email" placeholder="you@company.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <input class="form-input" type="text" id="reg-company" placeholder="Acme Hardware Inc.">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="reg-pass" placeholder="Min. 8 characters" required minlength="8">
+          <div class="form-hint">Use a mix of letters, numbers, and symbols.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Account</button>
+      </form>
+
+      <div class="auth-footer">By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ DASHBOARD VIEW ══════════════════════ -->
+<div class="view" id="view-dashboard">
+  <div class="dashboard">
+
+    <!-- Admin Bar (only visible for admin) -->
+    <div class="admin-bar" id="adminBar" style="display:none;">
+      <div class="admin-bar-text">
+        <span class="admin-badge">ADMIN</span>
+        You are viewing the admin dashboard. You can upload design files and manage milestones.
+      </div>
+    </div>
+
+    <div class="dash-header">
+      <div>
+        <h1 class="dash-title" id="dashTitle">My Projects</h1>
+        <p class="dash-subtitle" id="dashSubtitle">Manage your PCB design orders and track progress</p>
+      </div>
+      <button class="btn btn-primary btn-sm" id="newProjectBtn" onclick="openNewProject()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Project
+      </button>
+    </div>
+
+    <!-- Projects List -->
+    <div id="projectsList"></div>
+
+    <!-- Project Detail -->
+    <div id="projectDetail" style="display:none;"></div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════ CHECKOUT VIEW ══════════════════════ -->
+<div class="view" id="view-checkout">
+  <div class="checkout-container">
+    <!-- Progress Steps -->
+    <div class="checkout-progress">
+      <div class="checkout-step-ind done">
+        <div class="checkout-step-dot">&#10003;</div>
+        <span class="checkout-step-label">Quote</span>
+      </div>
+      <div class="checkout-connector done"></div>
+      <div class="checkout-step-ind active">
+        <div class="checkout-step-dot">2</div>
+        <span class="checkout-step-label">Payment</span>
+      </div>
+      <div class="checkout-connector pending"></div>
+      <div class="checkout-step-ind pending">
+        <div class="checkout-step-dot">3</div>
+        <span class="checkout-step-label">Upload Files</span>
+      </div>
+    </div>
+
+    <div class="checkout-grid">
+      <!-- Left Column: Forms -->
+      <div>
+        <!-- Contact & Billing -->
+        <div class="checkout-card">
+          <div class="checkout-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Contact & Billing
+          </div>
+          <div class="form-row" style="margin-bottom:16px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">First Name</label>
+              <input class="form-input" type="text" id="co-fname" placeholder="Ada" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Last Name</label>
+              <input class="form-input" type="text" id="co-lname" placeholder="Lovelace" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input class="form-input" type="email" id="co-email" placeholder="you@company.com" required>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Company <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+            <input class="form-input" type="text" id="co-company" placeholder="Acme Hardware Inc.">
+          </div>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="checkout-card">
+          <div class="checkout-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Payment Details
+          </div>
+          <div class="payment-methods">
+            <span class="pay-badge">VISA</span>
+            <span class="pay-badge">MASTERCARD</span>
+            <span class="pay-badge">AMEX</span>
+            <span class="pay-badge">STRIPE</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Card Number</label>
+            <input class="form-input" type="text" id="co-card" placeholder="1234  5678  9012  3456" maxlength="22" oninput="fmtCard(this)">
+          </div>
+          <div class="card-input-row" style="margin-bottom:16px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Expiry Date</label>
+              <input class="form-input" type="text" id="co-expiry" placeholder="MM / YY" maxlength="7" oninput="fmtExpiry(this)">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">CVC / CVV</label>
+              <input class="form-input" type="text" placeholder="•••" maxlength="4">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Name on Card</label>
+            <input class="form-input" type="text" id="co-cardname" placeholder="Ada Lovelace">
+          </div>
+          <button class="btn btn-primary" id="payBtn" onclick="processPayment()" style="font-size:16px;padding:16px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Pay <span id="co-pay-amount">$538</span> Securely
+          </button>
+          <div class="trust-row">
+            <span class="trust-badge trust-blue">256-bit SSL</span>
+            <span class="trust-badge trust-green">Stripe Secured</span>
+            <span class="trust-badge trust-blue">PCI DSS Compliant</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Order Summary -->
+      <div>
+        <div class="checkout-card" style="position:sticky;top:96px;">
+          <div class="checkout-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Order Summary
+          </div>
+          <div class="order-summary-line"><span class="order-summary-label">Service</span><span class="order-summary-val">PCB Layout</span></div>
+          <div class="order-summary-line"><span class="order-summary-label">Layer Count</span><span class="order-summary-val" id="co-s-layers">4 layers</span></div>
+          <div class="order-summary-line"><span class="order-summary-label">Complexity</span><span class="order-summary-val" id="co-s-complexity">Standard</span></div>
+          <div class="order-summary-line"><span class="order-summary-label">Board Size</span><span class="order-summary-val" id="co-s-size">Medium</span></div>
+          <div class="order-summary-line"><span class="order-summary-label">Turnaround</span><span class="order-summary-val" id="co-s-turn">Express</span></div>
+          <div class="order-summary-line"><span class="order-summary-label">Special Req.</span><span class="order-summary-val" id="co-s-special">None</span></div>
+          <div class="order-summary-line"><span class="order-summary-label">Base Rate</span><span class="order-summary-val" id="co-s-base">$256</span></div>
+          <div class="order-summary-line"><span class="order-summary-label">Tax (0%)</span><span class="order-summary-val">$0.00</span></div>
+          <div class="order-total-row">
+            <span class="order-total-label">Total Due</span>
+            <span class="order-total-val" id="co-s-total">$538</span>
+          </div>
+          <div style="margin-top:1.25rem;padding:12px;background:rgba(0,102,255,0.04);border:1px solid rgba(0,102,255,0.1);border-radius:var(--radius-sm);">
+            <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;">After payment you'll receive a secure link to upload your schematic, BOM, and design notes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ ORDER SUCCESS VIEW ══════════════════════ -->
+<div class="view" id="view-success">
+  <div class="success-container">
+    <div class="success-icon-wrap">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00E5A0" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h1 class="success-title">Order Confirmed!</h1>
+    <p class="success-desc">Payment received successfully. A confirmation email with your file upload link has been sent.</p>
+    <div class="order-id-tag" id="success-order-id">ORDER #PRJ-2026-002</div>
+
+    <div class="next-steps-card">
+      <p style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:14px;">What Happens Next</p>
+      <div class="next-step-row">
+        <div class="next-step-num ns-done">&#10003;</div>
+        <div class="next-step-text"><strong>Payment confirmed</strong> — your project has been created in your dashboard.</div>
+      </div>
+      <div class="next-step-row">
+        <div class="next-step-num ns-current">2</div>
+        <div class="next-step-text"><strong>Upload your files</strong> — schematic (.sch, .kicad_sch), BOM, netlist, and any design notes from your dashboard.</div>
+      </div>
+      <div class="next-step-row">
+        <div class="next-step-num ns-pending">3</div>
+        <div class="next-step-text"><strong>Layout begins</strong> — work starts within 2 hours of receiving your files. You'll get milestone updates.</div>
+      </div>
+      <div class="next-step-row">
+        <div class="next-step-num ns-pending">4</div>
+        <div class="next-step-text"><strong>Review & approve</strong> — review each milestone (placement, routing, final Gerbers) and approve or request changes.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="goToNewProject()">Go to Project <span aria-hidden="true">&rarr;</span></button>
+      <button class="btn btn-secondary" style="flex:1;" onclick="renderDashboard(); showView('dashboard');">View Dashboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ EMAIL PREVIEW MODAL ══════════════════════ -->
+<div class="modal-overlay" id="emailPreviewModal">
+  <div class="email-preview">
+    <div class="email-header-bar">
+      <div class="email-from"><strong>ElectroTrical</strong> &lt;notifications@electrotrical.com&gt;</div>
+      <div class="email-subject" id="emailSubject">Milestone Update</div>
+    </div>
+    <div class="email-body" id="emailBody"></div>
+    <div class="email-footer-bar">
+      &copy; 2026 ElectroTrical &middot; Professional PCB Layout Services<br>
+      <a href="#" style="color:#6B7280;">Unsubscribe</a> &middot; <a href="#" style="color:#6B7280;">Email preferences</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ NEW PROJECT MODAL ══════════════════════ -->
+<div class="modal-overlay" id="newProjectModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('newProjectModal')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-title">New Project</div>
+    <div class="modal-sub">Create a new PCB design project and upload your schematic files.</div>
+    <form onsubmit="createProject(event)">
+      <div class="form-group">
+        <label class="form-label">Project Name</label>
+        <input class="form-input" type="text" id="np-name" placeholder="e.g. IoT Sensor Board v2" required>
+      </div>
+      <div class="form-row" style="margin-bottom:16px">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Layer Count</label>
+          <select class="form-input" id="np-layers" style="padding-right:16px;">
+            <option value="2">2 layers</option>
+            <option value="4" selected>4 layers</option>
+            <option value="6">6 layers</option>
+            <option value="8">8 layers</option>
+            <option value="10">10 layers</option>
+            <option value="16">16 layers</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Board Size</label>
+          <select class="form-input" id="np-size" style="padding-right:16px;">
+            <option value="Small">Small (up to 50x50mm)</option>
+            <option value="Medium" selected>Medium (50-100mm)</option>
+            <option value="Large">Large (100-200mm)</option>
+            <option value="XL">Extra large (200mm+)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description / Notes</label>
+        <textarea class="review-comment" id="np-desc" placeholder="Describe your project requirements, special constraints, etc." style="min-height:80px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Upload Schematic Files</label>
+        <div class="upload-zone" id="npUploadZone">
+          <div class="upload-zone-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-zone-title">Drop files here or click to browse</div>
+          <div class="upload-zone-desc">.sch, .kicad_sch, .brd, .pdf, .zip — Max 50MB</div>
+          <input type="file" multiple accept=".sch,.kicad_sch,.brd,.pdf,.zip,.rar,.csv,.xlsx,.txt" onchange="handleFileSelect(event, 'npFileList')">
+        </div>
+        <div id="npFileList" style="margin-top:8px;"></div>
+      </div>
+      <button type="submit" class="btn btn-primary">Create Project</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════ JAVASCRIPT ══════════════════════ -->
+<script>
+// ══════════════════════════════════════════════════════════
+// STATE MANAGEMENT (localStorage)
+// ══════════════════════════════════════════════════════════
+const STORAGE_KEY = 'electrotrical_data';
+
+function getState() {
+  const data = localStorage.getItem(STORAGE_KEY);
+  if (!data) return initState();
+  return JSON.parse(data);
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function initState() {
+  const state = {
+    users: [
+      {
+        id: 'admin-001',
+        email: 'admin@electrotrical.com',
+        password: 'admin123',
+        firstName: 'Admin',
+        lastName: 'ElectroTrical',
+        company: 'ElectroTrical',
+        role: 'admin'
+      },
+      {
+        id: 'cust-001',
+        email: 'demo@customer.com',
+        password: 'demo1234',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        company: 'Nexon Robotics',
+        role: 'customer'
+      }
+    ],
+    projects: [
+      {
+        id: 'PRJ-2026-001',
+        name: 'IoT Sensor Board v2',
+        customerId: 'cust-001',
+        layers: 4,
+        size: 'Medium',
+        description: '4-layer IoT board with BLE module, temp sensor array, and USB-C connector. Need impedance control on RF traces.',
+        status: 'review',
+        createdAt: '2026-03-10T09:30:00',
+        files: [
+          { name: 'sensor_board_v2.kicad_sch', size: '2.4 MB', type: 'sch', uploadedAt: '2026-03-10T09:30:00', uploadedBy: 'cust-001' },
+          { name: 'BOM_sensor_v2.csv', size: '148 KB', type: 'csv', uploadedAt: '2026-03-10T09:32:00', uploadedBy: 'cust-001' }
+        ],
+        milestones: [
+          {
+            id: 'ms-1',
+            name: 'Component Placement',
+            status: 'awaiting',
+            description: 'All components placed according to schematic grouping. BLE antenna placed with proper ground clearance. USB-C connector on board edge.',
+            files: [
+              { name: 'placement_review_v1.pdf', size: '3.1 MB', type: 'pdf', uploadedAt: '2026-03-12T14:20:00', uploadedBy: 'admin-001' },
+              { name: 'placement_3d_render.png', size: '1.8 MB', type: 'img', uploadedAt: '2026-03-12T14:22:00', uploadedBy: 'admin-001' }
+            ],
+            comments: [],
+            updatedAt: '2026-03-12T14:22:00'
+          },
+          {
+            id: 'ms-2',
+            name: 'Nets Routing',
+            status: 'pending',
+            description: 'Trace routing for all nets with controlled impedance on RF and USB differential pairs.',
+            files: [],
+            comments: [],
+            updatedAt: null
+          },
+          {
+            id: 'ms-3',
+            name: 'Final Gerbers',
+            status: 'pending',
+            description: 'DRC-clean Gerber files, fabrication notes, drill files, and 3D render for final approval.',
+            files: [],
+            comments: [],
+            updatedAt: null
+          }
+        ],
+        activity: [
+          { text: '<strong>Admin</strong> uploaded placement review files', time: '2026-03-12 14:22', type: 'blue' },
+          { text: 'Milestone <strong>Component Placement</strong> awaiting your review', time: '2026-03-12 14:20', type: 'yellow' },
+          { text: '<strong>Admin</strong> started working on component placement', time: '2026-03-11 08:15', type: 'blue' },
+          { text: '<strong>Ada</strong> uploaded schematic files', time: '2026-03-10 09:32', type: 'green' },
+          { text: 'Project <strong>IoT Sensor Board v2</strong> created', time: '2026-03-10 09:30', type: 'green' }
+        ]
+      }
+    ],
+    currentUser: null
+  };
+  saveState(state);
+
+  // Seed demo notifications
+  const seedNotifs = [
+    {
+      id: 'n-seed-1',
+      title: 'Component Placement — Ready for Review',
+      message: '<strong>Component Placement</strong> is ready for your review on <strong>IoT Sensor Board v2</strong>',
+      type: 'yellow',
+      emailTemplate: null,
+      read: false,
+      time: 'Mar 12, 02:22 PM'
+    },
+    {
+      id: 'n-seed-2',
+      title: 'Project Created',
+      message: 'Your project <strong>IoT Sensor Board v2</strong> has been created successfully.',
+      type: 'green',
+      emailTemplate: null,
+      read: true,
+      time: 'Mar 10, 09:30 AM'
+    }
+  ];
+  // Only seed if no notifications exist
+  if (!localStorage.getItem('electrotrical_notifications')) {
+    localStorage.setItem('electrotrical_notifications', JSON.stringify(seedNotifs));
+  }
+
+  return state;
+}
+
+let state = getState();
+let selectedFiles = [];
+
+// ══════════════════════════════════════════════════════════
+// AUTH FUNCTIONS
+// ══════════════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => {
+    t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+  });
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  const user = state.users.find(u => u.email === email && u.password === pass);
+  if (!user) {
+    showToast('Invalid email or password. Try the demo accounts below.', 'warning');
+    return;
+  }
+  loginAs(user);
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  const user = {
+    id: 'cust-' + Date.now(),
+    email: document.getElementById('reg-email').value,
+    password: document.getElementById('reg-pass').value,
+    firstName: document.getElementById('reg-fname').value,
+    lastName: document.getElementById('reg-lname').value,
+    company: document.getElementById('reg-company').value || '',
+    role: 'customer'
+  };
+  if (state.users.find(u => u.email === user.email)) {
+    showToast('An account with this email already exists.', 'warning');
+    return;
+  }
+  state.users.push(user);
+  saveState(state);
+  loginAs(user);
+  showToast('Account created successfully! Welcome to ElectroTrical.', 'success');
+}
+
+function demoLogin(role) {
+  const user = role === 'admin'
+    ? state.users.find(u => u.role === 'admin')
+    : state.users.find(u => u.role === 'customer');
+  if (user) loginAs(user);
+}
+
+function loginAs(user) {
+  state.currentUser = user.id;
+  saveState(state);
+  showView('dashboard');
+  updateNav();
+  renderDashboard();
+}
+
+function logout() {
+  state.currentUser = null;
+  saveState(state);
+  showView('auth');
+  updateNav();
+}
+
+function getCurrentUser() {
+  if (!state.currentUser) return null;
+  return state.users.find(u => u.id === state.currentUser);
+}
+
+function isAdmin() {
+  const user = getCurrentUser();
+  return user && user.role === 'admin';
+}
+
+// ══════════════════════════════════════════════════════════
+// VIEW MANAGEMENT
+// ══════════════════════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+function updateNav() {
+  const user = getCurrentUser();
+  const navUser = document.getElementById('navUser');
+  if (user) {
+    navUser.style.display = 'flex';
+    document.getElementById('navAvatar').textContent = user.firstName[0] + user.lastName[0];
+    document.getElementById('navUserName').textContent = user.firstName;
+    renderNotifications();
+  } else {
+    navUser.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// DASHBOARD RENDERING
+// ══════════════════════════════════════════════════════════
+function renderDashboard() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const admin = isAdmin();
+  document.getElementById('adminBar').style.display = admin ? 'flex' : 'none';
+  document.getElementById('dashTitle').textContent = admin ? 'All Projects' : 'My Projects';
+  document.getElementById('dashSubtitle').textContent = admin
+    ? 'Manage all customer projects, upload designs, and track milestones'
+    : 'Manage your PCB design orders and track progress';
+  document.getElementById('newProjectBtn').style.display = admin ? 'none' : 'inline-flex';
+
+  document.getElementById('projectDetail').style.display = 'none';
+  document.getElementById('projectsList').style.display = 'block';
+
+  const projects = admin
+    ? state.projects
+    : state.projects.filter(p => p.customerId === user.id);
+
+  const container = document.getElementById('projectsList');
+
+  if (projects.length === 0) {
+    container.innerHTML = `
+      <div class="projects-empty">
+        <div class="projects-empty-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div class="projects-empty-title">No projects yet</div>
+        <div class="projects-empty-desc">Create your first project to get started. Upload your schematic and we'll handle the rest.</div>
+        <button class="btn btn-primary btn-sm" onclick="openNewProject()">Create First Project</button>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = projects.map(p => {
+    const statusClass = p.status === 'completed' ? 'status-completed' : p.status === 'review' ? 'status-review' : 'status-active';
+    const statusText = p.status === 'completed' ? 'Completed' : p.status === 'review' ? 'Awaiting Review' : 'In Progress';
+    const completedMs = p.milestones.filter(m => m.status === 'approved').length;
+    const customer = admin ? state.users.find(u => u.id === p.customerId) : null;
+
+    return `
+      <div class="project-card" onclick="openProject('${p.id}')">
+        <div class="project-card-header">
+          <div>
+            <div class="project-card-title">${p.name}</div>
+            <div class="project-card-id">${p.id}${customer ? ' &middot; ' + customer.firstName + ' ' + customer.lastName : ''}</div>
+          </div>
+          <div class="project-status ${statusClass}">
+            <span class="status-dot"></span> ${statusText}
+          </div>
+        </div>
+        <div class="milestone-tracker">
+          ${p.milestones.map((m, i) => {
+            let stepClass = m.status === 'approved' ? 'completed' : m.status === 'awaiting' ? 'review' : m.status === 'in-progress' ? 'active' : 'pending';
+            let icon = m.status === 'approved' ? '&#10003;' : (i+1);
+            return `
+              <div class="milestone-step ${stepClass}">
+                <div class="milestone-dot">${icon}</div>
+                <div class="milestone-label">${m.name}</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// PROJECT DETAIL VIEW
+// ══════════════════════════════════════════════════════════
+function openProject(projectId) {
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  document.getElementById('projectsList').style.display = 'none';
+  const detail = document.getElementById('projectDetail');
+  detail.style.display = 'block';
+
+  const admin = isAdmin();
+  const customer = state.users.find(u => u.id === project.customerId);
+
+  detail.innerHTML = `
+    <div style="margin-bottom:1.5rem;">
+      <button class="btn btn-secondary btn-xs" onclick="renderDashboard()" style="margin-bottom:1rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Projects
+      </button>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h2 style="font-size:24px;font-weight:700;color:var(--white);margin-bottom:4px;">${project.name}</h2>
+          <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);">${project.id}</span>
+        </div>
+        <div class="project-status ${project.status === 'completed' ? 'status-completed' : project.status === 'review' ? 'status-review' : 'status-active'}">
+          <span class="status-dot"></span>
+          ${project.status === 'completed' ? 'Completed' : project.status === 'review' ? 'Awaiting Review' : 'In Progress'}
+        </div>
+      </div>
+    </div>
+
+    <!-- Milestone Tracker Bar -->
+    <div class="detail-card" style="margin-bottom:20px;">
+      <div class="milestone-tracker" style="margin-bottom:0;">
+        ${project.milestones.map((m, i) => {
+          let stepClass = m.status === 'approved' ? 'completed' : m.status === 'awaiting' ? 'review' : m.status === 'in-progress' ? 'active' : 'pending';
+          let icon = m.status === 'approved' ? '&#10003;' : m.status === 'awaiting' ? '!' : (i+1);
+          let sub = m.status === 'approved' ? 'Approved' : m.status === 'awaiting' ? 'Needs Review' : m.status === 'in-progress' ? 'In Progress' : 'Pending';
+          return `
+            <div class="milestone-step ${stepClass}">
+              <div class="milestone-dot">${icon}</div>
+              <div class="milestone-label">${m.name}</div>
+              <div class="milestone-sublabel">${sub}</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="project-detail-grid">
+      <div>
+        <!-- Milestone Panels -->
+        ${project.milestones.map((m, i) => renderMilestonePanel(project.id, m, i, admin)).join('')}
+
+        <!-- Customer Schematic Files -->
+        <div class="detail-card">
+          <div class="detail-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Uploaded Schematic Files
+          </div>
+          ${project.files.length > 0
+            ? project.files.map(f => renderFileItem(f)).join('')
+            : '<p style="font-size:13px;color:var(--text-muted);">No files uploaded yet.</p>'}
+          ${!admin ? `
+            <div class="upload-zone" style="margin-top:12px;">
+              <div class="upload-zone-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <div class="upload-zone-title" style="font-size:13px;">Upload additional files</div>
+              <input type="file" multiple onchange="uploadProjectFile(event, '${project.id}')">
+            </div>` : ''}
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div>
+        <div class="detail-card">
+          <div class="detail-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Project Details
+          </div>
+          ${customer ? `<div class="project-info-row"><span class="project-info-label">Client</span><span class="project-info-value">${customer.firstName} ${customer.lastName}</span></div>` : ''}
+          ${customer && customer.company ? `<div class="project-info-row"><span class="project-info-label">Company</span><span class="project-info-value">${customer.company}</span></div>` : ''}
+          <div class="project-info-row"><span class="project-info-label">Layers</span><span class="project-info-value">${project.layers} layers</span></div>
+          <div class="project-info-row"><span class="project-info-label">Board Size</span><span class="project-info-value">${project.size}</span></div>
+          <div class="project-info-row"><span class="project-info-label">Created</span><span class="project-info-value">${formatDate(project.createdAt)}</span></div>
+          <div class="project-info-row"><span class="project-info-label">Files</span><span class="project-info-value">${project.files.length} uploaded</span></div>
+          ${project.description ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--text-secondary);line-height:1.7;">${project.description}</div>` : ''}
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Activity Log
+          </div>
+          ${project.activity.map(a => `
+            <div class="activity-item">
+              <div class="activity-dot activity-dot-${a.type}"></div>
+              <div>
+                <div class="activity-text">${a.text}</div>
+                <div class="activity-time">${a.time}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderMilestonePanel(projectId, milestone, index, admin) {
+  const isReview = milestone.status === 'awaiting';
+  const isCurrent = milestone.status === 'in-progress';
+  const isPending = milestone.status === 'pending';
+  const isApproved = milestone.status === 'approved';
+
+  let statusBadge = '';
+  if (isPending) statusBadge = '<span class="milestone-detail-status ms-pending">Pending</span>';
+  else if (isCurrent) statusBadge = '<span class="milestone-detail-status ms-in-progress">In Progress</span>';
+  else if (isReview) statusBadge = '<span class="milestone-detail-status ms-awaiting">Awaiting Review</span>';
+  else if (isApproved) statusBadge = '<span class="milestone-detail-status ms-approved">Approved</span>';
+
+  let actions = '';
+
+  if (admin) {
+    if (isPending || isCurrent) {
+      actions = `
+        <div style="margin-top:12px;">
+          <div class="upload-zone" style="padding:1.25rem;">
+            <div class="upload-zone-title" style="font-size:13px;">Upload design files for review</div>
+            <div class="upload-zone-desc" style="font-size:12px;">.pdf, .png, .zip, .gerber</div>
+            <input type="file" multiple onchange="adminUploadMilestone(event, '${projectId}', ${index})">
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:10px;width:100%;" onclick="submitForReview('${projectId}', ${index})">Submit for Customer Review</button>
+        </div>`;
+    }
+  } else {
+    if (isReview) {
+      actions = `
+        <textarea class="review-comment" id="comment-${projectId}-${index}" placeholder="Add feedback or comments (optional)..."></textarea>
+        <div class="milestone-actions">
+          <button class="btn btn-success btn-sm" onclick="approveMilestone('${projectId}', ${index})">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Approve
+          </button>
+          <button class="btn btn-danger-outline btn-sm" onclick="requestRevision('${projectId}', ${index})">
+            Request Revision
+          </button>
+        </div>`;
+    }
+  }
+
+  return `
+    <div class="milestone-detail ${isCurrent ? 'current' : ''} ${isReview ? 'needs-review' : ''}">
+      <div class="milestone-detail-header">
+        <div class="milestone-detail-title">
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">0${index+1}</span>
+          ${milestone.name}
+        </div>
+        ${statusBadge}
+      </div>
+      <div class="milestone-detail-desc">${milestone.description}</div>
+      ${milestone.files.length > 0 ? `
+        <div class="milestone-detail-files">
+          ${milestone.files.map(f => renderFileItem(f)).join('')}
+        </div>` : ''}
+      ${milestone.comments && milestone.comments.length > 0 ? `
+        <div style="margin-top:8px;">
+          ${milestone.comments.map(c => `
+            <div style="background:var(--dark-600);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:6px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${c.author} &middot; ${c.time}</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.6;">${c.text}</div>
+            </div>`).join('')}
+        </div>` : ''}
+      ${actions}
+    </div>`;
+}
+
+function renderFileItem(file) {
+  const typeMap = {
+    sch: { cls: 'file-icon-sch', label: 'SCH' },
+    csv: { cls: 'file-icon-sch', label: 'CSV' },
+    pcb: { cls: 'file-icon-pcb', label: 'PCB' },
+    gerber: { cls: 'file-icon-gerber', label: 'GBR' },
+    pdf: { cls: 'file-icon-pdf', label: 'PDF' },
+    img: { cls: 'file-icon-img', label: 'IMG' },
+    zip: { cls: 'file-icon-zip', label: 'ZIP' },
+    other: { cls: 'file-icon-sch', label: 'FILE' }
+  };
+  const t = typeMap[file.type] || typeMap.other;
+  return `
+    <div class="file-item">
+      <div class="file-icon ${t.cls}">${t.label}</div>
+      <div class="file-info">
+        <div class="file-name">${file.name}</div>
+        <div class="file-meta">${file.size} &middot; ${formatDate(file.uploadedAt)}</div>
+      </div>
+      <div class="file-actions">
+        <button class="file-action-btn" title="Download" onclick="event.stopPropagation(); showToast('Download started: ${file.name}', 'info')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════════════════
+function openNewProject() {
+  document.getElementById('newProjectModal').classList.add('active');
+  selectedFiles = [];
+  document.getElementById('npFileList').innerHTML = '';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function handleFileSelect(event, listId) {
+  const files = Array.from(event.target.files);
+  selectedFiles = selectedFiles.concat(files);
+  renderSelectedFiles(listId);
+}
+
+function renderSelectedFiles(listId) {
+  const container = document.getElementById(listId);
+  container.innerHTML = selectedFiles.map((f, i) => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const typeMap = { sch:'sch', kicad_sch:'sch', brd:'pcb', pdf:'pdf', png:'img', jpg:'img', zip:'zip', rar:'zip', csv:'csv' };
+    const type = typeMap[ext] || 'other';
+    const size = f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB';
+    return renderFileItem({ name: f.name, size, type, uploadedAt: new Date().toISOString() });
+  }).join('');
+}
+
+function createProject(e) {
+  e.preventDefault();
+  const user = getCurrentUser();
+  const project = {
+    id: 'PRJ-2026-' + String(state.projects.length + 1).padStart(3,'0'),
+    name: document.getElementById('np-name').value,
+    customerId: user.id,
+    layers: parseInt(document.getElementById('np-layers').value),
+    size: document.getElementById('np-size').value,
+    description: document.getElementById('np-desc').value,
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    files: selectedFiles.map(f => {
+      const ext = f.name.split('.').pop().toLowerCase();
+      const typeMap = { sch:'sch', kicad_sch:'sch', brd:'pcb', pdf:'pdf', png:'img', jpg:'img', zip:'zip', rar:'zip', csv:'csv' };
+      return {
+        name: f.name,
+        size: f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB',
+        type: typeMap[ext] || 'other',
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: user.id
+      };
+    }),
+    milestones: [
+      { id:'ms-1', name:'Component Placement', status:'pending', description:'Component placement according to schematic groupings, thermal and mechanical constraints.', files:[], comments:[], updatedAt:null },
+      { id:'ms-2', name:'Nets Routing', status:'pending', description:'Complete trace routing with controlled impedance and DRC compliance.', files:[], comments:[], updatedAt:null },
+      { id:'ms-3', name:'Final Gerbers', status:'pending', description:'DRC-clean Gerber files, fabrication notes, drill files, and 3D render.', files:[], comments:[], updatedAt:null }
+    ],
+    activity: [
+      { text: `<strong>${user.firstName}</strong> uploaded ${selectedFiles.length} schematic file(s)`, time: formatNow(), type: 'green' },
+      { text: `Project <strong>${document.getElementById('np-name').value}</strong> created`, time: formatNow(), type: 'green' }
+    ]
+  };
+  state.projects.push(project);
+  saveState(state);
+  closeModal('newProjectModal');
+  renderDashboard();
+  showToast('Project created successfully!', 'success');
+}
+
+function uploadProjectFile(event, projectId) {
+  const project = state.projects.find(p => p.id === projectId);
+  const user = getCurrentUser();
+  if (!project || !user) return;
+  const files = Array.from(event.target.files);
+  files.forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const typeMap = { sch:'sch', kicad_sch:'sch', brd:'pcb', pdf:'pdf', png:'img', jpg:'img', zip:'zip', rar:'zip', csv:'csv' };
+    project.files.push({
+      name: f.name,
+      size: f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB',
+      type: typeMap[ext] || 'other',
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: user.id
+    });
+  });
+  project.activity.unshift({ text: `<strong>${user.firstName}</strong> uploaded ${files.length} file(s)`, time: formatNow(), type: 'green' });
+  saveState(state);
+  openProject(projectId);
+  showToast(`${files.length} file(s) uploaded successfully.`, 'success');
+}
+
+function adminUploadMilestone(event, projectId, msIndex) {
+  const project = state.projects.find(p => p.id === projectId);
+  const user = getCurrentUser();
+  if (!project || !user) return;
+  const files = Array.from(event.target.files);
+  const ms = project.milestones[msIndex];
+  files.forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const typeMap = { pdf:'pdf', png:'img', jpg:'img', zip:'zip', rar:'zip', gerber:'gerber' };
+    ms.files.push({
+      name: f.name,
+      size: f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB',
+      type: typeMap[ext] || 'other',
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: user.id
+    });
+  });
+  if (ms.status === 'pending') ms.status = 'in-progress';
+  ms.updatedAt = new Date().toISOString();
+  project.activity.unshift({ text: `<strong>Admin</strong> uploaded ${files.length} file(s) to <strong>${ms.name}</strong>`, time: formatNow(), type: 'blue' });
+  saveState(state);
+  openProject(projectId);
+  showToast(`Files uploaded to ${ms.name}.`, 'success');
+}
+
+function submitForReview(projectId, msIndex) {
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) return;
+  const ms = project.milestones[msIndex];
+  if (ms.files.length === 0) {
+    showToast('Please upload design files before submitting for review.', 'warning');
+    return;
+  }
+  ms.status = 'awaiting';
+  ms.updatedAt = new Date().toISOString();
+  project.status = 'review';
+  project.activity.unshift({ text: `<strong>${ms.name}</strong> submitted for customer review`, time: formatNow(), type: 'yellow' });
+  saveState(state);
+  addNotification(
+    `${ms.name} — Ready for Review`,
+    `<strong>${ms.name}</strong> is ready for your review on <strong>${project.name}</strong>`,
+    'yellow',
+    emailMilestoneSubmitted(project.name, ms.name)
+  );
+  openProject(projectId);
+  showToast(`${ms.name} sent for customer review.`, 'success');
+}
+
+function approveMilestone(projectId, msIndex) {
+  const project = state.projects.find(p => p.id === projectId);
+  const user = getCurrentUser();
+  if (!project || !user) return;
+  const ms = project.milestones[msIndex];
+  const commentEl = document.getElementById(`comment-${projectId}-${msIndex}`);
+  const comment = commentEl ? commentEl.value.trim() : '';
+
+  ms.status = 'approved';
+  ms.updatedAt = new Date().toISOString();
+  if (comment) {
+    ms.comments.push({ author: user.firstName, text: comment, time: formatNow() });
+  }
+
+  project.activity.unshift({ text: `<strong>${user.firstName}</strong> approved <strong>${ms.name}</strong>`, time: formatNow(), type: 'green' });
+
+  // Activate next milestone
+  const nextMs = project.milestones[msIndex + 1];
+  if (nextMs && nextMs.status === 'pending') {
+    nextMs.status = 'in-progress';
+    project.status = 'active';
+    project.activity.unshift({ text: `<strong>${nextMs.name}</strong> is now in progress`, time: formatNow(), type: 'blue' });
+  }
+
+  // Check if all milestones approved
+  if (project.milestones.every(m => m.status === 'approved')) {
+    project.status = 'completed';
+    project.activity.unshift({ text: `Project <strong>${project.name}</strong> completed!`, time: formatNow(), type: 'green' });
+  }
+
+  saveState(state);
+  addNotification(
+    `${ms.name} — Approved`,
+    `<strong>${ms.name}</strong> has been approved on <strong>${project.name}</strong>`,
+    'green',
+    emailMilestoneApproved(project.name, ms.name, nextMs ? nextMs.name : null)
+  );
+  openProject(projectId);
+  showToast(`${ms.name} approved!`, 'success');
+}
+
+function requestRevision(projectId, msIndex) {
+  const project = state.projects.find(p => p.id === projectId);
+  const user = getCurrentUser();
+  if (!project || !user) return;
+  const ms = project.milestones[msIndex];
+  const commentEl = document.getElementById(`comment-${projectId}-${msIndex}`);
+  const comment = commentEl ? commentEl.value.trim() : '';
+
+  if (!comment) {
+    showToast('Please add feedback describing what needs to be revised.', 'warning');
+    return;
+  }
+
+  ms.status = 'in-progress';
+  ms.updatedAt = new Date().toISOString();
+  ms.comments.push({ author: user.firstName, text: comment, time: formatNow() });
+  project.status = 'active';
+
+  project.activity.unshift({ text: `<strong>${user.firstName}</strong> requested revision on <strong>${ms.name}</strong>`, time: formatNow(), type: 'red' });
+  saveState(state);
+  addNotification(
+    `Revision Requested — ${ms.name}`,
+    `Revision requested on <strong>${ms.name}</strong> for <strong>${project.name}</strong>`,
+    'red',
+    emailRevisionRequested(project.name, ms.name, comment)
+  );
+  openProject(projectId);
+  showToast('Revision requested. The team will be notified.', 'info');
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatNow() {
+  const d = new Date();
+  return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function showToast(message, type) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<div class="toast-text">${message}</div>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(40px)';
+    toast.style.transition = '0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATIONS SYSTEM
+// ══════════════════════════════════════════════════════════
+function getNotifications() {
+  return JSON.parse(localStorage.getItem('electrotrical_notifications') || '[]');
+}
+
+function saveNotifications(notifs) {
+  localStorage.setItem('electrotrical_notifications', JSON.stringify(notifs));
+}
+
+function addNotification(title, message, type, emailTemplate) {
+  const notifs = getNotifications();
+  notifs.unshift({
+    id: 'n-' + Date.now(),
+    title,
+    message,
+    type, // blue, green, yellow, red
+    emailTemplate,
+    read: false,
+    time: formatNow()
+  });
+  saveNotifications(notifs);
+  renderNotifications();
+}
+
+function renderNotifications() {
+  const notifs = getNotifications();
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const count = notifs.filter(n => !n.read).length;
+  const badge = document.getElementById('notifCount');
+  if (count > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = count > 9 ? '9+' : count;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const list = document.getElementById('notifList');
+  if (notifs.length === 0) {
+    list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+    return;
+  }
+
+  list.innerHTML = notifs.slice(0, 15).map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}" onclick="openNotification('${n.id}')">
+      <div class="notif-icon-wrap notif-icon-${n.type}">
+        ${n.type === 'green' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00E5A0" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
+        : n.type === 'yellow' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFB400" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+        : n.type === 'red' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D4D" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>'}
+      </div>
+      <div class="notif-content">
+        <div class="notif-text">${n.message}</div>
+        <div class="notif-time">${n.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleNotifications(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('notifDropdown');
+  dd.classList.toggle('open');
+}
+
+function markAllRead() {
+  const notifs = getNotifications();
+  notifs.forEach(n => n.read = true);
+  saveNotifications(notifs);
+  renderNotifications();
+}
+
+function openNotification(id) {
+  const notifs = getNotifications();
+  const notif = notifs.find(n => n.id === id);
+  if (!notif) return;
+
+  notif.read = true;
+  saveNotifications(notifs);
+  renderNotifications();
+
+  if (notif.emailTemplate) {
+    document.getElementById('emailSubject').textContent = notif.title;
+    document.getElementById('emailBody').innerHTML = notif.emailTemplate;
+    document.getElementById('emailPreviewModal').classList.add('active');
+  }
+
+  document.getElementById('notifDropdown').classList.remove('open');
+}
+
+// Close notifications dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('notifDropdown');
+  if (dd && !dd.parentElement.contains(e.target)) {
+    dd.classList.remove('open');
+  }
+});
+
+// Generate email templates for different events
+function emailMilestoneSubmitted(projectName, milestoneName) {
+  return `
+    <h2>Milestone Ready for Review</h2>
+    <p>Hi there,</p>
+    <p>Great news! The <strong>${milestoneName}</strong> milestone for your project <strong>${projectName}</strong> is ready for your review.</p>
+    <div class="email-highlight">
+      <strong>Project:</strong> ${projectName}<br>
+      <strong>Milestone:</strong> ${milestoneName}<br>
+      <strong>Status:</strong> Awaiting your approval
+    </div>
+    <p>Please log in to your dashboard to review the uploaded design files. You can approve the milestone or request revisions with feedback.</p>
+    <a href="#" class="email-btn">Review Now &rarr;</a>
+    <p style="color:#9CA3AF;font-size:13px;margin-top:20px;">If you have any questions, reply to this email and we'll get back to you within a few hours.</p>
+  `;
+}
+
+function emailMilestoneApproved(projectName, milestoneName, nextMilestone) {
+  return `
+    <h2>Milestone Approved</h2>
+    <p>Hi team,</p>
+    <p>The customer has <strong style="color:#059669;">approved</strong> the <strong>${milestoneName}</strong> milestone for <strong>${projectName}</strong>.</p>
+    <div class="email-highlight">
+      <strong>Project:</strong> ${projectName}<br>
+      <strong>Approved:</strong> ${milestoneName}<br>
+      ${nextMilestone ? '<strong>Next up:</strong> ' + nextMilestone : '<strong style="color:#059669;">All milestones complete!</strong>'}
+    </div>
+    ${nextMilestone ? '<p>Work on <strong>' + nextMilestone + '</strong> can now begin.</p>' : '<p>Congratulations! This project is now complete. Final deliverables have been sent to the customer.</p>'}
+  `;
+}
+
+function emailRevisionRequested(projectName, milestoneName, feedback) {
+  return `
+    <h2>Revision Requested</h2>
+    <p>Hi team,</p>
+    <p>The customer has requested revisions on <strong>${milestoneName}</strong> for <strong>${projectName}</strong>.</p>
+    <div class="email-highlight" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B;">
+      <strong>Customer Feedback:</strong><br>
+      "${feedback}"
+    </div>
+    <p>Please review the feedback and upload updated design files when ready.</p>
+    <a href="#" class="email-btn">View Project &rarr;</a>
+  `;
+}
+
+function emailOrderConfirmation(projectName, projectId, total) {
+  return `
+    <h2>Order Confirmed</h2>
+    <p>Hi there,</p>
+    <p>Thank you for your order! Your PCB layout project has been created and our team will begin work shortly.</p>
+    <div class="email-highlight">
+      <strong>Order:</strong> ${projectId}<br>
+      <strong>Project:</strong> ${projectName}<br>
+      <strong>Amount Paid:</strong> $${total}
+    </div>
+    <p><strong>Next step:</strong> Upload your schematic files, BOM, and any design notes through your dashboard.</p>
+    <a href="#" class="email-btn">Upload Files &rarr;</a>
+    <p style="color:#9CA3AF;font-size:13px;margin-top:20px;">Need help? Reply to this email or reach out at hello@electrotrical.com</p>
+  `;
+}
+
+// Click outside modal to close
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// CHECKOUT FLOW
+// ══════════════════════════════════════════════════════════
+let pendingQuote = null;
+let lastCreatedProjectId = null;
+
+function loadCheckout() {
+  const raw = localStorage.getItem('electrotrical_pending_quote');
+  if (!raw) { showView('auth'); return; }
+  pendingQuote = JSON.parse(raw);
+
+  // Fill the order summary
+  document.getElementById('co-s-layers').textContent = pendingQuote.layersLabel;
+  document.getElementById('co-s-complexity').textContent = pendingQuote.complexityLabel.split('—')[0].trim();
+  document.getElementById('co-s-size').textContent = pendingQuote.sizeLabel;
+  document.getElementById('co-s-turn').textContent = pendingQuote.turnaroundLabel;
+  document.getElementById('co-s-special').textContent = pendingQuote.specialLabel;
+  document.getElementById('co-s-base').textContent = '$' + pendingQuote.base;
+  document.getElementById('co-s-total').textContent = '$' + pendingQuote.total;
+  document.getElementById('co-pay-amount').textContent = '$' + pendingQuote.total;
+
+  // Pre-fill user info if logged in
+  const user = getCurrentUser();
+  if (user) {
+    document.getElementById('co-fname').value = user.firstName || '';
+    document.getElementById('co-lname').value = user.lastName || '';
+    document.getElementById('co-email').value = user.email || '';
+    document.getElementById('co-company').value = user.company || '';
+  }
+
+  showView('checkout');
+  updateNav();
+}
+
+function fmtCard(el) {
+  let v = el.value.replace(/\D/g, '').substring(0, 16);
+  v = v.replace(/(.{4})/g, '$1  ').trim();
+  el.value = v;
+}
+
+function fmtExpiry(el) {
+  let v = el.value.replace(/\D/g, '').substring(0, 4);
+  if (v.length >= 2) v = v.substring(0, 2) + ' / ' + v.substring(2);
+  el.value = v;
+}
+
+function processPayment() {
+  const fname = document.getElementById('co-fname').value.trim();
+  const lname = document.getElementById('co-lname').value.trim();
+  const email = document.getElementById('co-email').value.trim();
+
+  if (!fname || !lname || !email) {
+    showToast('Please fill in your contact details.', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" opacity="0.3"/><path d="M12 2a10 10 0 019.95 9"/></svg> Processing...';
+
+  // Add CSS for spinner
+  if (!document.getElementById('spin-style')) {
+    const style = document.createElement('style');
+    style.id = 'spin-style';
+    style.textContent = '@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+  }
+
+  setTimeout(() => {
+    // Check if user exists or register them
+    let user = getCurrentUser();
+    if (!user) {
+      // Auto-register the user
+      user = {
+        id: 'cust-' + Date.now(),
+        email: email,
+        password: 'pass' + Math.floor(Math.random() * 10000),
+        firstName: fname,
+        lastName: lname,
+        company: document.getElementById('co-company').value.trim(),
+        role: 'customer'
+      };
+      if (!state.users.find(u => u.email === email)) {
+        state.users.push(user);
+      } else {
+        user = state.users.find(u => u.email === email);
+      }
+      state.currentUser = user.id;
+    }
+
+    // Create the project from the quote
+    const sizeMap = { '1.0': 'Small', '1.4': 'Medium', '2.0': 'Large', '3.0': 'Extra Large' };
+    const projectId = 'PRJ-2026-' + String(state.projects.length + 1).padStart(3, '0');
+    const project = {
+      id: projectId,
+      name: pendingQuote.layersLabel + ' PCB — ' + pendingQuote.sizeLabel,
+      customerId: user.id,
+      layers: parseInt(pendingQuote.layers),
+      size: pendingQuote.sizeLabel,
+      description: 'Ordered via quote calculator. ' + pendingQuote.complexityLabel + '. ' + (pendingQuote.specialLabel !== 'None' ? 'Special: ' + pendingQuote.specialLabel + '. ' : '') + pendingQuote.turnaroundLabel + '.',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      quote: {
+        total: pendingQuote.total,
+        base: pendingQuote.base,
+        turnaround: pendingQuote.turnaround,
+        paid: true,
+        paidAt: new Date().toISOString()
+      },
+      files: [],
+      milestones: [
+        { id:'ms-1', name:'Component Placement', status:'pending', description:'Component placement per schematic grouping, thermal and mechanical constraints.', files:[], comments:[], updatedAt:null },
+        { id:'ms-2', name:'Nets Routing', status:'pending', description:'Complete trace routing with controlled impedance and DRC compliance.', files:[], comments:[], updatedAt:null },
+        { id:'ms-3', name:'Final Gerbers', status:'pending', description:'DRC-clean Gerber files, fabrication notes, drill files, and 3D render.', files:[], comments:[], updatedAt:null }
+      ],
+      activity: [
+        { text: '<strong>Payment confirmed</strong> — $' + pendingQuote.total + ' via Stripe', time: formatNow(), type: 'green' },
+        { text: 'Project <strong>' + pendingQuote.layersLabel + ' PCB</strong> created from quote', time: formatNow(), type: 'green' }
+      ]
+    };
+
+    state.projects.push(project);
+    lastCreatedProjectId = projectId;
+    saveState(state);
+
+    // Send order confirmation notification
+    addNotification(
+      'Order Confirmed — ' + projectId,
+      `Your order <strong>${projectId}</strong> has been confirmed. Payment of <strong>$${pendingQuote.total}</strong> received.`,
+      'green',
+      emailOrderConfirmation(project.name, projectId, pendingQuote.total)
+    );
+
+    // Clean up
+    localStorage.removeItem('electrotrical_pending_quote');
+
+    // Show success
+    document.getElementById('success-order-id').textContent = 'ORDER #' + projectId;
+    showView('success');
+    updateNav();
+  }, 2000);
+}
+
+function goToNewProject() {
+  if (lastCreatedProjectId) {
+    showView('dashboard');
+    renderDashboard();
+    openProject(lastCreatedProjectId);
+  } else {
+    showView('dashboard');
+    renderDashboard();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+(function init() {
+  state = getState();
+  const params = new URLSearchParams(window.location.search);
+  const isCheckout = params.get('checkout') === 'true';
+
+  if (isCheckout && localStorage.getItem('electrotrical_pending_quote')) {
+    // Coming from quote calculator — show checkout
+    loadCheckout();
+  } else if (state.currentUser) {
+    showView('dashboard');
+    updateNav();
+    renderDashboard();
+  } else {
+    showView('auth');
+    updateNav();
+  }
+
+  // Clean URL params without reloading
+  if (isCheckout) {
+    window.history.replaceState({}, '', 'dashboard.html');
+  }
+})();
+</script>
+</body>
+</html>
