@@ -2897,7 +2897,14 @@ function renderQuoteRequests() {
         ${statusBadge}
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.25rem;">
+      ${q.specs.serviceLabel ? `<div style="display:inline-block;font-size:12px;font-weight:600;color:var(--primary-light);background:rgba(0,102,255,0.1);border:1px solid rgba(0,102,255,0.2);border-radius:6px;padding:4px 10px;margin-bottom:12px;">${q.specs.serviceLabel}</div>` : ''}
+      ${q.specs.pcbTypeLabel && q.specs.pcbTypeLabel !== 'Regular Rigid PCB' ? `<div style="display:inline-block;font-size:12px;font-weight:600;color:var(--cyan);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:4px 10px;margin-bottom:12px;margin-left:8px;">${q.specs.pcbTypeLabel}</div>` : ''}
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:1.25rem;">
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">PCB Type</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.pcbTypeLabel || 'Rigid'}</div>
+        </div>
         <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
           <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Layers</div>
           <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.layersLabel}</div>
@@ -2905,6 +2912,10 @@ function renderQuoteRequests() {
         <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
           <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Size</div>
           <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.sizeLabel}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Components</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.sidesLabel || 'Both sides'}</div>
         </div>
         <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
           <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Turnaround</div>
@@ -2915,6 +2926,13 @@ function renderQuoteRequests() {
           <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.specialLabel}</div>
         </div>
       </div>
+      ${q.specs.deliveryFormats && q.specs.deliveryFormats.length > 0 ? `
+      <div style="margin-bottom:1.25rem;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Delivery Formats</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${q.specs.deliveryFormats.map(f => '<span style="font-size:12px;color:var(--text-secondary);background:var(--dark-700);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">' + f + '</span>').join('')}
+        </div>
+      </div>` : ''}
 
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
@@ -2976,12 +2994,16 @@ function openQuoteReview(quoteId) {
     <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:20px;">
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">CUSTOMER SPECS</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><span style="color:var(--text-secondary);font-size:13px;">Service:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.serviceLabel || 'PCB Layout Design'}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">PCB Type:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.pcbTypeLabel || 'Rigid'}</span></div>
         <div><span style="color:var(--text-secondary);font-size:13px;">Layers:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.layersLabel}</span></div>
         <div><span style="color:var(--text-secondary);font-size:13px;">Size:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.sizeLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Components:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.sidesLabel || 'Both sides'}</span></div>
         <div><span style="color:var(--text-secondary);font-size:13px;">Complexity:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.complexityLabel}</span></div>
         <div><span style="color:var(--text-secondary);font-size:13px;">Turnaround:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.turnaroundLabel}</span></div>
         <div><span style="color:var(--text-secondary);font-size:13px;">Special:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.specialLabel}</span></div>
-        <div><span style="color:var(--text-secondary);font-size:13px;">Estimate:</span> <span style="color:var(--white);font-size:13px;font-weight:600;">$${quote.estimatedTotal}</span></div>
+        <div style="grid-column:span 2;"><span style="color:var(--text-secondary);font-size:13px;">Estimate:</span> <span style="color:var(--white);font-size:13px;font-weight:600;">$${quote.estimatedTotal}</span></div>
+        ${quote.specs.deliveryFormats && quote.specs.deliveryFormats.length > 0 ? '<div style="grid-column:span 2;"><span style="color:var(--text-secondary);font-size:13px;">Delivery:</span> <span style="color:var(--white);font-size:13px;">' + quote.specs.deliveryFormats.join(', ') + '</span></div>' : ''}
       </div>
     </div>
     <div class="form-group">
@@ -3133,17 +3155,24 @@ function handleQuoteSubmission() {
     customerName: user.firstName + ' ' + user.lastName,
     customerEmail: user.email,
     specs: {
+      serviceType: quoteData.serviceType || 'design',
+      serviceLabel: quoteData.serviceLabel || 'PCB Layout Design',
+      pcbType: quoteData.pcbType || 'rigid',
+      pcbTypeLabel: quoteData.pcbTypeLabel || 'Regular Rigid PCB',
       layers: quoteData.layers,
       layersLabel: quoteData.layersLabel,
       complexity: quoteData.complexity,
       complexityLabel: quoteData.complexityLabel,
       size: quoteData.size,
       sizeLabel: quoteData.sizeLabel,
+      sides: quoteData.sides || 'both',
+      sidesLabel: quoteData.sidesLabel || 'Both sides',
       special: quoteData.special,
       specialLabel: quoteData.specialLabel,
       turnaround: quoteData.turnaround,
       turnaroundLabel: quoteData.turnaroundLabel,
       turnMult: quoteData.turnMult,
+      deliveryFormats: quoteData.deliveryFormats || ['Source document', 'Gerber files'],
       base: quoteData.base
     },
     estimatedTotal: quoteData.total,
