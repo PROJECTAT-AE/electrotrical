@@ -1079,9 +1079,9 @@ a { color: inherit; text-decoration: none; }
         <h1 class="dash-title" id="dashTitle">My Projects</h1>
         <p class="dash-subtitle" id="dashSubtitle">Manage your PCB design orders and track progress</p>
       </div>
-      <button class="btn btn-primary btn-sm" id="newProjectBtn" onclick="openNewProject()">
+      <button class="btn btn-primary btn-sm" id="newQuoteBtn" onclick="goToQuoteCalculator()" style="display:none;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New Project
+        New Quote Request
       </button>
     </div>
 
@@ -1716,7 +1716,7 @@ function renderDashboard() {
   document.getElementById('dashSubtitle').textContent = admin
     ? 'Manage all customer projects, upload designs, and track milestones'
     : 'Manage your PCB design orders and track progress';
-  document.getElementById('newProjectBtn').style.display = admin ? 'none' : 'inline-flex';
+  document.getElementById('newQuoteBtn').style.display = admin ? 'none' : 'inline-flex';
   // Show Users tab only for admin
   const usersTab = document.getElementById('usersTab');
   if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
@@ -1740,8 +1740,10 @@ function renderDashboard() {
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         </div>
         <div class="projects-empty-title">No projects yet</div>
-        <div class="projects-empty-desc">Create your first project to get started. Upload your schematic and we'll handle the rest.</div>
-        <button class="btn btn-primary btn-sm" onclick="openNewProject()">Create First Project</button>
+        <div class="projects-empty-desc">${admin
+          ? 'Projects will appear here once customers submit quotes and complete payment.'
+          : 'Submit a quote request first. Once approved and paid, your project will appear here.'}</div>
+        ${!admin ? '<button class="btn btn-primary btn-sm" onclick="goToQuoteCalculator()">Submit a Quote Request</button>' : ''}
       </div>`;
     return;
   }
@@ -1987,9 +1989,67 @@ function renderFileItem(file) {
 // ACTIONS
 // ══════════════════════════════════════════════════════════
 function openNewProject() {
-  document.getElementById('newProjectModal').classList.add('active');
+  // Only admin can create projects directly
+  if (!isAdmin()) {
+    showToast('Please submit a quote request first.', 'warning');
+    goToQuoteCalculator();
+    return;
+  }
+  // Reset modal to original form (in case it was replaced by quote review)
+  const modal = document.getElementById('newProjectModal');
+  modal.querySelector('.modal-title').textContent = 'New Project';
+  modal.querySelector('.modal-sub').textContent = 'Create a new PCB design project and upload your schematic files.';
+  modal.querySelector('.modal form').innerHTML = `
+    <div class="form-group">
+      <label class="form-label">Project Name</label>
+      <input class="form-input" type="text" id="np-name" placeholder="e.g. IoT Sensor Board v2" required>
+    </div>
+    <div class="form-row" style="margin-bottom:16px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Layer Count</label>
+        <select class="form-input" id="np-layers" style="padding-right:16px;">
+          <option value="2">2 layers</option>
+          <option value="4" selected>4 layers</option>
+          <option value="6">6 layers</option>
+          <option value="8">8 layers</option>
+          <option value="10">10 layers</option>
+          <option value="16">16 layers</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Board Size</label>
+        <select class="form-input" id="np-size" style="padding-right:16px;">
+          <option value="Small">Small (up to 50x50mm)</option>
+          <option value="Medium" selected>Medium (50-100mm)</option>
+          <option value="Large">Large (100-200mm)</option>
+          <option value="XL">Extra large (200mm+)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description / Notes</label>
+      <textarea class="review-comment" id="np-desc" placeholder="Describe your project requirements, special constraints, etc." style="min-height:80px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Upload Schematic Files</label>
+      <div class="upload-zone" id="npUploadZone">
+        <div class="upload-zone-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="upload-zone-title">Drop files here or click to browse</div>
+        <div class="upload-zone-desc">.sch, .kicad_sch, .brd, .pdf, .zip — Max 50MB</div>
+        <input type="file" multiple accept=".sch,.kicad_sch,.brd,.pdf,.zip,.rar,.csv,.xlsx,.txt" onchange="handleFileSelect(event, 'npFileList')">
+      </div>
+      <div id="npFileList" style="margin-top:8px;"></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Create Project</button>
+  `;
+  modal.classList.add('active');
   selectedFiles = [];
-  document.getElementById('npFileList').innerHTML = '';
+}
+
+function goToQuoteCalculator() {
+  window.location.href = 'index.html#quote';
 }
 
 function closeModal(id) {
@@ -2015,6 +2075,7 @@ function renderSelectedFiles(listId) {
 
 function createProject(e) {
   e.preventDefault();
+  if (!isAdmin()) { showToast('Please submit a quote request instead.', 'warning'); return; }
   const user = getCurrentUser();
   const project = {
     id: 'PRJ-2026-' + String(state.projects.length + 1).padStart(3,'0'),
@@ -2514,6 +2575,17 @@ function processPayment() {
 
     state.projects.push(project);
     lastCreatedProjectId = projectId;
+
+    // Mark the quote as paid and link to project
+    if (pendingQuote.quoteId && state.quoteRequests) {
+      const qIndex = state.quoteRequests.findIndex(q => q.id === pendingQuote.quoteId);
+      if (qIndex !== -1) {
+        state.quoteRequests[qIndex].status = 'paid';
+        state.quoteRequests[qIndex].paidAt = new Date().toISOString();
+        state.quoteRequests[qIndex].projectId = projectId;
+      }
+    }
+
     saveState(state);
 
     // Send order confirmation notification
@@ -2801,7 +2873,8 @@ function renderQuoteRequests() {
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <div style="font-size:20px;font-weight:600;color:var(--white);margin-bottom:8px;">No quote requests yet</div>
-        <p style="font-size:14px;color:var(--text-secondary);max-width:400px;margin:0 auto;">${isAdmin ? 'Quote requests from customers will appear here for your review.' : 'Submit a quote request from the home page to get started.'}</p>
+        <p style="font-size:14px;color:var(--text-secondary);max-width:400px;margin:0 auto 1.25rem;">${isAdmin ? 'Quote requests from customers will appear here for your review.' : 'Submit a quote request to get a price estimate for your PCB project.'}</p>
+        ${!isAdmin ? '<button class="btn btn-primary btn-sm" onclick="goToQuoteCalculator()">Submit a Quote Request</button>' : ''}
       </div>`;
     return;
   }
@@ -2867,6 +2940,9 @@ function renderQuoteRequests() {
           ` : ''}
           ${q.status === 'rejected' ? `
             <span style="font-size:13px;color:var(--danger);">Quote declined${q.adminNotes ? ': ' + sanitizeInput(q.adminNotes) : ''}</span>
+          ` : ''}
+          ${q.status === 'paid' && q.projectId ? `
+            <button class="btn btn-primary btn-sm" onclick="switchMainTab('projects'); setTimeout(() => openProject('${q.projectId}'), 100);">View Project — ${q.projectId}</button>
           ` : ''}
         </div>
       </div>
