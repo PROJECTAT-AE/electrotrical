@@ -2714,13 +2714,13 @@ function renderUsers() {
         const toggleLabel = isSuspended ? 'Activate' : 'Suspend';
         const toggleColor = isSuspended ? 'var(--accent)' : 'var(--warning)';
         actions = `
-          <button onclick="toggleUserStatus('${u.id}')" title="${toggleLabel}" style="background:none;border:1px solid var(--border);color:${toggleColor};width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);margin-right:4px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''">
+          <button onclick="toggleUserStatus('${u.id}')" title="${toggleLabel}" style="background:transparent;border:1px solid var(--border);color:${toggleColor};width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);margin-right:4px;outline:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'" onblur="this.style.background='transparent'" onfocus="this.style.background='transparent'">
             ${isSuspended
               ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
               : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'
             }
           </button>
-          <button onclick="deleteUser('${u.id}')" title="Delete" style="background:none;border:1px solid var(--border);color:var(--danger);width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);" onmouseover="this.style.background='rgba(255,77,77,0.08)'" onmouseout="this.style.background=''">
+          <button onclick="deleteUser('${u.id}')" title="Delete" style="background:transparent;border:1px solid var(--border);color:var(--danger);width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);outline:none;" onmouseover="this.style.background='rgba(255,77,77,0.08)'" onmouseout="this.style.background='transparent'" onblur="this.style.background='transparent'" onfocus="this.style.background='transparent'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
           </button>`;
       } else {
