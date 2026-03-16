@@ -1393,7 +1393,13 @@ function updatePasswordStrength(pass) {
 function getState() {
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) return initState();
-  return JSON.parse(data);
+  const parsed = JSON.parse(data);
+  // Ensure all required keys exist (handles old localStorage missing new features)
+  if (!parsed.users) parsed.users = [];
+  if (!parsed.projects) parsed.projects = [];
+  if (!parsed.quoteRequests) parsed.quoteRequests = [];
+  if (!parsed.notifications) parsed.notifications = [];
+  return parsed;
 }
 
 function saveState(state) {
@@ -2923,24 +2929,30 @@ function openQuoteReview(quoteId) {
 }
 
 function approveQuote(quoteId) {
-  const price = parseInt(document.getElementById('review-price').value);
-  const notes = document.getElementById('review-notes').value;
+  const priceEl = document.getElementById('review-price');
+  const notesEl = document.getElementById('review-notes');
+  if (!priceEl) { showToast('Error: price field not found', 'warning'); return; }
+
+  const price = Math.round(Number(priceEl.value));
+  const notes = notesEl ? notesEl.value : '';
   if (!price || price < 1) { showToast('Please enter a valid price', 'warning'); return; }
 
   const state = getState();
-  const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
-  if (!quote) return;
+  if (!state.quoteRequests) state.quoteRequests = [];
+  const quoteIndex = state.quoteRequests.findIndex(q => q.id === quoteId);
+  if (quoteIndex === -1) { showToast('Quote not found', 'warning'); return; }
 
-  quote.adminPrice = price;
-  quote.adminNotes = notes;
-  quote.status = 'approved';
-  quote.reviewedAt = new Date().toISOString();
+  // Update directly by index to ensure it saves
+  state.quoteRequests[quoteIndex].adminPrice = price;
+  state.quoteRequests[quoteIndex].adminNotes = notes;
+  state.quoteRequests[quoteIndex].status = 'approved';
+  state.quoteRequests[quoteIndex].reviewedAt = new Date().toISOString();
 
   // Add notification for the customer
   if (!state.notifications) state.notifications = [];
   state.notifications.push({
     id: 'notif-' + Date.now(),
-    userId: quote.customerId,
+    userId: state.quoteRequests[quoteIndex].customerId,
     type: 'quote_approved',
     title: 'Quote Approved!',
     message: 'Your quote ' + quoteId + ' has been approved at $' + price + '.' + (notes ? ' Note: ' + notes : '') + ' You can now proceed to payment.',
@@ -2950,27 +2962,38 @@ function approveQuote(quoteId) {
   });
 
   saveState(state);
-  closeModal('newProjectModal');
-  showToast('Quote approved at $' + price, 'success');
+
+  // Verify it actually saved
+  const verify = getState();
+  const saved = verify.quoteRequests.find(q => q.id === quoteId);
+  if (saved && saved.status === 'approved') {
+    closeModal('newProjectModal');
+    showToast('Quote approved at $' + price + '! Customer can now proceed to payment.', 'success');
+  } else {
+    showToast('Warning: approval may not have saved properly. Please try again.', 'warning');
+  }
+
   renderQuoteRequests();
   updateQuoteBadge();
   renderNotifications();
 }
 
 function rejectQuote(quoteId) {
-  const notes = document.getElementById('review-notes').value;
+  const notesEl = document.getElementById('review-notes');
+  const notes = notesEl ? notesEl.value : '';
   const state = getState();
-  const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
-  if (!quote) return;
+  if (!state.quoteRequests) state.quoteRequests = [];
+  const quoteIndex = state.quoteRequests.findIndex(q => q.id === quoteId);
+  if (quoteIndex === -1) { showToast('Quote not found', 'warning'); return; }
 
-  quote.status = 'rejected';
-  quote.adminNotes = notes;
-  quote.reviewedAt = new Date().toISOString();
+  state.quoteRequests[quoteIndex].status = 'rejected';
+  state.quoteRequests[quoteIndex].adminNotes = notes;
+  state.quoteRequests[quoteIndex].reviewedAt = new Date().toISOString();
 
   if (!state.notifications) state.notifications = [];
   state.notifications.push({
     id: 'notif-' + Date.now(),
-    userId: quote.customerId,
+    userId: state.quoteRequests[quoteIndex].customerId,
     type: 'quote_rejected',
     title: 'Quote Update',
     message: 'Your quote ' + quoteId + ' needs revision.' + (notes ? ' Note: ' + notes : ''),
