@@ -1023,11 +1023,11 @@ a { color: inherit; text-decoration: none; }
         <div class="form-row" style="margin-bottom:16px;">
           <div class="form-group" style="margin-bottom:0;">
             <label class="form-label">First Name</label>
-            <input class="form-input" type="text" id="reg-fname" placeholder="Ada" required>
+            <input class="form-input" type="text" id="reg-fname" placeholder="Ada" required pattern="[A-Za-z\s\-']+" title="Letters only">
           </div>
           <div class="form-group" style="margin-bottom:0;">
             <label class="form-label">Last Name</label>
-            <input class="form-input" type="text" id="reg-lname" placeholder="Lovelace" required>
+            <input class="form-input" type="text" id="reg-lname" placeholder="Lovelace" required pattern="[A-Za-z\s\-']+" title="Letters only">
           </div>
         </div>
         <div class="form-group">
@@ -1581,6 +1581,31 @@ function handleRegister(e) {
   // Honeypot check
   const hp = document.querySelector('#registerForm input[name="website_url"]');
   if (hp && hp.value) return;
+  // Name validation (letters, spaces, hyphens only)
+  const nameRegex = /^[A-Za-z\s\-']+$/;
+  const fname = document.getElementById('reg-fname').value.trim();
+  const lname = document.getElementById('reg-lname').value.trim();
+  if (!fname || !nameRegex.test(fname)) {
+    showToast('First name must contain only letters', 'warning');
+    document.getElementById('reg-fname').style.borderColor = 'var(--danger)';
+    return;
+  }
+  document.getElementById('reg-fname').style.borderColor = '';
+  if (!lname || !nameRegex.test(lname)) {
+    showToast('Last name must contain only letters', 'warning');
+    document.getElementById('reg-lname').style.borderColor = 'var(--danger)';
+    return;
+  }
+  document.getElementById('reg-lname').style.borderColor = '';
+  // Email validation
+  const emailVal = document.getElementById('reg-email').value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  if (!emailVal || !emailRegex.test(emailVal)) {
+    showToast('Please enter a valid email address', 'warning');
+    document.getElementById('reg-email').style.borderColor = 'var(--danger)';
+    return;
+  }
+  document.getElementById('reg-email').style.borderColor = '';
   // Password match
   const confirmPass = document.getElementById('reg-confirm-pass');
   if (confirmPass && confirmPass.value !== document.getElementById('reg-pass').value) {
@@ -1590,10 +1615,10 @@ function handleRegister(e) {
   }
   const user = {
     id: 'cust-' + Date.now(),
-    email: document.getElementById('reg-email').value,
+    email: emailVal,
     password: document.getElementById('reg-pass').value,
-    firstName: document.getElementById('reg-fname').value,
-    lastName: document.getElementById('reg-lname').value,
+    firstName: fname,
+    lastName: lname,
     company: document.getElementById('reg-company').value || '',
     role: 'customer'
   };
@@ -2868,6 +2893,24 @@ if (document.getElementById('reg-confirm-pass')) {
     } else {
       this.style.borderColor = '';
     }
+  });
+}
+
+// ═══ Real-time name & email validation ═══
+const nameRegex = /^[A-Za-z\s\-']*$/;
+['reg-fname', 'reg-lname'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', function() {
+      this.style.borderColor = (!this.value || nameRegex.test(this.value)) ? '' : 'var(--danger)';
+    });
+  }
+});
+const regEmailEl = document.getElementById('reg-email');
+if (regEmailEl) {
+  regEmailEl.addEventListener('blur', function() {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    this.style.borderColor = (!this.value || emailRegex.test(this.value)) ? '' : 'var(--danger)';
   });
 }
 
