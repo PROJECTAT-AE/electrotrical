@@ -3171,11 +3171,8 @@ function handleQuoteSubmission() {
 
   showToast('Quote request submitted! We\'ll review it shortly.', 'success');
 
-  // Show the quotes section
-  document.getElementById('quoteRequestsSection').style.display = 'block';
-  document.getElementById('projectsList').style.display = 'none';
-  renderQuoteRequests();
-  updateQuoteBadge();
+  // Switch to the Quotes tab properly
+  switchMainTab('quotes');
 }
 
 // ═══ SECURITY: Session Timeout (30 min inactivity) ═══
