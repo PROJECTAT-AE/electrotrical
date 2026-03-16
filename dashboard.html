@@ -1092,6 +1092,7 @@ a { color: inherit; text-decoration: none; }
     <div class="dash-tabs" id="mainDashTabs">
       <button class="dash-tab active" onclick="switchMainTab('projects')">Projects</button>
       <button class="dash-tab" onclick="switchMainTab('quotes')">Quotes</button>
+      <button class="dash-tab" onclick="switchMainTab('users')" id="usersTab" style="display:none;">Users</button>
     </div>
 
     <!-- Projects List -->
@@ -1099,6 +1100,9 @@ a { color: inherit; text-decoration: none; }
 
     <!-- Quote Requests (Admin) / My Quotes (Customer) -->
     <div id="quoteRequestsSection" style="display:none;"></div>
+
+    <!-- Registered Users (Admin only) -->
+    <div id="usersSection" style="display:none;"></div>
 
     <!-- Project Detail -->
     <div id="projectDetail" style="display:none;"></div>
@@ -1704,6 +1708,9 @@ function renderDashboard() {
     ? 'Manage all customer projects, upload designs, and track milestones'
     : 'Manage your PCB design orders and track progress';
   document.getElementById('newProjectBtn').style.display = admin ? 'none' : 'inline-flex';
+  // Show Users tab only for admin
+  const usersTab = document.getElementById('usersTab');
+  if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
 
   document.getElementById('projectDetail').style.display = 'none';
   document.getElementById('projectsList').style.display = 'block';
@@ -2534,19 +2541,112 @@ function switchMainTab(tab) {
   const tabs = document.querySelectorAll('#mainDashTabs .dash-tab');
   tabs.forEach(t => t.classList.remove('active'));
 
+  // Hide all sections
+  document.getElementById('projectsList').style.display = 'none';
+  document.getElementById('quoteRequestsSection').style.display = 'none';
+  document.getElementById('usersSection').style.display = 'none';
+  document.getElementById('projectDetail').style.display = 'none';
+
   if (tab === 'projects') {
     tabs[0].classList.add('active');
     document.getElementById('projectsList').style.display = 'block';
-    document.getElementById('quoteRequestsSection').style.display = 'none';
-    document.getElementById('projectDetail').style.display = 'none';
     renderDashboard();
   } else if (tab === 'quotes') {
     tabs[1].classList.add('active');
-    document.getElementById('projectsList').style.display = 'none';
     document.getElementById('quoteRequestsSection').style.display = 'block';
-    document.getElementById('projectDetail').style.display = 'none';
     renderQuoteRequests();
+  } else if (tab === 'users') {
+    const usersTab = document.getElementById('usersTab');
+    if (usersTab) usersTab.classList.add('active');
+    document.getElementById('usersSection').style.display = 'block';
+    renderUsers();
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// REGISTERED USERS (Admin Only)
+// ══════════════════════════════════════════════════════════
+
+function renderUsers() {
+  const state = getState();
+  const currentUser = state.users.find(u => u.id === state.currentUser);
+  if (!currentUser || currentUser.role !== 'admin') return;
+
+  const container = document.getElementById('usersSection');
+  const users = state.users || [];
+  const customers = users.filter(u => u.role === 'customer');
+  const admins = users.filter(u => u.role === 'admin');
+
+  let html = '';
+
+  // Stats overview
+  html += `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:var(--white);margin-bottom:4px;">${users.length}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Total Users</div>
+    </div>
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:var(--cyan);margin-bottom:4px;">${customers.length}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Customers</div>
+    </div>
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:var(--primary-light);margin-bottom:4px;">${admins.length}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Admins</div>
+    </div>
+  </div>`;
+
+  // Users table
+  html += `
+  <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+    <div style="padding:1.5rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:16px;font-weight:600;color:var(--white);">Registered Users</div>
+      <div style="font-size:13px;color:var(--text-muted);">${users.length} total</div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:12px 1.75rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">User</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Email</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Company</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Role</th>
+            <th style="text-align:left;padding:12px 1.75rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">ID</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+  users.forEach(u => {
+    const initials = ((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '');
+    const isAdmin = u.role === 'admin';
+    const roleBadge = isAdmin
+      ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,0.12);color:var(--primary-light);border:1px solid rgba(0,102,255,0.2);">Admin</span>'
+      : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);">Customer</span>';
+
+    html += `
+          <tr style="border-bottom:1px solid var(--border);transition:var(--transition);" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+            <td style="padding:14px 1.75rem;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:${isAdmin ? 'rgba(0,102,255,0.15)' : 'rgba(0,229,160,0.12)'};border:2px solid ${isAdmin ? 'rgba(0,102,255,0.3)' : 'rgba(0,229,160,0.25)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${isAdmin ? 'var(--primary-light)' : 'var(--accent)'};">${sanitizeInput(initials.toUpperCase())}</div>
+                <div>
+                  <div style="font-weight:500;color:var(--white);">${sanitizeInput(u.firstName || '')} ${sanitizeInput(u.lastName || '')}</div>
+                </div>
+              </div>
+            </td>
+            <td style="padding:14px 1rem;color:var(--text-secondary);">${sanitizeInput(u.email || '')}</td>
+            <td style="padding:14px 1rem;color:var(--text-secondary);">${sanitizeInput(u.company || '—')}</td>
+            <td style="padding:14px 1rem;">${roleBadge}</td>
+            <td style="padding:14px 1.75rem;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">${sanitizeInput(u.id || '')}</td>
+          </tr>`;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
 }
 
 function renderQuoteRequests() {
