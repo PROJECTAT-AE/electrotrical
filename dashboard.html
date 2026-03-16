@@ -1657,11 +1657,12 @@ function loginAs(user) {
   saveState(state);
   showView('dashboard');
   updateNav();
-  renderDashboard();
 
   // Check for pending quote request after login/registration
   if (localStorage.getItem('electrotrical_quote_request')) {
     handleQuoteSubmission();
+  } else {
+    renderDashboard();
   }
 }
 
@@ -3171,7 +3172,18 @@ function handleQuoteSubmission() {
 
   showToast('Quote request submitted! We\'ll review it shortly.', 'success');
 
-  // Switch to the Quotes tab properly
+  // Set up dashboard UI basics first, then switch to Quotes tab
+  const admin = isAdmin();
+  document.getElementById('adminBar').style.display = admin ? 'flex' : 'none';
+  document.getElementById('dashTitle').textContent = admin ? 'All Projects' : 'My Projects';
+  document.getElementById('dashSubtitle').textContent = admin
+    ? 'Manage all customer projects, upload designs, and track milestones'
+    : 'Manage your PCB design orders and track progress';
+  document.getElementById('newQuoteBtn').style.display = admin ? 'none' : 'inline-flex';
+  const usersTab = document.getElementById('usersTab');
+  if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
+
+  // Switch to Quotes tab
   switchMainTab('quotes');
 }
 
@@ -3256,7 +3268,6 @@ if (regEmailEl) {
     if (state.currentUser) {
       showView('dashboard');
       updateNav();
-      renderDashboard();
       handleQuoteSubmission();
     } else {
       // Not logged in yet — show auth view, quote will be processed after login via loginAs()
