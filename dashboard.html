@@ -1088,8 +1088,17 @@ a { color: inherit; text-decoration: none; }
       </button>
     </div>
 
+    <!-- Dashboard Tabs -->
+    <div class="dash-tabs" id="mainDashTabs">
+      <button class="dash-tab active" onclick="switchMainTab('projects')">Projects</button>
+      <button class="dash-tab" onclick="switchMainTab('quotes')">Quotes</button>
+    </div>
+
     <!-- Projects List -->
     <div id="projectsList"></div>
+
+    <!-- Quote Requests (Admin) / My Quotes (Customer) -->
+    <div id="quoteRequestsSection" style="display:none;"></div>
 
     <!-- Project Detail -->
     <div id="projectDetail" style="display:none;"></div>
@@ -1465,6 +1474,34 @@ function initState() {
           { text: '<strong>Ada</strong> uploaded schematic files', time: '2026-03-10 09:32', type: 'green' },
           { text: 'Project <strong>IoT Sensor Board v2</strong> created', time: '2026-03-10 09:30', type: 'green' }
         ]
+      }
+    ],
+    quoteRequests: [
+      {
+        id: 'QR-2026-001',
+        customerId: 'cust-001',
+        customerName: 'Ada Lovelace',
+        customerEmail: 'demo@customer.com',
+        specs: {
+          layers: '4',
+          layersLabel: '4 layers',
+          complexity: '1.6',
+          complexityLabel: 'Standard — 50–200 components',
+          size: '1.4',
+          sizeLabel: 'Medium',
+          special: '0',
+          specialLabel: 'None',
+          turnaround: 'express',
+          turnaroundLabel: 'Express (2-3 days)',
+          turnMult: 1.5,
+          base: 256
+        },
+        estimatedTotal: 538,
+        adminPrice: null,
+        adminNotes: '',
+        status: 'pending',
+        createdAt: '2026-03-14T10:30:00',
+        reviewedAt: null
       }
     ],
     currentUser: null
@@ -2459,6 +2496,330 @@ function goToNewProject() {
   }
 }
 
+// ══════════════════════════════════════════════════════════
+// QUOTE REQUEST SYSTEM
+// ══════════════════════════════════════════════════════════
+
+function switchMainTab(tab) {
+  const tabs = document.querySelectorAll('#mainDashTabs .dash-tab');
+  tabs.forEach(t => t.classList.remove('active'));
+
+  if (tab === 'projects') {
+    tabs[0].classList.add('active');
+    document.getElementById('projectsList').style.display = 'block';
+    document.getElementById('quoteRequestsSection').style.display = 'none';
+    document.getElementById('projectDetail').style.display = 'none';
+    renderDashboard();
+  } else if (tab === 'quotes') {
+    tabs[1].classList.add('active');
+    document.getElementById('projectsList').style.display = 'none';
+    document.getElementById('quoteRequestsSection').style.display = 'block';
+    document.getElementById('projectDetail').style.display = 'none';
+    renderQuoteRequests();
+  }
+}
+
+function renderQuoteRequests() {
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!user) return;
+
+  const container = document.getElementById('quoteRequestsSection');
+  const isAdmin = user.role === 'admin';
+
+  let quotes = state.quoteRequests || [];
+  if (!isAdmin) {
+    quotes = quotes.filter(q => q.customerId === user.id);
+  }
+
+  if (quotes.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:4rem 2rem;background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);">
+        <div style="width:72px;height:72px;margin:0 auto 1.5rem;background:rgba(0,102,255,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div style="font-size:20px;font-weight:600;color:var(--white);margin-bottom:8px;">No quote requests yet</div>
+        <p style="font-size:14px;color:var(--text-secondary);max-width:400px;margin:0 auto;">${isAdmin ? 'Quote requests from customers will appear here for your review.' : 'Submit a quote request from the home page to get started.'}</p>
+      </div>`;
+    return;
+  }
+
+  let html = '';
+  quotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  quotes.forEach(q => {
+    const statusBadge = getQuoteStatusBadge(q.status);
+    const date = new Date(q.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    html += `
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.75rem;margin-bottom:16px;transition:var(--transition);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:18px;font-weight:600;color:var(--white);margin-bottom:4px;">Quote ${q.id}</div>
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">${isAdmin ? q.customerName + ' (' + q.customerEmail + ')' : 'Submitted ' + date}</div>
+        </div>
+        ${statusBadge}
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.25rem;">
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Layers</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.layersLabel}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Size</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.sizeLabel}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Turnaround</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.turnaroundLabel}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Special Req.</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.specialLabel}</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Customer Estimate</div>
+          <div style="font-size:24px;font-weight:700;color:var(--text-secondary);font-family:var(--font-mono);">$${q.estimatedTotal}</div>
+        </div>
+        ${q.adminPrice !== null ? `
+        <div>
+          <div style="font-size:12px;color:var(--accent);margin-bottom:2px;">Approved Price</div>
+          <div style="font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:var(--font-mono);">$${q.adminPrice}</div>
+        </div>` : ''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${isAdmin && q.status === 'pending' ? `
+            <button class="btn btn-primary btn-sm" onclick="openQuoteReview('${q.id}')">Review & Price</button>
+          ` : ''}
+          ${isAdmin && q.status === 'approved' ? `
+            <span style="font-size:13px;color:var(--accent);">Approved — awaiting customer payment</span>
+          ` : ''}
+          ${!isAdmin && q.status === 'approved' ? `
+            <button class="btn btn-success btn-sm" onclick="proceedToPayment('${q.id}')">Proceed to Payment — $${q.adminPrice}</button>
+          ` : ''}
+          ${!isAdmin && q.status === 'pending' ? `
+            <span style="font-size:13px;color:var(--text-muted);">Awaiting review by our team...</span>
+          ` : ''}
+          ${q.status === 'rejected' ? `
+            <span style="font-size:13px;color:var(--danger);">Quote declined${q.adminNotes ? ': ' + sanitizeInput(q.adminNotes) : ''}</span>
+          ` : ''}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function getQuoteStatusBadge(status) {
+  const badges = {
+    pending: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(255,180,0,0.1);color:var(--warning);border:1px solid rgba(255,180,0,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--warning);animation:pulse 2s infinite;"></span>Pending Review</span>',
+    approved: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>Approved</span>',
+    rejected: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(255,77,77,0.1);color:var(--danger);border:1px solid rgba(255,77,77,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--danger);"></span>Declined</span>',
+    paid: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(0,102,255,0.1);color:var(--primary-light);border:1px solid rgba(0,102,255,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary-light);"></span>Paid</span>'
+  };
+  return badges[status] || badges.pending;
+}
+
+function openQuoteReview(quoteId) {
+  const state = getState();
+  const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
+  if (!quote) return;
+
+  const modal = document.getElementById('newProjectModal');
+  modal.querySelector('.modal-title').textContent = 'Review Quote ' + quoteId;
+  modal.querySelector('.modal-sub').textContent = 'From ' + quote.customerName + ' — adjust price and approve or decline.';
+
+  modal.querySelector('.modal form').innerHTML = `
+    <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:20px;">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">CUSTOMER SPECS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><span style="color:var(--text-secondary);font-size:13px;">Layers:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.layersLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Size:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.sizeLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Complexity:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.complexityLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Turnaround:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.turnaroundLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Special:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.specialLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Estimate:</span> <span style="color:var(--white);font-size:13px;font-weight:600;">$${quote.estimatedTotal}</span></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Final Price (USD)</label>
+      <input class="form-input" type="number" id="review-price" value="${quote.estimatedTotal}" min="1" step="1" required style="font-size:20px;font-weight:600;">
+      <div class="form-hint">Adjust the price if needed. The customer estimated $${quote.estimatedTotal}.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes to Customer <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <textarea class="review-comment" id="review-notes" placeholder="e.g. Price adjusted due to high-density BGA routing complexity..." style="min-height:80px;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button type="button" class="btn btn-success" style="flex:2;" onclick="approveQuote('${quoteId}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve Quote
+      </button>
+      <button type="button" class="btn btn-danger-outline" style="flex:1;" onclick="rejectQuote('${quoteId}')">Decline</button>
+    </div>
+  `;
+
+  modal.classList.add('active');
+}
+
+function approveQuote(quoteId) {
+  const price = parseInt(document.getElementById('review-price').value);
+  const notes = document.getElementById('review-notes').value;
+  if (!price || price < 1) { showToast('Please enter a valid price', 'warning'); return; }
+
+  const state = getState();
+  const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
+  if (!quote) return;
+
+  quote.adminPrice = price;
+  quote.adminNotes = notes;
+  quote.status = 'approved';
+  quote.reviewedAt = new Date().toISOString();
+
+  // Add notification for the customer
+  if (!state.notifications) state.notifications = [];
+  state.notifications.push({
+    id: 'notif-' + Date.now(),
+    userId: quote.customerId,
+    type: 'quote_approved',
+    title: 'Quote Approved!',
+    message: 'Your quote ' + quoteId + ' has been approved at $' + price + '.' + (notes ? ' Note: ' + notes : '') + ' You can now proceed to payment.',
+    quoteId: quoteId,
+    read: false,
+    createdAt: new Date().toISOString()
+  });
+
+  saveState(state);
+  closeModal('newProjectModal');
+  showToast('Quote approved at $' + price, 'success');
+  renderQuoteRequests();
+  renderNotifications();
+}
+
+function rejectQuote(quoteId) {
+  const notes = document.getElementById('review-notes').value;
+  const state = getState();
+  const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
+  if (!quote) return;
+
+  quote.status = 'rejected';
+  quote.adminNotes = notes;
+  quote.reviewedAt = new Date().toISOString();
+
+  if (!state.notifications) state.notifications = [];
+  state.notifications.push({
+    id: 'notif-' + Date.now(),
+    userId: quote.customerId,
+    type: 'quote_rejected',
+    title: 'Quote Update',
+    message: 'Your quote ' + quoteId + ' needs revision.' + (notes ? ' Note: ' + notes : ''),
+    quoteId: quoteId,
+    read: false,
+    createdAt: new Date().toISOString()
+  });
+
+  saveState(state);
+  closeModal('newProjectModal');
+  showToast('Quote declined', 'warning');
+  renderQuoteRequests();
+  renderNotifications();
+}
+
+function proceedToPayment(quoteId) {
+  const state = getState();
+  const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
+  if (!quote || quote.status !== 'approved') return;
+
+  // Populate checkout with approved price
+  const checkoutData = {
+    ...quote.specs,
+    total: quote.adminPrice,
+    quoteId: quote.id,
+    timestamp: new Date().toISOString()
+  };
+  localStorage.setItem('electrotrical_pending_quote', JSON.stringify(checkoutData));
+
+  // Update checkout view totals
+  document.getElementById('co-pay-amount').textContent = '$' + quote.adminPrice;
+  document.getElementById('co-s-layers').textContent = quote.specs.layersLabel;
+  document.getElementById('co-s-complexity').textContent = quote.specs.complexityLabel;
+  document.getElementById('co-s-size').textContent = quote.specs.sizeLabel;
+  document.getElementById('co-s-turn').textContent = quote.specs.turnaroundLabel;
+  document.getElementById('co-s-special').textContent = quote.specs.specialLabel;
+  document.getElementById('co-s-base').textContent = '$' + quote.specs.base;
+  document.getElementById('co-s-total').textContent = '$' + quote.adminPrice;
+
+  showView('checkout');
+}
+
+function handleQuoteSubmission() {
+  const quoteDataStr = localStorage.getItem('electrotrical_quote_request');
+  if (!quoteDataStr) return;
+
+  const quoteData = JSON.parse(quoteDataStr);
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!user) return;
+
+  // Create new quote request
+  const quoteId = 'QR-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000).padStart(3, '0');
+  if (!state.quoteRequests) state.quoteRequests = [];
+
+  state.quoteRequests.push({
+    id: quoteId,
+    customerId: user.id,
+    customerName: user.firstName + ' ' + user.lastName,
+    customerEmail: user.email,
+    specs: {
+      layers: quoteData.layers,
+      layersLabel: quoteData.layersLabel,
+      complexity: quoteData.complexity,
+      complexityLabel: quoteData.complexityLabel,
+      size: quoteData.size,
+      sizeLabel: quoteData.sizeLabel,
+      special: quoteData.special,
+      specialLabel: quoteData.specialLabel,
+      turnaround: quoteData.turnaround,
+      turnaroundLabel: quoteData.turnaroundLabel,
+      turnMult: quoteData.turnMult,
+      base: quoteData.base
+    },
+    estimatedTotal: quoteData.total,
+    adminPrice: null,
+    adminNotes: '',
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    reviewedAt: null
+  });
+
+  // Notify admin
+  if (!state.notifications) state.notifications = [];
+  state.notifications.push({
+    id: 'notif-' + Date.now(),
+    userId: 'admin-001',
+    type: 'new_quote',
+    title: 'New Quote Request',
+    message: user.firstName + ' ' + user.lastName + ' submitted a quote request (' + quoteId + ') for $' + quoteData.total + ' estimated.',
+    quoteId: quoteId,
+    read: false,
+    createdAt: new Date().toISOString()
+  });
+
+  saveState(state);
+  localStorage.removeItem('electrotrical_quote_request');
+
+  showToast('Quote request submitted! We\'ll review it shortly.', 'success');
+
+  // Show the quotes section
+  document.getElementById('quoteRequestsSection').style.display = 'block';
+  document.getElementById('projectsList').style.display = 'none';
+  renderQuoteRequests();
+}
+
 // ═══ SECURITY: Session Timeout (30 min inactivity) ═══
 let sessionTimer;
 function resetSessionTimer() {
@@ -2512,10 +2873,19 @@ if (document.getElementById('reg-confirm-pass')) {
   state = getState();
   const params = new URLSearchParams(window.location.search);
   const isCheckout = params.get('checkout') === 'true';
+  const submitQuote = params.get('submit_quote') === 'true';
 
   if (isCheckout && localStorage.getItem('electrotrical_pending_quote')) {
     // Coming from quote calculator — show checkout
     loadCheckout();
+  } else if (submitQuote) {
+    // Handle quote submission after login
+    if (state.currentUser) {
+      showView('dashboard');
+      updateNav();
+      renderDashboard();
+      handleQuoteSubmission();
+    }
   } else if (state.currentUser) {
     showView('dashboard');
     updateNav();
@@ -2526,7 +2896,7 @@ if (document.getElementById('reg-confirm-pass')) {
   }
 
   // Clean URL params without reloading
-  if (isCheckout) {
+  if (isCheckout || submitQuote) {
     window.history.replaceState({}, '', 'dashboard.html');
   }
 })();
