@@ -1620,6 +1620,11 @@ function loginAs(user) {
   showView('dashboard');
   updateNav();
   renderDashboard();
+
+  // Check for pending quote request after login/registration
+  if (localStorage.getItem('electrotrical_quote_request')) {
+    handleQuoteSubmission();
+  }
 }
 
 function logout() {
@@ -2885,6 +2890,10 @@ if (document.getElementById('reg-confirm-pass')) {
       updateNav();
       renderDashboard();
       handleQuoteSubmission();
+    } else {
+      // Not logged in yet — show auth view, quote will be processed after login via loginAs()
+      showView('auth');
+      updateNav();
     }
   } else if (state.currentUser) {
     showView('dashboard');
