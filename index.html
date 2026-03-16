@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://www.google.com; img-src 'self' data:; connect-src 'self' https://api.emailjs.com;">
 <title>ElectroTrical — Professional PCB Layout & Design Services</title>
 <meta name="description" content="ElectroTrical delivers expert PCB layout and design services for engineers, hardware startups, and electronics companies. From 2-layer prototypes to 16-layer high-speed designs.">
 <meta name="keywords" content="PCB layout, PCB design, schematic capture, design review, high-speed digital, RF design, electronics engineering">
@@ -762,6 +763,17 @@ a { color: inherit; text-decoration: none; }
 </head>
 <body>
 
+<!-- Cookie Consent Banner -->
+<div id="cookie-consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(10,14,26,0.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:16px 24px;">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <p style="font-size:13px;color:var(--text-secondary);margin:0;flex:1;min-width:240px;line-height:1.6;font-family:var(--font-sans);">We use essential cookies to make this site work. By continuing, you agree to our <a href="privacy.html" style="color:var(--cyan);text-decoration:none;">Privacy Policy</a>.</p>
+    <div style="display:flex;gap:8px;">
+      <button onclick="acceptCookies()" style="background:var(--primary);color:var(--white);border:none;font-family:var(--font-sans);font-size:13px;font-weight:600;padding:8px 20px;border-radius:var(--radius-sm);cursor:pointer;">Accept</button>
+      <button onclick="declineCookies()" style="background:transparent;color:var(--text-secondary);border:1px solid var(--border);font-family:var(--font-sans);font-size:13px;padding:8px 20px;border-radius:var(--radius-sm);cursor:pointer;">Decline</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════ NAVIGATION ══════════════════════ -->
 <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
   <div class="nav-inner">
@@ -1176,6 +1188,10 @@ a { color: inherit; text-decoration: none; }
             <label class="form-label" for="c-message">Project Details</label>
             <textarea class="form-textarea" id="c-message" placeholder="Describe your project — board type, layer count, special requirements, timeline, etc." required></textarea>
           </div>
+          <!-- Honeypot field for bot detection -->
+          <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
+            <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="form-input">
+          </div>
           <button type="submit" class="btn-primary btn-full">Send Message <span aria-hidden="true">&rarr;</span></button>
         </form>
       </div>
@@ -1257,9 +1273,9 @@ a { color: inherit; text-decoration: none; }
     <div class="footer-bottom">
       <div class="footer-copy">&copy; 2026 ElectroTrical. All rights reserved.</div>
       <div class="footer-legal">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">Cookie Policy</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a href="privacy.html#cookies">Cookie Policy</a>
       </div>
     </div>
   </div>
@@ -1370,9 +1386,49 @@ function proceedToCheckout() {
   window.location.href = 'dashboard.html?checkout=true';
 }
 
+// ═══ SECURITY: Input Sanitization ═══
+function sanitizeInput(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ═══ SECURITY: Rate Limiting ═══
+const formSubmissions = {};
+function checkRateLimit(formId, maxPerMinute = 3) {
+  const now = Date.now();
+  if (!formSubmissions[formId]) formSubmissions[formId] = [];
+  formSubmissions[formId] = formSubmissions[formId].filter(t => now - t < 60000);
+  if (formSubmissions[formId].length >= maxPerMinute) return false;
+  formSubmissions[formId].push(now);
+  return true;
+}
+
+// ═══ SECURITY: Honeypot Check ═══
+function hasHoneypot(formEl) {
+  const hp = formEl ? formEl.querySelector('input[name="website_url"]') : null;
+  return hp && hp.value.length > 0;
+}
+
 // ── Contact Form Handler ──
 function handleContact(e) {
   e.preventDefault();
+
+  // Bot detection: honeypot check
+  if (hasHoneypot(e.target)) return;
+
+  // Rate limiting
+  if (!checkRateLimit('contact')) {
+    alert('Too many submissions. Please wait a moment before trying again.');
+    return;
+  }
+
+  // Sanitize inputs
+  const fname = sanitizeInput(document.getElementById('c-fname').value);
+  const lname = sanitizeInput(document.getElementById('c-lname').value);
+  const email = sanitizeInput(document.getElementById('c-email').value);
+
   const btn = e.target.querySelector('button[type="submit"]');
   btn.textContent = 'Message Sent!';
   btn.style.background = '#00E5A0';
@@ -1397,6 +1453,19 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     }
   });
 });
+
+// ═══ Cookie Consent ═══
+function acceptCookies() {
+  localStorage.setItem('cookie_consent', 'accepted');
+  document.getElementById('cookie-consent').style.display = 'none';
+}
+function declineCookies() {
+  localStorage.setItem('cookie_consent', 'declined');
+  document.getElementById('cookie-consent').style.display = 'none';
+}
+if (!localStorage.getItem('cookie_consent')) {
+  document.getElementById('cookie-consent').style.display = 'block';
+}
 
 // Init
 calcQuote();

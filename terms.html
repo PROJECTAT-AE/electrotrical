@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; connect-src 'self'">
+    <title>Terms of Service - ElectroTrical</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --blue: #00aaff;
+            --green: #00ff9c;
+            --dark: #07070f;
+            --surface: #0f0f1a;
+            --surface2: #161625;
+            --border: #252535;
+            --text: #e2e8f0;
+            --muted: #7a84a0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* PCB Grid Pattern Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(0deg, transparent 24%, rgba(0, 170, 255, 0.05) 25%, rgba(0, 170, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 170, 255, 0.05) 75%, rgba(0, 170, 255, 0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(0, 170, 255, 0.05) 25%, rgba(0, 170, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 170, 255, 0.05) 75%, rgba(0, 170, 255, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, var(--surface) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            z-index: 100;
+        }
+
+        nav ul {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            justify-content: space-between;
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        nav a:hover {
+            color: var(--blue);
+        }
+
+        nav .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: -0.5px;
+        }
+
+        /* Main Content */
+        main {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 120px 2rem 4rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .page-meta {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 3rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--blue);
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--green);
+            padding-left: 1rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text);
+            line-height: 1.8;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.75rem;
+            line-height: 1.8;
+        }
+
+        strong {
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        em {
+            color: var(--blue);
+            font-style: italic;
+        }
+
+        .section {
+            background: rgba(15, 15, 26, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .highlight {
+            background: linear-gradient(90deg, rgba(0, 170, 255, 0.1) 0%, rgba(0, 255, 156, 0.05) 100%);
+            border-left: 3px solid var(--green);
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+        }
+
+        .highlight strong {
+            color: var(--green);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: rgba(22, 22, 37, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: rgba(0, 170, 255, 0.1);
+            font-weight: 600;
+            color: var(--blue);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        a {
+            color: var(--blue);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            border-bottom: 1px solid transparent;
+        }
+
+        a:hover {
+            color: var(--green);
+            border-bottom-color: var(--green);
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 1;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        footer .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        footer h3 {
+            color: var(--blue);
+            margin-bottom: 1rem;
+        }
+
+        footer a {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        footer a:hover {
+            color: var(--green);
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Back to Top */
+        .back-to-home {
+            display: inline-block;
+            margin-bottom: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid var(--blue);
+            color: var(--blue);
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-home:hover {
+            background: rgba(0, 170, 255, 0.2);
+            color: var(--green);
+            border-color: var(--green);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            main {
+                padding: 100px 1.5rem 3rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            footer .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <ul>
+            <li><a href="index.html" class="logo">ElectroTrical</a></li>
+            <li>
+                <a href="index.html">Home</a>
+                <a href="privacy.html">Privacy Policy</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <a href="index.html" class="back-to-home">← Back to Home</a>
+
+        <h1>Terms of Service</h1>
+        <p class="page-meta">Last updated: March 2026</p>
+
+        <!-- Section 1: Acceptance -->
+        <div class="section">
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing and using the ElectroTrical website and services, you agree to be bound by these Terms of Service. If you do not agree to abide by the above, please do not use this service. ElectroTrical reserves the right to update and change these terms at any time without notice.</p>
+        </div>
+
+        <!-- Section 2: Service Description -->
+        <div class="section">
+            <h2>2. Service Description</h2>
+            <p>ElectroTrical provides professional PCB layout and design services, including:</p>
+            <ul>
+                <li><strong>PCB Layout Design</strong> - Custom schematic capture and PCB layout for single and multi-layer boards</li>
+                <li><strong>Schematic Review</strong> - Analysis and optimization of electronic circuit designs</li>
+                <li><strong>Gerber File Generation</strong> - Production-ready files for manufacturing</li>
+            </ul>
+            <p>All services are provided on a project basis. Specifications, timelines, and deliverables are confirmed in writing via quotation prior to service initiation.</p>
+        </div>
+
+        <!-- Section 3: Account Registration -->
+        <div class="section">
+            <h2>3. Account Registration Requirements</h2>
+            <p>To use ElectroTrical services, you must:</p>
+            <ul>
+                <li>Create a valid user account with accurate information</li>
+                <li>Provide a valid email address for communications and project updates</li>
+                <li>Maintain confidentiality of your account credentials</li>
+                <li>Be at least 18 years of age or have parental consent</li>
+                <li>Comply with all applicable laws and regulations</li>
+            </ul>
+            <p>You are responsible for all activities that occur under your account. You agree to notify ElectroTrical immediately of any unauthorized use of your account.</p>
+        </div>
+
+        <!-- Section 4: Pricing & Payments -->
+        <div class="section">
+            <h2>4. Pricing and Payments</h2>
+
+            <h3>Quotes and Estimates</h3>
+            <p>All pricing is provided via customized quote based on project specifications. Quotes are valid for 14 days from issuance. Acceptance of a quote constitutes authorization to proceed with work.</p>
+
+            <h3>Payment Processing</h3>
+            <p>ElectroTrical uses <strong>Stripe</strong> for secure payment processing. Payment methods accepted include credit cards and digital payment methods supported by Stripe. By providing payment information, you authorize ElectroTrical to charge the quoted amount upon project completion or as specified in your agreement.</p>
+
+            <h3>Refund Policy</h3>
+            <div class="highlight">
+                <p><strong>Refunds are issued under the following conditions:</strong></p>
+                <ul>
+                    <li>Service not delivered as specified in the quote within agreed turnaround times</li>
+                    <li>Failure to meet quality standards or deliverable specifications</li>
+                    <li>Customer request for cancellation before work begins (100% refund)</li>
+                    <li>Customer request for cancellation during production (50% refund, less completed work)</li>
+                    <li>Payment processing errors or duplicate charges</li>
+                </ul>
+                <p>Refund requests must be submitted within 30 days of service completion. ElectroTrical will investigate and respond within 10 business days.</p>
+            </div>
+
+            <h3>Invoicing</h3>
+            <p>Invoices are provided via email upon project initiation or at project milestones as specified. Payment terms are Net 30 unless otherwise agreed in writing.</p>
+        </div>
+
+        <!-- Section 5: Intellectual Property -->
+        <div class="section">
+            <h2>5. Intellectual Property Rights</h2>
+
+            <h3>Customer Intellectual Property</h3>
+            <p>You retain all intellectual property rights to your original designs, schematics, and circuit concepts. Upon payment in full, you receive exclusive rights to all deliverables including PCB layouts, design files, and Gerber files.</p>
+
+            <h3>ElectroTrical Intellectual Property</h3>
+            <p>ElectroTrical retains all intellectual property rights to:</p>
+            <ul>
+                <li>Design methodologies, processes, and techniques</li>
+                <li>Tools, templates, and software developed independently</li>
+                <li>General design principles and best practices applied to your project</li>
+            </ul>
+
+            <h3>License to Use</h3>
+            <p>You grant ElectroTrical a non-exclusive license to use your project as a portfolio reference and case study, subject to your confidentiality requirements.</p>
+        </div>
+
+        <!-- Section 6: File Uploads & Data -->
+        <div class="section">
+            <h2>6. File Uploads and Data Handling</h2>
+
+            <h3>Data Security</h3>
+            <p>ElectroTrical employs industry-standard security practices to protect uploaded files and customer information. All data is encrypted during transmission and storage. However, no method of transmission over the internet is 100% secure.</p>
+
+            <h3>File Retention</h3>
+            <p>Project files and documentation are retained for <strong>12 months</strong> following project completion for archive and quality assurance purposes. You may request permanent deletion of your files at any time.</p>
+
+            <h3>Acceptable Use</h3>
+            <p>You agree not to upload files that:</p>
+            <ul>
+                <li>Violate applicable laws or regulations</li>
+                <li>Infringe on third-party intellectual property rights</li>
+                <li>Contain malware, viruses, or malicious code</li>
+                <li>Exceed file size limitations specified during upload</li>
+            </ul>
+            <p>ElectroTrical reserves the right to refuse service if illegal or harmful content is detected.</p>
+        </div>
+
+        <!-- Section 7: Service Level Commitments -->
+        <div class="section">
+            <h2>7. Service Level Commitments</h2>
+
+            <p>ElectroTrical offers tiered turnaround options based on project complexity:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Service Tier</th>
+                        <th>Turnaround Time</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Standard</strong></td>
+                        <td>5-7 business days</td>
+                        <td>Regular priority, suitable for most projects</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Express</strong></td>
+                        <td>2-3 business days</td>
+                        <td>Expedited service with premium pricing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rush</strong></td>
+                        <td>Less than 24 hours</td>
+                        <td>Emergency turnaround for critical projects</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Timeline Guarantees</h3>
+            <p>Turnaround times are estimated based on current workload and project specifications. Delays due to incomplete specifications, unclear requirements, or late file revisions may extend timelines. ElectroTrical will notify you immediately of any anticipated delays.</p>
+
+            <h3>Quality Assurance</h3>
+            <p>All deliverables undergo design verification and quality review before delivery. ElectroTrical is not responsible for manufacturing defects arising from customer revisions to files post-delivery.</p>
+        </div>
+
+        <!-- Section 8: Limitations of Liability -->
+        <div class="section">
+            <h2>8. Limitations of Liability</h2>
+
+            <p><em>TO THE MAXIMUM EXTENT PERMITTED BY LAW:</em></p>
+
+            <ul>
+                <li>ElectroTrical shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from service use or inability to use services</li>
+                <li>ElectroTrical's total liability shall not exceed the amount paid by you for the specific service in question</li>
+                <li>ElectroTrical is not responsible for manufacturing defects, board failures, or component-level issues resulting from customer implementation or third-party manufacturing processes</li>
+                <li>ElectroTrical is not liable for loss of data, business interruption, or loss of profits</li>
+                <li>These limitations apply even if ElectroTrical has been advised of the possibility of such damages</li>
+            </ul>
+
+            <p><strong>Some jurisdictions do not allow limitation of liability, so these terms may not apply to you.</strong></p>
+        </div>
+
+        <!-- Section 9: Termination -->
+        <div class="section">
+            <h2>9. Termination</h2>
+
+            <h3>By Customer</h3>
+            <p>You may terminate a project at any time by written notice. Refunds are subject to Section 4 (Refund Policy).</p>
+
+            <h3>By ElectroTrical</h3>
+            <p>ElectroTrical may suspend or terminate services if:</p>
+            <ul>
+                <li>Payment is not received within the specified terms</li>
+                <li>You violate these Terms of Service</li>
+                <li>You request designs or services that are illegal or unethical</li>
+                <li>Your account is dormant for more than 12 months</li>
+            </ul>
+
+            <h3>Effect of Termination</h3>
+            <p>Upon termination, you remain liable for all services rendered to date. Completed work will not be returned until all outstanding balances are paid.</p>
+        </div>
+
+        <!-- Section 10: Dispute Resolution -->
+        <div class="section">
+            <h2>10. Dispute Resolution</h2>
+
+            <h3>Good Faith Negotiation</h3>
+            <p>In the event of a dispute, both parties agree to attempt resolution through good faith negotiation and discussion before pursuing formal legal action.</p>
+
+            <h3>Mediation</h3>
+            <p>If negotiation fails, either party may request non-binding mediation conducted by a mutually agreed-upon neutral mediator.</p>
+
+            <h3>Limitation on Legal Action</h3>
+            <p>Any legal action or proceeding arising from these Terms of Service must be brought within <strong>one (1) year</strong> of the event giving rise to the claim, or be forever barred.</p>
+        </div>
+
+        <!-- Section 11: Governing Law -->
+        <div class="section">
+            <h2>11. Governing Law and Jurisdiction</h2>
+
+            <p>These Terms of Service are governed by and construed in accordance with the laws of the jurisdiction in which ElectroTrical operates, without regard to its conflict of law principles. You agree to submit to the exclusive jurisdiction of courts located in that jurisdiction for resolution of any disputes.</p>
+        </div>
+
+        <!-- Section 12: Contact Information -->
+        <div class="section">
+            <h2>12. Contact Information</h2>
+
+            <p>For questions regarding these Terms of Service, billing inquiries, or service issues, please contact:</p>
+
+            <div class="highlight">
+                <p><strong>ElectroTrical Support</strong><br>
+                Email: <a href="mailto:info@electrotrical.com">info@electrotrical.com</a><br>
+                Response time: Within 24 business hours</p>
+            </div>
+        </div>
+
+        <!-- Section 13: Miscellaneous -->
+        <div class="section">
+            <h2>13. Miscellaneous</h2>
+
+            <h3>Entire Agreement</h3>
+            <p>These Terms of Service, along with any quoted specifications and our Privacy Policy, constitute the entire agreement between you and ElectroTrical regarding services.</p>
+
+            <h3>Severability</h3>
+            <p>If any provision of these Terms is found to be unenforceable, the remaining provisions shall continue in full effect.</p>
+
+            <h3>Waiver</h3>
+            <p>Failure by ElectroTrical to enforce any right or provision does not constitute waiver of that right or provision.</p>
+
+            <h3>Assignment</h3>
+            <p>You may not assign your rights under these Terms without ElectroTrical's written consent. ElectroTrical may assign its rights without restriction.</p>
+
+            <h3>Related Policies</h3>
+            <p>Please review our <a href="privacy.html">Privacy Policy</a> for information about data collection and handling practices.</p>
+        </div>
+
+        <!-- Footer Links -->
+        <div style="text-align: center; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+            <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                <a href="index.html">Home</a> •
+                <a href="privacy.html">Privacy Policy</a> •
+                <a href="mailto:info@electrotrical.com">Contact Support</a>
+            </p>
+            <p style="color: var(--muted); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;">
+                ElectroTrical © 2026 • Professional PCB Layout & Design Services
+            </p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div>
+                <h3>Quick Links</h3>
+                <a href="index.html">Home</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="mailto:info@electrotrical.com">Contact Us</a>
+            </div>
+            <div>
+                <h3>Services</h3>
+                <a href="index.html#services">PCB Layout Design</a>
+                <a href="index.html#services">Schematic Review</a>
+                <a href="index.html#services">Gerber Generation</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            ElectroTrical © 2026 • Professional PCB Layout & Design Services<br>
+            Terms of Service • Last Updated March 2026
+        </div>
+    </footer>
+</body>
+</html>

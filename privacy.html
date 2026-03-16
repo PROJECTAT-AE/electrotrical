@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="description" content="Privacy Policy for ElectroTrical PCB Layout & Design Services. Learn how we collect, use, and protect your data.">
+<meta name="keywords" content="privacy policy, data protection, GDPR, security">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; font-src https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self'">
+<title>Privacy Policy — ElectroTrical PCB Design Services</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   ELECTROTRICAL — Privacy Policy
+   ══════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary: #0066FF;
+  --primary-light: #3388FF;
+  --cyan: #00D4FF;
+  --cyan-glow: rgba(0, 212, 255, 0.15);
+  --accent: #00E5A0;
+  --dark-900: #0A0E1A;
+  --dark-800: #0F1424;
+  --dark-700: #151B2E;
+  --dark-600: #1a2043;
+  --border: #2a2f47;
+  --border-hover: #3a4058;
+  --text: #E2E8F0;
+  --text-secondary: #A8B2C7;
+  --text-muted: #7A84A0;
+  --white: #FFFFFF;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--dark-900);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* PCB Grid Background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(0deg, transparent 24%, rgba(0, 212, 255, 0.02) 25%, rgba(0, 212, 255, 0.02) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.02) 75%, rgba(0, 212, 255, 0.02) 76%, transparent 77%, transparent),
+    linear-gradient(90deg, transparent 24%, rgba(0, 212, 255, 0.02) 25%, rgba(0, 212, 255, 0.02) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.02) 75%, rgba(0, 212, 255, 0.02) 76%, transparent 77%, transparent);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+   ══════════════════════════════════════════ */
+
+header {
+  background: rgba(10, 14, 26, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white);
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: var(--transition);
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.nav-links a:hover {
+  color: var(--cyan);
+}
+
+/* ══════════════════════════════════════════
+   PAGE HEADER
+   ══════════════════════════════════════════ */
+
+.page-header {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 6rem 2rem 4rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.page-title {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 1rem;
+  letter-spacing: -1px;
+}
+
+.page-subtitle {
+  font-size: 17px;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.last-updated {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ══════════════════════════════════════════
+   MAIN CONTENT
+   ══════════════════════════════════════════ */
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem 6rem;
+  position: relative;
+  z-index: 1;
+}
+
+.toc {
+  background: var(--dark-800);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 3rem;
+}
+
+.toc-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cyan);
+}
+
+.toc-list {
+  list-style: none;
+}
+
+.toc-list li {
+  margin-bottom: 0.75rem;
+}
+
+.toc-list a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toc-list a::before {
+  content: '→';
+  color: var(--cyan);
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.toc-list a:hover {
+  color: var(--cyan);
+}
+
+.toc-list a:hover::before {
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════
+   POLICY SECTIONS
+   ══════════════════════════════════════════ */
+
+.policy-section {
+  margin-bottom: 3.5rem;
+  scroll-margin-top: 100px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.section-number {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.section-content {
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.section-content p {
+  margin-bottom: 1.25rem;
+}
+
+.section-content ul,
+.section-content ol {
+  margin-left: 2rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-content li {
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.section-content strong {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.section-content a {
+  color: var(--cyan);
+  text-decoration: none;
+  transition: var(--transition);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.section-content a:hover {
+  color: var(--primary-light);
+  border-bottom-color: var(--primary-light);
+}
+
+.highlight-box {
+  background: rgba(0, 102, 255, 0.04);
+  border: 1px solid rgba(0, 102, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid var(--primary);
+}
+
+.highlight-box strong {
+  color: var(--cyan);
+}
+
+.data-table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  background: var(--dark-800);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.data-table th {
+  background: rgba(0, 102, 255, 0.08);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover {
+  background: rgba(0, 212, 255, 0.02);
+}
+
+/* ══════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════ */
+
+footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cyan);
+  margin-bottom: 1rem;
+}
+
+.footer-section a {
+  display: block;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 0.75rem;
+  transition: var(--transition);
+}
+
+.footer-section a:hover {
+  color: var(--cyan);
+}
+
+.footer-bottom {
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-contact strong {
+  color: var(--text);
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.footer-links a:hover {
+  color: var(--cyan);
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  nav {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .nav-links {
+    gap: 1rem;
+    font-size: 13px;
+  }
+
+  .page-header {
+    padding: 3rem 1.5rem 2rem;
+  }
+
+  .page-title {
+    font-size: 28px;
+  }
+
+  .container {
+    padding: 0 1.5rem 4rem;
+  }
+
+  .toc {
+    padding: 1.5rem;
+  }
+
+  .section-header {
+    flex-wrap: wrap;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .section-content ul,
+  .section-content ol {
+    margin-left: 1.5rem;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    gap: 1rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 24px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     NAVIGATION
+     ══════════════════════════════════════════ -->
+
+<header>
+  <nav>
+    <a href="index.html" class="logo">ElectroTrical</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="terms.html">Terms</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="mailto:info@electrotrical.com">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ══════════════════════════════════════════
+     PAGE HEADER
+     ══════════════════════════════════════════ -->
+
+<section class="page-header">
+  <h1 class="page-title">Privacy Policy</h1>
+  <p class="page-subtitle">We respect your privacy. Learn how ElectroTrical collects, uses, and protects your information.</p>
+  <p class="last-updated">Last updated: March 2026</p>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TABLE OF CONTENTS
+     ══════════════════════════════════════════ -->
+
+<div class="container">
+  <div class="toc">
+    <h2 class="toc-title">Quick Navigation</h2>
+    <ul class="toc-list">
+      <li><a href="#section-1">Information We Collect</a></li>
+      <li><a href="#section-2">How We Use Information</a></li>
+      <li><a href="#section-3">Data Security</a></li>
+      <li><a href="#section-4">Third-Party Services</a></li>
+      <li><a href="#section-5">Cookies & Tracking</a></li>
+      <li><a href="#section-6">Data Retention</a></li>
+      <li><a href="#section-7">Your Rights</a></li>
+      <li><a href="#section-8">Policy Changes</a></li>
+      <li><a href="#section-9">Contact Us</a></li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       POLICY SECTIONS
+       ══════════════════════════════════════════ -->
+
+  <div id="section-1" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">1.</span>
+      <h2 class="section-title">Information We Collect</h2>
+    </div>
+    <div class="section-content">
+      <p>ElectroTrical collects information necessary to provide professional PCB layout and design services. Here's what we gather and why:</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Personal Information</h3>
+      <ul>
+        <li><strong>Contact Details:</strong> Your name, email address, and phone number (provided when you request a quote or create an account)</li>
+        <li><strong>Company Information:</strong> Company name, industry, and business details to understand your project scope</li>
+        <li><strong>Project Information:</strong> Technical specifications, PCB requirements, design files, schematics, and project documentation</li>
+      </ul>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Payment Information</h3>
+      <ul>
+        <li><strong>Billing Details:</strong> We do not store your full credit card information. Payment processing is handled securely by Stripe</li>
+        <li><strong>Invoice Records:</strong> We maintain transaction records for accounting and service delivery purposes</li>
+      </ul>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Technical Information</h3>
+      <ul>
+        <li><strong>Server Logs:</strong> IP addresses, browser type, referring pages, and access times</li>
+        <li><strong>Cookies & Tracking:</strong> Session data and analytics information (see Section 5)</li>
+        <li><strong>Device Information:</strong> Operating system, browser version, and device type</li>
+      </ul>
+
+      <div class="highlight-box">
+        <p><strong>Important:</strong> Your project files are treated with the highest confidentiality. We use industry-standard encryption to protect all uploaded documents and designs.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-2" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">2.</span>
+      <h2 class="section-title">How We Use Information</h2>
+    </div>
+    <div class="section-content">
+      <p>We use collected information exclusively for purposes related to providing PCB design services and improving our platform:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Information Type</th>
+            <th>Primary Use</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Name & Email</td>
+            <td>Service delivery, communication, project updates</td>
+          </tr>
+          <tr>
+            <td>Project Files & Specs</td>
+            <td>PCB layout design and technical analysis</td>
+          </tr>
+          <tr>
+            <td>Payment Information</td>
+            <td>Invoice processing and subscription management</td>
+          </tr>
+          <tr>
+            <td>Server Logs & IP</td>
+            <td>Security monitoring, fraud prevention, system maintenance</td>
+          </tr>
+          <tr>
+            <td>Analytics Data</td>
+            <td>Website performance optimization and user experience improvement</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">What We Don't Do</h3>
+      <ul>
+        <li>We never sell or rent your personal information to third parties</li>
+        <li>We do not use your data for marketing purposes without explicit consent</li>
+        <li>We do not share your project files with competitors or unauthorized parties</li>
+        <li>We do not use your information for behavioral advertising or profiling</li>
+      </ul>
+
+      <div class="highlight-box">
+        <p><strong>Confidentiality:</strong> All project information you share remains confidential and is protected under our client agreements.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-3" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">3.</span>
+      <h2 class="section-title">Data Security</h2>
+    </div>
+    <div class="section-content">
+      <p>ElectroTrical implements comprehensive security measures to protect your data from unauthorized access, alteration, disclosure, or destruction:</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Encryption & Transport Security</h3>
+      <ul>
+        <li><strong>SSL/TLS 256-bit Encryption:</strong> All data transmitted between your browser and our servers is encrypted using industry-standard TLS 1.2 or higher</li>
+        <li><strong>HTTPS Protocol:</strong> Our entire platform uses HTTPS to ensure secure communication</li>
+        <li><strong>Data in Transit:</strong> Project files are encrypted during upload and download operations</li>
+      </ul>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Payment Security</h3>
+      <ul>
+        <li><strong>PCI DSS Compliance:</strong> Payment processing is handled by Stripe, which is PCI DSS Level 1 certified</li>
+        <li><strong>No Direct Storage:</strong> We never store full credit card numbers on our servers</li>
+        <li><strong>Tokenization:</strong> Payment details are tokenized for secure, recurring transactions</li>
+      </ul>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Infrastructure Security</h3>
+      <ul>
+        <li>Regular security audits and penetration testing</li>
+        <li>Firewalls and DDoS protection</li>
+        <li>Regular software updates and security patches</li>
+        <li>Secure access controls and authentication</li>
+        <li>Automated backup systems for data recovery</li>
+      </ul>
+
+      <div class="highlight-box">
+        <p><strong>Security Standards:</strong> While we implement comprehensive security measures, no system is 100% secure. We encourage you to use strong passwords and enable two-factor authentication where available.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-4" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">4.</span>
+      <h2 class="section-title">Third-Party Services</h2>
+    </div>
+    <div class="section-content">
+      <p>ElectroTrical uses carefully selected third-party services to enhance functionality and security. We only share necessary data and maintain data processing agreements with all vendors:</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Payment Processing</h3>
+      <ul>
+        <li><strong>Stripe:</strong> Handles all payment processing. Your payment data is processed according to Stripe's <a href="https://stripe.com/privacy" rel="noopener noreferrer">Privacy Policy</a></li>
+      </ul>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Front-End Libraries & Resources</h3>
+      <ul>
+        <li><strong>Google Fonts:</strong> Provides the Inter and JetBrains Mono typefaces used on our website. View <a href="https://policies.google.com/privacy" rel="noopener noreferrer">Google's Privacy Policy</a></li>
+      </ul>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Bot Protection & Security</h3>
+      <ul>
+        <li><strong>reCAPTCHA:</strong> Used on forms to prevent spam and abuse. Governed by <a href="https://policies.google.com/privacy" rel="noopener noreferrer">Google's Privacy Policy</a> and <a href="https://policies.google.com/terms" rel="noopener noreferrer">Terms of Service</a></li>
+      </ul>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Data Processing</h3>
+      <p>All third-party service providers are contractually obligated to:</p>
+      <ul>
+        <li>Process data only as instructed by ElectroTrical</li>
+        <li>Maintain appropriate security measures</li>
+        <li>Implement data minimization principles</li>
+        <li>Comply with applicable data protection regulations</li>
+      </ul>
+
+      <div class="highlight-box">
+        <p><strong>Your Control:</strong> You can control certain third-party cookies through your browser settings or our cookie preferences (see Section 5).</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-5" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">5.</span>
+      <h2 class="section-title">Cookies & Tracking</h2>
+    </div>
+    <div class="section-content">
+      <p>We use cookies and similar technologies to enhance user experience, maintain session security, and analyze platform performance:</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Types of Cookies</h3>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Cookie Type</th>
+            <th>Purpose</th>
+            <th>Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Session Cookies</td>
+            <td>Maintain login state and user preferences</td>
+            <td>Session ends or 30 days</td>
+          </tr>
+          <tr>
+            <td>Security Cookies</td>
+            <td>CSRF protection, fraud prevention</td>
+            <td>Session dependent</td>
+          </tr>
+          <tr>
+            <td>Analytics Cookies</td>
+            <td>Track website usage and performance</td>
+            <td>Up to 2 years</td>
+          </tr>
+          <tr>
+            <td>Third-Party Cookies</td>
+            <td>Stripe payments, Google services</td>
+            <td>Per vendor policy</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Managing Cookies</h3>
+      <p>You can control cookies through your browser settings:</p>
+      <ul>
+        <li><strong>Chrome/Edge:</strong> Settings → Privacy and security → Cookies and other site data</li>
+        <li><strong>Firefox:</strong> Preferences → Privacy & Security → Cookies and Site Data</li>
+        <li><strong>Safari:</strong> Preferences → Privacy → Cookies and website data</li>
+      </ul>
+
+      <p style="margin-top: 1.25rem;">Note that disabling cookies may affect functionality such as login persistence and form submission.</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Analytics & Performance</h3>
+      <p>We monitor website performance metrics including page load times, user flow, and error rates. This data helps us optimize the platform but does not identify individual users.</p>
+
+      <div class="highlight-box">
+        <p><strong>Do Not Track:</strong> We respect browser Do Not Track (DNT) signals where applicable. If you enable DNT, we will not use analytics tracking cookies.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-6" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">6.</span>
+      <h2 class="section-title">Data Retention</h2>
+    </div>
+    <div class="section-content">
+      <p>We retain your information only as long as necessary to provide services, comply with legal obligations, and resolve disputes:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Data Type</th>
+            <th>Retention Period</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Account Information</td>
+            <td>Active account + 2 years</td>
+            <td>Service continuity, legal compliance</td>
+          </tr>
+          <tr>
+            <td>Project Files</td>
+            <td>Contract period + 3 years</td>
+            <td>Service delivery, dispute resolution</td>
+          </tr>
+          <tr>
+            <td>Payment Records</td>
+            <td>7 years</td>
+            <td>Tax and accounting requirements</td>
+          </tr>
+          <tr>
+            <td>Server Logs</td>
+            <td>90 days</td>
+            <td>Security monitoring and debugging</td>
+          </tr>
+          <tr>
+            <td>Analytics Data</td>
+            <td>24 months</td>
+            <td>Performance analysis and optimization</td>
+          </tr>
+          <tr>
+            <td>Communications</td>
+            <td>3 years after project completion</td>
+            <td>Documentation and dispute resolution</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Deletion Upon Request</h3>
+      <p>You may request deletion of your account and associated data at any time (subject to legal retention requirements). Contact <a href="mailto:info@electrotrical.com">info@electrotrical.com</a> with deletion requests.</p>
+
+      <div class="highlight-box">
+        <p><strong>Legal Hold:</strong> If you're involved in any legal proceedings, we may retain data longer than stated above to comply with legal obligations or court orders.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-7" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">7.</span>
+      <h2 class="section-title">Your Rights</h2>
+    </div>
+    <div class="section-content">
+      <p>We respect your privacy rights and comply with applicable data protection regulations including GDPR and CCPA. You have the following rights:</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Right to Access</h3>
+      <p>You have the right to request and receive a copy of all personal data we hold about you in a portable, machine-readable format.</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Right to Correction</h3>
+      <p>You can request correction of inaccurate or incomplete information in your account at any time.</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Right to Deletion</h3>
+      <p>You can request deletion of your personal data, subject to legal retention requirements and our ability to continue providing services.</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Right to Data Portability</h3>
+      <p>You can request your data in a structured, commonly used, and machine-readable format to transfer to another service provider.</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">Right to Object</h3>
+      <p>You can object to processing of your personal data for non-essential purposes such as marketing or profiling.</p>
+
+      <h3 style="color: var(--text); font-size: 16px; margin-top: 1.5rem; margin-bottom: 0.75rem;">How to Exercise Your Rights</h3>
+      <p>To exercise any of these rights, please contact us with your request:</p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:info@electrotrical.com">info@electrotrical.com</a></li>
+        <li><strong>Subject Line:</strong> Data Rights Request [Access/Deletion/Correction/Portability]</li>
+      </ul>
+
+      <p style="margin-top: 1.25rem;">We will respond to your request within 30 days. We may ask you to verify your identity before processing your request.</p>
+
+      <div class="highlight-box">
+        <p><strong>No Discrimination:</strong> We will not discriminate against you for exercising your privacy rights. Your ability to use our services will not be affected by your data requests.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-8" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">8.</span>
+      <h2 class="section-title">Changes to This Policy</h2>
+    </div>
+    <div class="section-content">
+      <p>ElectroTrical may update this Privacy Policy periodically to reflect changes in our practices, technology, legal requirements, or other factors. We will notify you of material changes by:</p>
+
+      <ul>
+        <li>Posting the updated policy on our website with a new "Last updated" date</li>
+        <li>Sending you an email notification (if the change significantly affects your privacy rights)</li>
+        <li>Requiring explicit consent for certain material changes</li>
+      </ul>
+
+      <p style="margin-top: 1.25rem;">Your continued use of ElectroTrical's services after changes become effective constitutes your acceptance of the updated Privacy Policy.</p>
+
+      <p style="margin-top: 1.25rem;"><strong>Last Updated:</strong> March 2026</p>
+    </div>
+  </div>
+
+  <div id="section-9" class="policy-section">
+    <div class="section-header">
+      <span class="section-number">9.</span>
+      <h2 class="section-title">Contact Us</h2>
+    </div>
+    <div class="section-content">
+      <p>If you have questions, concerns, or requests regarding this Privacy Policy or our privacy practices, please contact us:</p>
+
+      <div class="highlight-box">
+        <p><strong>ElectroTrical Privacy Team</strong></p>
+        <p style="margin-top: 0.5rem;">Email: <a href="mailto:info@electrotrical.com">info@electrotrical.com</a></p>
+        <p style="margin-top: 0.5rem;">We typically respond to privacy inquiries within 5 business days.</p>
+      </div>
+
+      <p style="margin-top: 1.5rem;">For other legal documents, see our <a href="terms.html">Terms of Service</a>.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════ -->
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-section">
+      <h3>ElectroTrical</h3>
+      <a href="index.html">Home</a>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#portfolio">Portfolio</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <div class="footer-section">
+      <h3>Legal</h3>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+    <div class="footer-section">
+      <h3>Support</h3>
+      <a href="mailto:info@electrotrical.com">Email Support</a>
+      <a href="index.html#faq">FAQ</a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-contact">
+      <strong>Get in Touch</strong>
+      <a href="mailto:info@electrotrical.com" style="color: var(--cyan); text-decoration: none;">info@electrotrical.com</a>
+    </div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="mailto:info@electrotrical.com">Contact</a>
+    </div>
+    <div style="color: var(--text-muted);">
+      &copy; 2026 ElectroTrical. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
