@@ -8,7 +8,9 @@
 <meta name="keywords" content="privacy policy, data protection, GDPR, security">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; font-src https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self'">
 <title>Privacy Policy — ElectroTrical PCB Design Services</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -98,18 +100,16 @@ nav {
 }
 
 .logo {
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--white);
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
-  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   transition: var(--transition);
 }
-
+.logo img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
 .logo:hover {
   opacity: 0.8;
 }
@@ -514,7 +514,7 @@ footer {
 
 <header>
   <nav>
-    <a href="index.html" class="logo">ElectroTrical</a>
+    <a href="index.html" class="logo"><img src="Logo/ElectroTrical_Logo_2.png" alt="ElectroTrical - PCB Layout Services"></a>
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="terms.html">Terms</a></li>

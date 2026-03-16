@@ -6,7 +6,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://www.google.com; img-src 'self' data:; connect-src 'self' https://api.emailjs.com;">
 <title>ElectroTrical — Customer Dashboard</title>
 <meta name="description" content="Manage your PCB design projects, upload schematics, and track design progress with ElectroTrical.">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -80,10 +82,12 @@ a { color: inherit; text-decoration: none; }
   padding: 0 2rem; height: 72px;
 }
 .nav-brand {
-  display: flex; align-items: center; gap: 12px;
-  font-weight: 700; font-size: 20px; color: var(--white);
+  display: flex; align-items: center; cursor: pointer;
+  text-decoration: none;
 }
-.nav-brand-accent { color: var(--cyan); }
+.nav-brand img {
+  height: 42px; width: auto; object-fit: contain;
+}
 .nav-links { display: flex; align-items: center; gap: 4px; }
 .nav-link {
   background: none; border: none; color: var(--text-secondary);
@@ -938,18 +942,7 @@ a { color: inherit; text-decoration: none; }
 <nav class="navbar">
   <div class="nav-inner">
     <a class="nav-brand" href="index.html">
-      <svg width="32" height="32" viewBox="0 0 36 36" fill="none" aria-hidden="true">
-        <rect x="1" y="1" width="34" height="34" rx="8" stroke="#0066FF" stroke-width="1.5" opacity="0.6"/>
-        <rect x="7" y="7" width="8" height="8" rx="2" fill="#0066FF" opacity="0.9"/>
-        <rect x="21" y="7" width="8" height="8" rx="2" fill="#00D4FF" opacity="0.9"/>
-        <rect x="7" y="21" width="8" height="8" rx="2" fill="#00D4FF" opacity="0.9"/>
-        <rect x="21" y="21" width="8" height="8" rx="2" fill="#0066FF" opacity="0.9"/>
-        <line x1="15" y1="11" x2="21" y2="11" stroke="#0066FF" stroke-width="1.2"/>
-        <line x1="25" y1="15" x2="25" y2="21" stroke="#00D4FF" stroke-width="1.2"/>
-        <line x1="11" y1="15" x2="11" y2="21" stroke="#00D4FF" stroke-width="1.2"/>
-        <line x1="15" y1="25" x2="21" y2="25" stroke="#0066FF" stroke-width="1.2"/>
-      </svg>
-      Electro<span class="nav-brand-accent">Trical</span>
+      <img src="Logo/ElectroTrical_Logo_2.png" alt="ElectroTrical - PCB Layout Services">
     </a>
     <div class="nav-links" id="navLinks">
       <a class="nav-link" href="index.html">Home</a>
@@ -1413,7 +1406,9 @@ function initState() {
         firstName: 'Admin',
         lastName: 'ElectroTrical',
         company: 'ElectroTrical',
-        role: 'admin'
+        role: 'admin',
+        status: 'active',
+        registeredAt: '2026-01-15T08:00:00'
       },
       {
         id: 'cust-001',
@@ -1422,7 +1417,9 @@ function initState() {
         firstName: 'Ada',
         lastName: 'Lovelace',
         company: 'Nexon Robotics',
-        role: 'customer'
+        role: 'customer',
+        status: 'active',
+        registeredAt: '2026-03-01T14:30:00'
       }
     ],
     projects: [
@@ -1624,7 +1621,9 @@ function handleRegister(e) {
     firstName: fname,
     lastName: lname,
     company: document.getElementById('reg-company').value || '',
-    role: 'customer'
+    role: 'customer',
+    status: 'active',
+    registeredAt: new Date().toISOString()
   };
   if (state.users.find(u => u.email === user.email)) {
     showToast('An account with this email already exists.', 'warning');
@@ -2567,23 +2566,43 @@ function switchMainTab(tab) {
 // REGISTERED USERS (Admin Only)
 // ══════════════════════════════════════════════════════════
 
+let userSearchQuery = '';
+
 function renderUsers() {
   const state = getState();
   const currentUser = state.users.find(u => u.id === state.currentUser);
   if (!currentUser || currentUser.role !== 'admin') return;
 
   const container = document.getElementById('usersSection');
-  const users = state.users || [];
-  const customers = users.filter(u => u.role === 'customer');
-  const admins = users.filter(u => u.role === 'admin');
+  const allUsers = state.users || [];
+  const customers = allUsers.filter(u => u.role === 'customer');
+  const admins = allUsers.filter(u => u.role === 'admin');
+  const activeCount = allUsers.filter(u => u.status !== 'suspended').length;
+
+  // Filter by search
+  let users = allUsers;
+  if (userSearchQuery) {
+    const q = userSearchQuery.toLowerCase();
+    users = allUsers.filter(u =>
+      (u.firstName + ' ' + u.lastName).toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.company || '').toLowerCase().includes(q)
+    );
+  }
+
+  // Count quotes per user
+  const quotes = state.quoteRequests || [];
+  function getUserQuoteCount(userId) {
+    return quotes.filter(q => q.customerId === userId).length;
+  }
 
   let html = '';
 
   // Stats overview
   html += `
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:24px;">
     <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
-      <div style="font-size:32px;font-weight:700;color:var(--white);margin-bottom:4px;">${users.length}</div>
+      <div style="font-size:32px;font-weight:700;color:var(--white);margin-bottom:4px;">${allUsers.length}</div>
       <div style="font-size:13px;color:var(--text-secondary);">Total Users</div>
     </div>
     <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
@@ -2591,62 +2610,136 @@ function renderUsers() {
       <div style="font-size:13px;color:var(--text-secondary);">Customers</div>
     </div>
     <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:var(--accent);margin-bottom:4px;">${activeCount}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Active</div>
+    </div>
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
       <div style="font-size:32px;font-weight:700;color:var(--primary-light);margin-bottom:4px;">${admins.length}</div>
       <div style="font-size:13px;color:var(--text-secondary);">Admins</div>
     </div>
   </div>`;
 
-  // Users table
+  // Search bar
   html += `
   <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
-    <div style="padding:1.5rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+    <div style="padding:1.25rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
       <div style="font-size:16px;font-weight:600;color:var(--white);">Registered Users</div>
-      <div style="font-size:13px;color:var(--text-muted);">${users.length} total</div>
-    </div>
+      <div style="position:relative;flex:1;max-width:320px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search by name, email, or company..." value="${sanitizeInput(userSearchQuery)}" oninput="userSearchQuery=this.value;renderUsers();" style="width:100%;background:var(--dark-700);border:1px solid var(--border);color:var(--text);font-family:var(--font-sans);font-size:13px;padding:9px 14px 9px 36px;border-radius:var(--radius-sm);outline:none;">
+      </div>
+    </div>`;
+
+  if (users.length === 0) {
+    html += `<div style="padding:3rem;text-align:center;font-size:14px;color:var(--text-muted);">No users found matching "${sanitizeInput(userSearchQuery)}"</div>`;
+  } else {
+    html += `
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:14px;">
         <thead>
           <tr style="border-bottom:1px solid var(--border);">
             <th style="text-align:left;padding:12px 1.75rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">User</th>
             <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Email</th>
-            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Company</th>
-            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Role</th>
-            <th style="text-align:left;padding:12px 1.75rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">ID</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Registered</th>
+            <th style="text-align:center;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Quotes</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Status</th>
+            <th style="text-align:center;padding:12px 1.75rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Actions</th>
           </tr>
         </thead>
         <tbody>`;
 
-  users.forEach(u => {
-    const initials = ((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '');
-    const isAdmin = u.role === 'admin';
-    const roleBadge = isAdmin
-      ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,0.12);color:var(--primary-light);border:1px solid rgba(0,102,255,0.2);">Admin</span>'
-      : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);">Customer</span>';
+    users.forEach(u => {
+      const initials = ((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '');
+      const uIsAdmin = u.role === 'admin';
+      const isSuspended = u.status === 'suspended';
+      const quoteCount = getUserQuoteCount(u.id);
+      const regDate = u.registeredAt
+        ? new Date(u.registeredAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '—';
 
-    html += `
-          <tr style="border-bottom:1px solid var(--border);transition:var(--transition);" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+      const roleBadge = uIsAdmin
+        ? '<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(0,102,255,0.12);color:var(--primary-light);">Admin</span>'
+        : '';
+
+      const statusBadge = isSuspended
+        ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(255,77,77,0.1);color:var(--danger);border:1px solid rgba(255,77,77,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--danger);"></span>Suspended</span>'
+        : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>Active</span>';
+
+      const avatarBg = isSuspended ? 'rgba(255,77,77,0.12)' : (uIsAdmin ? 'rgba(0,102,255,0.15)' : 'rgba(0,229,160,0.12)');
+      const avatarBorder = isSuspended ? 'rgba(255,77,77,0.25)' : (uIsAdmin ? 'rgba(0,102,255,0.3)' : 'rgba(0,229,160,0.25)');
+      const avatarColor = isSuspended ? 'var(--danger)' : (uIsAdmin ? 'var(--primary-light)' : 'var(--accent)');
+
+      // Action buttons (don't show delete/suspend for admin accounts)
+      let actions = '';
+      if (!uIsAdmin) {
+        const toggleLabel = isSuspended ? 'Activate' : 'Suspend';
+        const toggleColor = isSuspended ? 'var(--accent)' : 'var(--warning)';
+        actions = `
+          <button onclick="toggleUserStatus('${u.id}')" title="${toggleLabel}" style="background:none;border:1px solid var(--border);color:${toggleColor};width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);margin-right:4px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''">
+            ${isSuspended
+              ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
+              : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'
+            }
+          </button>
+          <button onclick="deleteUser('${u.id}')" title="Delete" style="background:none;border:1px solid var(--border);color:var(--danger);width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);" onmouseover="this.style.background='rgba(255,77,77,0.08)'" onmouseout="this.style.background=''">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>`;
+      } else {
+        actions = '<span style="font-size:11px;color:var(--text-muted);">—</span>';
+      }
+
+      html += `
+          <tr style="border-bottom:1px solid var(--border);transition:var(--transition);${isSuspended ? 'opacity:0.6;' : ''}" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
             <td style="padding:14px 1.75rem;">
               <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:36px;height:36px;border-radius:50%;background:${isAdmin ? 'rgba(0,102,255,0.15)' : 'rgba(0,229,160,0.12)'};border:2px solid ${isAdmin ? 'rgba(0,102,255,0.3)' : 'rgba(0,229,160,0.25)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${isAdmin ? 'var(--primary-light)' : 'var(--accent)'};">${sanitizeInput(initials.toUpperCase())}</div>
+                <div style="width:36px;height:36px;border-radius:50%;background:${avatarBg};border:2px solid ${avatarBorder};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${avatarColor};flex-shrink:0;">${sanitizeInput(initials.toUpperCase())}</div>
                 <div>
-                  <div style="font-weight:500;color:var(--white);">${sanitizeInput(u.firstName || '')} ${sanitizeInput(u.lastName || '')}</div>
+                  <div style="font-weight:500;color:var(--white);display:flex;align-items:center;gap:6px;">${sanitizeInput(u.firstName || '')} ${sanitizeInput(u.lastName || '')} ${roleBadge}</div>
+                  <div style="font-size:12px;color:var(--text-muted);">${sanitizeInput(u.company || '')}</div>
                 </div>
               </div>
             </td>
-            <td style="padding:14px 1rem;color:var(--text-secondary);">${sanitizeInput(u.email || '')}</td>
-            <td style="padding:14px 1rem;color:var(--text-secondary);">${sanitizeInput(u.company || '—')}</td>
-            <td style="padding:14px 1rem;">${roleBadge}</td>
-            <td style="padding:14px 1.75rem;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">${sanitizeInput(u.id || '')}</td>
+            <td style="padding:14px 1rem;color:var(--text-secondary);font-size:13px;">${sanitizeInput(u.email || '')}</td>
+            <td style="padding:14px 1rem;color:var(--text-muted);font-size:13px;">${regDate}</td>
+            <td style="padding:14px 1rem;text-align:center;font-family:var(--font-mono);font-size:13px;color:${quoteCount > 0 ? 'var(--cyan)' : 'var(--text-muted)'};">${quoteCount}</td>
+            <td style="padding:14px 1rem;">${statusBadge}</td>
+            <td style="padding:14px 1.75rem;text-align:center;">${actions}</td>
           </tr>`;
-  });
+    });
 
-  html += `
+    html += `
         </tbody>
       </table>
-    </div>
-  </div>`;
+    </div>`;
+  }
 
+  html += `</div>`;
   container.innerHTML = html;
+}
+
+function toggleUserStatus(userId) {
+  const state = getState();
+  const user = state.users.find(u => u.id === userId);
+  if (!user || user.role === 'admin') return;
+
+  const newStatus = user.status === 'suspended' ? 'active' : 'suspended';
+  user.status = newStatus;
+  saveState(state);
+  showToast(sanitizeInput(user.firstName) + ' ' + sanitizeInput(user.lastName) + ' is now ' + newStatus, newStatus === 'active' ? 'success' : 'warning');
+  renderUsers();
+}
+
+function deleteUser(userId) {
+  const state = getState();
+  const user = state.users.find(u => u.id === userId);
+  if (!user || user.role === 'admin') return;
+
+  if (!confirm('Delete ' + user.firstName + ' ' + user.lastName + ' (' + user.email + ')? This cannot be undone.')) return;
+
+  state.users = state.users.filter(u => u.id !== userId);
+  saveState(state);
+  showToast('User deleted successfully', 'info');
+  renderUsers();
 }
 
 function renderQuoteRequests() {
