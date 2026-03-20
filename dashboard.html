@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://www.google.com; img-src 'self' data: blob:; connect-src 'self' https://api.emailjs.com https://qkydthrgsliknvmpbjfn.supabase.co wss://qkydthrgsliknvmpbjfn.supabase.co https://cdn.jsdelivr.net;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://www.google.com; img-src 'self' data:; connect-src 'self' https://api.emailjs.com;">
 <title>ElectroTrical — Customer Dashboard</title>
 <meta name="description" content="Manage your PCB design projects, upload schematics, and track design progress with ElectroTrical.">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -1339,20 +1339,11 @@ a { color: inherit; text-decoration: none; }
 </div>
 
 <!-- ══════════════════════ JAVASCRIPT ══════════════════════ -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════════════════════════
-// SUPABASE INITIALIZATION
+// STATE MANAGEMENT (localStorage)
 // ══════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://qkydthrgsliknvmpbjfn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFreWR0aHJnc2xpa252bXBiamZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODA0OTAsImV4cCI6MjA4OTI1NjQ5MH0.RHD0Dv2bi0VeI4eWMhEYpOVUldQ9U_-jUwZDglwC0eQ';
-const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ══════════════════════════════════════════════════════════
-// STATE & GLOBALS
-// ══════════════════════════════════════════════════════════
-let _currentUser = null;
-let selectedFiles = [];
+const STORAGE_KEY = 'electrotrical_data';
 
 // ═══ SECURITY: Input Sanitization ═══
 function sanitizeInput(str) {
@@ -1399,8 +1390,169 @@ function updatePasswordStrength(pass) {
   }
 }
 
+function getState() {
+  const data = localStorage.getItem(STORAGE_KEY);
+  if (!data) return initState();
+  const parsed = JSON.parse(data);
+  // Ensure all required keys exist (handles old localStorage missing new features)
+  if (!parsed.users) parsed.users = [];
+  if (!parsed.projects) parsed.projects = [];
+  if (!parsed.quoteRequests) parsed.quoteRequests = [];
+  if (!parsed.notifications) parsed.notifications = [];
+  return parsed;
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function initState() {
+  const state = {
+    users: [
+      {
+        id: 'admin-001',
+        email: 'admin@electrotrical.com',
+        password: 'admin123',
+        firstName: 'Admin',
+        lastName: 'ElectroTrical',
+        company: 'ElectroTrical',
+        role: 'admin',
+        status: 'active',
+        registeredAt: '2026-01-15T08:00:00'
+      },
+      {
+        id: 'cust-001',
+        email: 'demo@customer.com',
+        password: 'demo1234',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        company: 'Nexon Robotics',
+        role: 'customer',
+        status: 'active',
+        registeredAt: '2026-03-01T14:30:00'
+      }
+    ],
+    projects: [
+      {
+        id: 'PRJ-2026-001',
+        name: 'IoT Sensor Board v2',
+        customerId: 'cust-001',
+        layers: 4,
+        size: 'Medium',
+        description: '4-layer IoT board with BLE module, temp sensor array, and USB-C connector. Need impedance control on RF traces.',
+        status: 'review',
+        createdAt: '2026-03-10T09:30:00',
+        files: [
+          { name: 'sensor_board_v2.kicad_sch', size: '2.4 MB', type: 'sch', uploadedAt: '2026-03-10T09:30:00', uploadedBy: 'cust-001' },
+          { name: 'BOM_sensor_v2.csv', size: '148 KB', type: 'csv', uploadedAt: '2026-03-10T09:32:00', uploadedBy: 'cust-001' }
+        ],
+        milestones: [
+          {
+            id: 'ms-1',
+            name: 'Component Placement',
+            status: 'awaiting',
+            description: 'All components placed according to schematic grouping. BLE antenna placed with proper ground clearance. USB-C connector on board edge.',
+            files: [
+              { name: 'placement_review_v1.pdf', size: '3.1 MB', type: 'pdf', uploadedAt: '2026-03-12T14:20:00', uploadedBy: 'admin-001' },
+              { name: 'placement_3d_render.png', size: '1.8 MB', type: 'img', uploadedAt: '2026-03-12T14:22:00', uploadedBy: 'admin-001' }
+            ],
+            comments: [],
+            updatedAt: '2026-03-12T14:22:00'
+          },
+          {
+            id: 'ms-2',
+            name: 'Nets Routing',
+            status: 'pending',
+            description: 'Trace routing for all nets with controlled impedance on RF and USB differential pairs.',
+            files: [],
+            comments: [],
+            updatedAt: null
+          },
+          {
+            id: 'ms-3',
+            name: 'Final Gerbers',
+            status: 'pending',
+            description: 'DRC-clean Gerber files, fabrication notes, drill files, and 3D render for final approval.',
+            files: [],
+            comments: [],
+            updatedAt: null
+          }
+        ],
+        activity: [
+          { text: '<strong>Admin</strong> uploaded placement review files', time: '2026-03-12 14:22', type: 'blue' },
+          { text: 'Milestone <strong>Component Placement</strong> awaiting your review', time: '2026-03-12 14:20', type: 'yellow' },
+          { text: '<strong>Admin</strong> started working on component placement', time: '2026-03-11 08:15', type: 'blue' },
+          { text: '<strong>Ada</strong> uploaded schematic files', time: '2026-03-10 09:32', type: 'green' },
+          { text: 'Project <strong>IoT Sensor Board v2</strong> created', time: '2026-03-10 09:30', type: 'green' }
+        ]
+      }
+    ],
+    quoteRequests: [
+      {
+        id: 'QR-2026-001',
+        customerId: 'cust-001',
+        customerName: 'Ada Lovelace',
+        customerEmail: 'demo@customer.com',
+        specs: {
+          layers: '4',
+          layersLabel: '4 layers',
+          complexity: '1.6',
+          complexityLabel: 'Standard — 50–200 components',
+          size: '1.4',
+          sizeLabel: 'Medium',
+          special: '0',
+          specialLabel: 'None',
+          turnaround: 'express',
+          turnaroundLabel: 'Express (2-3 days)',
+          turnMult: 1.5,
+          base: 256
+        },
+        estimatedTotal: 538,
+        adminPrice: null,
+        adminNotes: '',
+        status: 'pending',
+        createdAt: '2026-03-14T10:30:00',
+        reviewedAt: null
+      }
+    ],
+    currentUser: null
+  };
+  saveState(state);
+
+  // Seed demo notifications
+  const seedNotifs = [
+    {
+      id: 'n-seed-1',
+      title: 'Component Placement — Ready for Review',
+      message: '<strong>Component Placement</strong> is ready for your review on <strong>IoT Sensor Board v2</strong>',
+      type: 'yellow',
+      emailTemplate: null,
+      read: false,
+      time: 'Mar 12, 02:22 PM'
+    },
+    {
+      id: 'n-seed-2',
+      title: 'Project Created',
+      message: 'Your project <strong>IoT Sensor Board v2</strong> has been created successfully.',
+      type: 'green',
+      emailTemplate: null,
+      read: true,
+      time: 'Mar 10, 09:30 AM'
+    }
+  ];
+  // Only seed if no notifications exist
+  if (!localStorage.getItem('electrotrical_notifications')) {
+    localStorage.setItem('electrotrical_notifications', JSON.stringify(seedNotifs));
+  }
+
+  return state;
+}
+
+let state = getState();
+let selectedFiles = [];
+
 // ══════════════════════════════════════════════════════════
-// AUTH FUNCTIONS (Supabase Auth)
+// AUTH FUNCTIONS
 // ══════════════════════════════════════════════════════════
 function switchAuthTab(tab) {
   document.querySelectorAll('.auth-tab').forEach((t,i) => {
@@ -1410,65 +1562,53 @@ function switchAuthTab(tab) {
   document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
 }
 
-async function handleLogin(e) {
+function handleLogin(e) {
   e.preventDefault();
+  // Rate limit
   if (!checkRateLimit('login')) {
     showToast('Too many attempts. Please wait a moment.', 'warning');
     return;
   }
+  // Honeypot check
   const hp = document.querySelector('#loginForm input[name="website_url"]');
   if (hp && hp.value) return;
-  
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-pass').value;
-  
-  const loginBtn = e.target.querySelector('button[type="submit"]');
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'Signing in...';
-  
-  try {
-    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      showToast(error.message || 'Invalid email or password', 'warning');
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'Sign In';
-      return;
-    }
-    await loginAs(data.user);
-  } catch (err) {
-    showToast('Login error: ' + (err.message || 'Unknown error'), 'warning');
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'Sign In';
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  const user = state.users.find(u => u.email === email && u.password === pass);
+  if (!user) {
+    showToast('Invalid email or password. Try the demo accounts below.', 'warning');
+    return;
   }
+  loginAs(user);
 }
 
-async function handleRegister(e) {
+function handleRegister(e) {
   e.preventDefault();
+  // Rate limit
   if (!checkRateLimit('register')) {
     showToast('Too many attempts. Please wait a moment.', 'warning');
     return;
   }
+  // Honeypot check
   const hp = document.querySelector('#registerForm input[name="website_url"]');
   if (hp && hp.value) return;
-  
+  // Name validation (letters, spaces, hyphens only)
   const nameRegex = /^[A-Za-z\s\-']+$/;
   const fname = document.getElementById('reg-fname').value.trim();
   const lname = document.getElementById('reg-lname').value.trim();
-  
   if (!fname || !nameRegex.test(fname)) {
     showToast('First name must contain only letters', 'warning');
     document.getElementById('reg-fname').style.borderColor = 'var(--danger)';
     return;
   }
   document.getElementById('reg-fname').style.borderColor = '';
-  
   if (!lname || !nameRegex.test(lname)) {
     showToast('Last name must contain only letters', 'warning');
     document.getElementById('reg-lname').style.borderColor = 'var(--danger)';
     return;
   }
   document.getElementById('reg-lname').style.borderColor = '';
-  
+  // Email validation
   const emailVal = document.getElementById('reg-email').value.trim();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   if (!emailVal || !emailRegex.test(emailVal)) {
@@ -1477,100 +1617,70 @@ async function handleRegister(e) {
     return;
   }
   document.getElementById('reg-email').style.borderColor = '';
-  
+  // Password match
   const confirmPass = document.getElementById('reg-confirm-pass');
-  const password = document.getElementById('reg-pass').value;
-  if (confirmPass && confirmPass.value !== password) {
+  if (confirmPass && confirmPass.value !== document.getElementById('reg-pass').value) {
     showToast('Passwords do not match', 'warning');
     confirmPass.style.borderColor = 'var(--danger)';
     return;
   }
-  
-  const company = document.getElementById('reg-company').value || '';
-  
-  const regBtn = e.target.querySelector('button[type="submit"]');
-  regBtn.disabled = true;
-  regBtn.textContent = 'Creating account...';
-  
-  try {
-    const { data, error } = await _supabase.auth.signUp({
-      email: emailVal,
-      password: password,
-      options: {
-        data: {
-          first_name: fname,
-          last_name: lname,
-          company: company,
-          role: 'customer'
-        }
-      }
-    });
-    
-    if (error) {
-      showToast(error.message || 'Registration failed', 'warning');
-      regBtn.disabled = false;
-      regBtn.textContent = 'Create Account';
-      return;
-    }
-    
-    // Create profile in profiles table
-    const { error: profileError } = await _supabase
-      .from('profiles')
-      .insert({
-        id: data.user.id,
-        email: emailVal,
-        first_name: fname,
-        last_name: lname,
-        company: company,
-        role: 'customer'
-      });
-    
-    if (profileError) {
-      console.error('Profile creation error:', profileError);
-    }
-    
-    loginAs(data.user);
-    showToast('Account created successfully! Welcome to ElectroTrical.', 'success');
-  } catch (err) {
-    showToast('Registration error: ' + (err.message || 'Unknown error'), 'warning');
-    regBtn.disabled = false;
-    regBtn.textContent = 'Create Account';
+  const user = {
+    id: 'cust-' + Date.now(),
+    email: emailVal,
+    password: document.getElementById('reg-pass').value,
+    firstName: fname,
+    lastName: lname,
+    company: document.getElementById('reg-company').value || '',
+    role: 'customer',
+    status: 'active',
+    registeredAt: new Date().toISOString()
+  };
+  if (state.users.find(u => u.email === user.email)) {
+    showToast('An account with this email already exists.', 'warning');
+    return;
   }
+  state.users.push(user);
+  saveState(state);
+  loginAs(user);
+  showToast('Account created successfully! Welcome to ElectroTrical.', 'success');
 }
 
 function demoLogin(role) {
-  // Demo login is disabled with Supabase Auth
-  showToast('Demo accounts are disabled. Please create your own account.', 'warning');
+  const user = role === 'admin'
+    ? state.users.find(u => u.role === 'admin')
+    : state.users.find(u => u.role === 'customer');
+  if (user) loginAs(user);
 }
 
-async function loginAs(authUser) {
-  // Role comes from JWT app_metadata — no database query needed
-  _currentUser = authUser;
-
+function loginAs(user) {
+  state.currentUser = user.id;
+  saveState(state);
   showView('dashboard');
-  await updateNav();
+  updateNav();
 
+  // Check for pending quote request after login/registration
   if (localStorage.getItem('electrotrical_quote_request')) {
-    await handleQuoteSubmission();
+    handleQuoteSubmission();
   } else {
-    await renderDashboard();
+    renderDashboard();
   }
 }
 
-async function logout() {
-  await _supabase.auth.signOut();
-  _currentUser = null;
+function logout() {
+  state.currentUser = null;
+  saveState(state);
   showView('auth');
   updateNav();
 }
 
 function getCurrentUser() {
-  return _currentUser;
+  if (!state.currentUser) return null;
+  return state.users.find(u => u.id === state.currentUser);
 }
 
 function isAdmin() {
-  // Role stored in JWT app_metadata — set via Supabase SQL
-  return _currentUser?.app_metadata?.role === 'admin';
+  const user = getCurrentUser();
+  return user && user.role === 'admin';
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1581,25 +1691,14 @@ function showView(name) {
   document.getElementById('view-' + name).classList.add('active');
 }
 
-async function updateNav() {
+function updateNav() {
   const user = getCurrentUser();
   const navUser = document.getElementById('navUser');
   if (user) {
     navUser.style.display = 'flex';
-    
-    // Fetch user profile for name display
-    const { data } = await _supabase
-      .from('profiles')
-      .select('first_name, last_name')
-      .eq('id', user.id)
-      .single();
-    
-    if (data) {
-      document.getElementById('navAvatar').textContent = data.first_name[0] + data.last_name[0];
-      document.getElementById('navUserName').textContent = data.first_name;
-    }
-    
-    await renderNotifications();
+    document.getElementById('navAvatar').textContent = user.firstName[0] + user.lastName[0];
+    document.getElementById('navUserName').textContent = user.firstName;
+    renderNotifications();
   } else {
     navUser.style.display = 'none';
   }
@@ -1608,7 +1707,7 @@ async function updateNav() {
 // ══════════════════════════════════════════════════════════
 // DASHBOARD RENDERING
 // ══════════════════════════════════════════════════════════
-async function renderDashboard() {
+function renderDashboard() {
   const user = getCurrentUser();
   if (!user) return;
 
@@ -1619,221 +1718,339 @@ async function renderDashboard() {
     ? 'Manage all customer projects, upload designs, and track milestones'
     : 'Manage your PCB design orders and track progress';
   document.getElementById('newQuoteBtn').style.display = admin ? 'none' : 'inline-flex';
-  
+  // Show Users tab only for admin
   const usersTab = document.getElementById('usersTab');
   if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
 
-  await updateQuoteBadge();
+  // Update quotes badge count
+  updateQuoteBadge();
 
   document.getElementById('projectDetail').style.display = 'none';
   document.getElementById('projectsList').style.display = 'block';
 
-  try {
-    let { data: projects, error } = admin
-      ? await _supabase.from('projects').select('*').order('created_at', { ascending: false })
-      : await _supabase.from('projects').select('*').eq('customer_id', user.id).order('created_at', { ascending: false });
+  const projects = admin
+    ? state.projects
+    : state.projects.filter(p => p.customerId === user.id);
 
-    if (error) {
-      console.error('Error fetching projects:', error);
-      projects = [];
-    }
+  const container = document.getElementById('projectsList');
 
-    const container = document.getElementById('projectsList');
-
-    if (!projects || projects.length === 0) {
-      container.innerHTML = `
-        <div class="projects-empty">
-          <div class="projects-empty-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          </div>
-          <div class="projects-empty-title">No projects yet</div>
-          <div class="projects-empty-desc">${admin
-            ? 'Projects will appear here once customers submit quotes and complete payment.'
-            : 'Submit a quote request first. Once approved and paid, your project will appear here.'}</div>
-          ${!admin ? '<button class="btn btn-primary btn-sm" onclick="goToQuoteCalculator()">Submit a Quote Request</button>' : ''}
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = projects.map(p => {
-      const statusClass = p.status === 'completed' ? 'status-completed' : p.status === 'review' ? 'status-review' : 'status-active';
-      const statusText = p.status === 'completed' ? 'Completed' : p.status === 'review' ? 'Awaiting Review' : 'In Progress';
-      const completedMs = (p.milestones || []).filter(m => m.status === 'approved').length;
-
-      return `
-        <div class="project-card" onclick="openProject('${p.id}')">
-          <div class="project-card-header">
-            <div>
-              <div class="project-card-title">${p.name}</div>
-              <div class="project-card-id">${p.id}</div>
-            </div>
-            <div class="project-status ${statusClass}">
-              <span class="status-dot"></span> ${statusText}
-            </div>
-          </div>
-          <div class="milestone-tracker">
-            ${(p.milestones || []).map((m, i) => {
-              let stepClass = m.status === 'approved' ? 'completed' : m.status === 'awaiting' ? 'review' : m.status === 'in-progress' ? 'active' : 'pending';
-              let icon = m.status === 'approved' ? '&#10003;' : (i+1);
-              return `
-                <div class="milestone-step ${stepClass}">
-                  <div class="milestone-dot">${icon}</div>
-                  <div class="milestone-label">${m.name}</div>
-                </div>`;
-            }).join('')}
-          </div>
-        </div>`;
-    }).join('');
-  } catch (err) {
-    console.error('Dashboard render error:', err);
-    showToast('Error loading projects', 'warning');
+  if (projects.length === 0) {
+    container.innerHTML = `
+      <div class="projects-empty">
+        <div class="projects-empty-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div class="projects-empty-title">No projects yet</div>
+        <div class="projects-empty-desc">${admin
+          ? 'Projects will appear here once customers submit quotes and complete payment.'
+          : 'Submit a quote request first. Once approved and paid, your project will appear here.'}</div>
+        ${!admin ? '<button class="btn btn-primary btn-sm" onclick="goToQuoteCalculator()">Submit a Quote Request</button>' : ''}
+      </div>`;
+    return;
   }
+
+  container.innerHTML = projects.map(p => {
+    const statusClass = p.status === 'completed' ? 'status-completed' : p.status === 'review' ? 'status-review' : 'status-active';
+    const statusText = p.status === 'completed' ? 'Completed' : p.status === 'review' ? 'Awaiting Review' : 'In Progress';
+    const completedMs = p.milestones.filter(m => m.status === 'approved').length;
+    const customer = admin ? state.users.find(u => u.id === p.customerId) : null;
+
+    return `
+      <div class="project-card" onclick="openProject('${p.id}')">
+        <div class="project-card-header">
+          <div>
+            <div class="project-card-title">${p.name}</div>
+            <div class="project-card-id">${p.id}${customer ? ' &middot; ' + customer.firstName + ' ' + customer.lastName : ''}</div>
+          </div>
+          <div class="project-status ${statusClass}">
+            <span class="status-dot"></span> ${statusText}
+          </div>
+        </div>
+        <div class="milestone-tracker">
+          ${p.milestones.map((m, i) => {
+            let stepClass = m.status === 'approved' ? 'completed' : m.status === 'awaiting' ? 'review' : m.status === 'in-progress' ? 'active' : 'pending';
+            let icon = m.status === 'approved' ? '&#10003;' : (i+1);
+            return `
+              <div class="milestone-step ${stepClass}">
+                <div class="milestone-dot">${icon}</div>
+                <div class="milestone-label">${m.name}</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════════
 // PROJECT DETAIL VIEW
 // ══════════════════════════════════════════════════════════
-async function openProject(projectId) {
-  try {
-    const { data: project, error } = await _supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .single();
+function openProject(projectId) {
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) return;
 
-    if (error || !project) {
-      showToast('Project not found', 'warning');
-      return;
-    }
+  document.getElementById('projectsList').style.display = 'none';
+  const detail = document.getElementById('projectDetail');
+  detail.style.display = 'block';
 
-    document.getElementById('projectsList').style.display = 'none';
-    const detail = document.getElementById('projectDetail');
-    detail.style.display = 'block';
+  const admin = isAdmin();
+  const customer = state.users.find(u => u.id === project.customerId);
 
-    const admin = isAdmin();
-    const { data: customerProfile } = await _supabase
-      .from('profiles')
-      .select('first_name, last_name')
-      .eq('id', project.customer_id)
-      .single();
+  detail.innerHTML = `
+    <div style="margin-bottom:1.5rem;">
+      <button class="btn btn-secondary btn-xs" onclick="renderDashboard()" style="margin-bottom:1rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Projects
+      </button>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h2 style="font-size:24px;font-weight:700;color:var(--white);margin-bottom:4px;">${project.name}</h2>
+          <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);">${project.id}</span>
+        </div>
+        <div class="project-status ${project.status === 'completed' ? 'status-completed' : project.status === 'review' ? 'status-review' : 'status-active'}">
+          <span class="status-dot"></span>
+          ${project.status === 'completed' ? 'Completed' : project.status === 'review' ? 'Awaiting Review' : 'In Progress'}
+        </div>
+      </div>
+    </div>
 
-    detail.innerHTML = `
-      <div style="margin-bottom:1.5rem;">
-        <button class="btn btn-secondary btn-xs" onclick="renderDashboard()" style="margin-bottom:1rem;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-          Back to Projects
-        </button>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-          <div>
-            <h2 style="font-size:24px;font-weight:700;color:var(--white);margin-bottom:4px;">${project.name}</h2>
-            <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);">${project.id}</span>
+    <!-- Milestone Tracker Bar -->
+    <div class="detail-card" style="margin-bottom:20px;">
+      <div class="milestone-tracker" style="margin-bottom:0;">
+        ${project.milestones.map((m, i) => {
+          let stepClass = m.status === 'approved' ? 'completed' : m.status === 'awaiting' ? 'review' : m.status === 'in-progress' ? 'active' : 'pending';
+          let icon = m.status === 'approved' ? '&#10003;' : m.status === 'awaiting' ? '!' : (i+1);
+          let sub = m.status === 'approved' ? 'Approved' : m.status === 'awaiting' ? 'Needs Review' : m.status === 'in-progress' ? 'In Progress' : 'Pending';
+          return `
+            <div class="milestone-step ${stepClass}">
+              <div class="milestone-dot">${icon}</div>
+              <div class="milestone-label">${m.name}</div>
+              <div class="milestone-sublabel">${sub}</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="project-detail-grid">
+      <div>
+        <!-- Milestone Panels -->
+        ${project.milestones.map((m, i) => renderMilestonePanel(project.id, m, i, admin)).join('')}
+
+        <!-- Customer Schematic Files -->
+        <div class="detail-card">
+          <div class="detail-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Uploaded Schematic Files
           </div>
-          <div class="project-status ${project.status === 'completed' ? 'status-completed' : project.status === 'review' ? 'status-review' : 'status-active'}">
-            <span class="status-dot"></span>
-            ${project.status === 'completed' ? 'Completed' : project.status === 'review' ? 'Awaiting Review' : 'In Progress'}
-          </div>
+          ${project.files.length > 0
+            ? project.files.map(f => renderFileItem(f)).join('')
+            : '<p style="font-size:13px;color:var(--text-muted);">No files uploaded yet.</p>'}
+          ${!admin ? `
+            <div class="upload-zone" style="margin-top:12px;">
+              <div class="upload-zone-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <div class="upload-zone-title" style="font-size:13px;">Upload additional files</div>
+              <input type="file" multiple onchange="uploadProjectFile(event, '${project.id}')">
+            </div>` : ''}
         </div>
       </div>
 
-      <!-- Milestone Tracker Bar -->
-      <div class="detail-card" style="margin-bottom:20px;">
-        <div class="milestone-tracker" style="margin-bottom:0;">
-          ${(project.milestones || []).map((m, i) => {
-            let stepClass = m.status === 'approved' ? 'completed' : m.status === 'awaiting' ? 'review' : m.status === 'in-progress' ? 'active' : 'pending';
-            let icon = m.status === 'approved' ? '&#10003;' : m.status === 'awaiting' ? '!' : (i+1);
-            let sub = m.status === 'approved' ? 'Approved' : m.status === 'awaiting' ? 'Needs Review' : m.status === 'in-progress' ? 'In Progress' : 'Pending';
-            return `
-              <div class="milestone-step ${stepClass}">
-                <div class="milestone-dot">${icon}</div>
-                <div class="milestone-label">${m.name}</div>
-                <div class="milestone-sublabel">${sub}</div>
-              </div>`;
-          }).join('')}
+      <!-- Sidebar -->
+      <div>
+        <div class="detail-card">
+          <div class="detail-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Project Details
+          </div>
+          ${customer ? `<div class="project-info-row"><span class="project-info-label">Client</span><span class="project-info-value">${customer.firstName} ${customer.lastName}</span></div>` : ''}
+          ${customer && customer.company ? `<div class="project-info-row"><span class="project-info-label">Company</span><span class="project-info-value">${customer.company}</span></div>` : ''}
+          <div class="project-info-row"><span class="project-info-label">Layers</span><span class="project-info-value">${project.layers} layers</span></div>
+          <div class="project-info-row"><span class="project-info-label">Board Size</span><span class="project-info-value">${project.size}</span></div>
+          <div class="project-info-row"><span class="project-info-label">Created</span><span class="project-info-value">${formatDate(project.createdAt)}</span></div>
+          <div class="project-info-row"><span class="project-info-label">Files</span><span class="project-info-value">${project.files.length} uploaded</span></div>
+          ${project.description ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--text-secondary);line-height:1.7;">${project.description}</div>` : ''}
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Activity Log
+          </div>
+          ${project.activity.map(a => `
+            <div class="activity-item">
+              <div class="activity-dot activity-dot-${a.type}"></div>
+              <div>
+                <div class="activity-text">${a.text}</div>
+                <div class="activity-time">${a.time}</div>
+              </div>
+            </div>
+          `).join('')}
         </div>
       </div>
-
-      <div class="project-detail-grid">
-        <div>
-          <!-- Milestone Panels -->
-          ${(project.milestones || []).map((m, i) => renderMilestonePanel(project.id, m, i, admin)).join('')}
-
-          <!-- Customer Schematic Files -->
-          <div class="detail-card">
-            <div class="detail-card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Uploaded Schematic Files
-            </div>
-            ${(project.files || []).length > 0
-              ? (project.files || []).map(f => renderFileItem(f)).join('')
-              : '<p style="font-size:13px;color:var(--text-muted);">No files uploaded yet.</p>'}
-            ${!admin ? `
-              <div class="upload-zone" style="margin-top:12px;">
-                <div class="upload-zone-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                </div>
-                <div class="upload-zone-title" style="font-size:13px;">Upload additional files</div>
-                <input type="file" multiple onchange="uploadProjectFile(event, '${project.id}')">
-              </div>` : ''}
-          </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div>
-          <div class="detail-card">
-            <div class="detail-card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Project Details
-            </div>
-            ${customerProfile ? `<div class="project-info-row"><span class="project-info-label">Client</span><span class="project-info-value">${customerProfile.first_name} ${customerProfile.last_name}</span></div>` : ''}
-            <div class="project-info-row"><span class="project-info-label">Layers</span><span class="project-info-value">${project.layers || 'N/A'}</span></div>
-            <div class="project-info-row"><span class="project-info-label">Size</span><span class="project-info-value">${project.size || 'N/A'}</span></div>
-            <div class="project-info-row"><span class="project-info-label">Created</span><span class="project-info-value">${formatDate(project.created_at)}</span></div>
-          </div>
-        </div>
-      </div>`;
-  } catch (err) {
-    console.error('Error opening project:', err);
-    showToast('Error loading project details', 'warning');
-  }
+    </div>
+  `;
 }
 
 function renderMilestonePanel(projectId, milestone, index, admin) {
-  // Simplified milestone panel rendering - full version would include file uploads and comments
+  const isReview = milestone.status === 'awaiting';
+  const isCurrent = milestone.status === 'in-progress';
+  const isPending = milestone.status === 'pending';
+  const isApproved = milestone.status === 'approved';
+
+  let statusBadge = '';
+  if (isPending) statusBadge = '<span class="milestone-detail-status ms-pending">Pending</span>';
+  else if (isCurrent) statusBadge = '<span class="milestone-detail-status ms-in-progress">In Progress</span>';
+  else if (isReview) statusBadge = '<span class="milestone-detail-status ms-awaiting">Awaiting Review</span>';
+  else if (isApproved) statusBadge = '<span class="milestone-detail-status ms-approved">Approved</span>';
+
+  let actions = '';
+
+  if (admin) {
+    if (isPending || isCurrent) {
+      actions = `
+        <div style="margin-top:12px;">
+          <div class="upload-zone" style="padding:1.25rem;">
+            <div class="upload-zone-title" style="font-size:13px;">Upload design files for review</div>
+            <div class="upload-zone-desc" style="font-size:12px;">.pdf, .png, .zip, .gerber</div>
+            <input type="file" multiple onchange="adminUploadMilestone(event, '${projectId}', ${index})">
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:10px;width:100%;" onclick="submitForReview('${projectId}', ${index})">Submit for Customer Review</button>
+        </div>`;
+    }
+  } else {
+    if (isReview) {
+      actions = `
+        <textarea class="review-comment" id="comment-${projectId}-${index}" placeholder="Add feedback or comments (optional)..."></textarea>
+        <div class="milestone-actions">
+          <button class="btn btn-success btn-sm" onclick="approveMilestone('${projectId}', ${index})">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Approve
+          </button>
+          <button class="btn btn-danger-outline btn-sm" onclick="requestRevision('${projectId}', ${index})">
+            Request Revision
+          </button>
+        </div>`;
+    }
+  }
+
   return `
-    <div class="detail-card">
-      <div class="detail-card-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M20 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h11"/></svg>
-        ${milestone.name}
-      </div>
-      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">${milestone.description || ''}</div>
-      ${(milestone.files || []).length > 0 ? `
-        <div style="margin-bottom:12px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Files</div>
-          ${(milestone.files || []).map(f => renderFileItem(f)).join('')}
+    <div class="milestone-detail ${isCurrent ? 'current' : ''} ${isReview ? 'needs-review' : ''}">
+      <div class="milestone-detail-header">
+        <div class="milestone-detail-title">
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">0${index+1}</span>
+          ${milestone.name}
         </div>
-      ` : ''}
+        ${statusBadge}
+      </div>
+      <div class="milestone-detail-desc">${milestone.description}</div>
+      ${milestone.files.length > 0 ? `
+        <div class="milestone-detail-files">
+          ${milestone.files.map(f => renderFileItem(f)).join('')}
+        </div>` : ''}
+      ${milestone.comments && milestone.comments.length > 0 ? `
+        <div style="margin-top:8px;">
+          ${milestone.comments.map(c => `
+            <div style="background:var(--dark-600);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:6px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${c.author} &middot; ${c.time}</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.6;">${c.text}</div>
+            </div>`).join('')}
+        </div>` : ''}
+      ${actions}
     </div>`;
 }
 
 function renderFileItem(file) {
-  const sizeStr = file.size ? (typeof file.size === 'number' ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : file.size) : '?';
+  const typeMap = {
+    sch: { cls: 'file-icon-sch', label: 'SCH' },
+    csv: { cls: 'file-icon-sch', label: 'CSV' },
+    pcb: { cls: 'file-icon-pcb', label: 'PCB' },
+    gerber: { cls: 'file-icon-gerber', label: 'GBR' },
+    pdf: { cls: 'file-icon-pdf', label: 'PDF' },
+    img: { cls: 'file-icon-img', label: 'IMG' },
+    zip: { cls: 'file-icon-zip', label: 'ZIP' },
+    other: { cls: 'file-icon-sch', label: 'FILE' }
+  };
+  const t = typeMap[file.type] || typeMap.other;
   return `
-    <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:13px;">
-      <div style="display:flex;align-items:center;gap:8px;flex:1;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <div>
-          <div style="color:var(--text);word-break:break-word;">${sanitizeInput(file.name)}</div>
-          <div style="color:var(--text-muted);font-size:11px;">${sizeStr}</div>
-        </div>
+    <div class="file-item">
+      <div class="file-icon ${t.cls}">${t.label}</div>
+      <div class="file-info">
+        <div class="file-name">${file.name}</div>
+        <div class="file-meta">${file.size} &middot; ${formatDate(file.uploadedAt)}</div>
+      </div>
+      <div class="file-actions">
+        <button class="file-action-btn" title="Download" onclick="event.stopPropagation(); showToast('Download started: ${file.name}', 'info')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
       </div>
     </div>`;
 }
 
 // ══════════════════════════════════════════════════════════
-// PROJECT MANAGEMENT
+// ACTIONS
 // ══════════════════════════════════════════════════════════
+function openNewProject() {
+  // Only admin can create projects directly
+  if (!isAdmin()) {
+    showToast('Please submit a quote request first.', 'warning');
+    goToQuoteCalculator();
+    return;
+  }
+  // Reset modal to original form (in case it was replaced by quote review)
+  const modal = document.getElementById('newProjectModal');
+  modal.querySelector('.modal-title').textContent = 'New Project';
+  modal.querySelector('.modal-sub').textContent = 'Create a new PCB design project and upload your schematic files.';
+  modal.querySelector('.modal form').innerHTML = `
+    <div class="form-group">
+      <label class="form-label">Project Name</label>
+      <input class="form-input" type="text" id="np-name" placeholder="e.g. IoT Sensor Board v2" required>
+    </div>
+    <div class="form-row" style="margin-bottom:16px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Layer Count</label>
+        <select class="form-input" id="np-layers" style="padding-right:16px;">
+          <option value="2">2 layers</option>
+          <option value="4" selected>4 layers</option>
+          <option value="6">6 layers</option>
+          <option value="8">8 layers</option>
+          <option value="10">10 layers</option>
+          <option value="16">16 layers</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Board Size</label>
+        <select class="form-input" id="np-size" style="padding-right:16px;">
+          <option value="Small">Small (up to 50x50mm)</option>
+          <option value="Medium" selected>Medium (50-100mm)</option>
+          <option value="Large">Large (100-200mm)</option>
+          <option value="XL">Extra large (200mm+)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description / Notes</label>
+      <textarea class="review-comment" id="np-desc" placeholder="Describe your project requirements, special constraints, etc." style="min-height:80px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Upload Schematic Files</label>
+      <div class="upload-zone" id="npUploadZone">
+        <div class="upload-zone-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="upload-zone-title">Drop files here or click to browse</div>
+        <div class="upload-zone-desc">.sch, .kicad_sch, .brd, .pdf, .zip — Max 50MB</div>
+        <input type="file" multiple accept=".sch,.kicad_sch,.brd,.pdf,.zip,.rar,.csv,.xlsx,.txt" onchange="handleFileSelect(event, 'npFileList')">
+      </div>
+      <div id="npFileList" style="margin-top:8px;"></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Create Project</button>
+  `;
+  modal.classList.add('active');
+  selectedFiles = [];
+}
+
 function goToQuoteCalculator() {
-  window.location.href = 'index.html#quote-section';
+  window.location.href = 'index.html#quote';
 }
 
 function closeModal(id) {
@@ -1842,316 +2059,916 @@ function closeModal(id) {
 
 function handleFileSelect(event, listId) {
   const files = Array.from(event.target.files);
-  selectedFiles = files;
+  selectedFiles = selectedFiles.concat(files);
   renderSelectedFiles(listId);
 }
 
 function renderSelectedFiles(listId) {
   const container = document.getElementById(listId);
-  container.innerHTML = selectedFiles.map((f, i) => `
-    <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-      <div style="display:flex;align-items:center;gap:8px;flex:1;font-size:13px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <div style="color:var(--text);">${sanitizeInput(f.name)}</div>
-      </div>
-      <button type="button" class="btn btn-sm btn-danger-outline" onclick="removeSelectedFile(${i})">Remove</button>
-    </div>`).join('');
+  container.innerHTML = selectedFiles.map((f, i) => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const typeMap = { sch:'sch', kicad_sch:'sch', brd:'pcb', pdf:'pdf', png:'img', jpg:'img', zip:'zip', rar:'zip', csv:'csv' };
+    const type = typeMap[ext] || 'other';
+    const size = f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB';
+    return renderFileItem({ name: f.name, size, type, uploadedAt: new Date().toISOString() });
+  }).join('');
 }
 
-function removeSelectedFile(index) {
-  selectedFiles.splice(index, 1);
-  renderSelectedFiles('selectedFilesList');
-}
-
-async function createProject(e) {
+function createProject(e) {
   e.preventDefault();
+  if (!isAdmin()) { showToast('Please submit a quote request instead.', 'warning'); return; }
   const user = getCurrentUser();
-  if (!user) return;
-  
-  const name = document.getElementById('proj-name').value.trim();
-  const layers = document.getElementById('proj-layers').value;
-  const size = document.getElementById('proj-size').value;
-  const description = document.getElementById('proj-description').value.trim();
-  
-  if (!name || !layers || !size) {
-    showToast('Please fill in all required fields', 'warning');
-    return;
-  }
-  
-  const projectId = 'PRJ-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000).padStart(3, '0');
-  
-  try {
-    const { error } = await _supabase.from('projects').insert({
-      id: projectId,
-      name: name,
-      customer_id: user.id,
-      layers: parseInt(layers),
-      size: size,
-      description: description,
-      status: 'active',
-      milestones: [],
-      files: [],
-      activity: []
-    });
-    
-    if (error) {
-      showToast('Error creating project: ' + error.message, 'warning');
-      return;
-    }
-    
-    closeModal('newProjectModal');
-    e.target.reset();
-    selectedFiles = [];
-    showToast('Project created successfully!', 'success');
-    await renderDashboard();
-  } catch (err) {
-    showToast('Error: ' + (err.message || 'Unknown error'), 'warning');
-  }
-}
-
-async function uploadProjectFile(event, projectId) {
-  const files = Array.from(event.target.files);
-  if (!files.length) return;
-  
-  try {
-    const { data: project } = await _supabase
-      .from('projects')
-      .select('files')
-      .eq('id', projectId)
-      .single();
-    
-    const currentFiles = (project?.files || []).map(f => ({
-      name: f.name,
-      size: f.size,
-      type: f.type,
-      uploadedAt: f.uploadedAt,
-      uploadedBy: f.uploadedBy
-    }));
-    
-    const user = getCurrentUser();
-    for (const file of files) {
-      currentFiles.push({
-        name: file.name,
-        size: file.size,
-        type: file.type.split('/')[1] || 'file',
+  const project = {
+    id: 'PRJ-2026-' + String(state.projects.length + 1).padStart(3,'0'),
+    name: document.getElementById('np-name').value,
+    customerId: user.id,
+    layers: parseInt(document.getElementById('np-layers').value),
+    size: document.getElementById('np-size').value,
+    description: document.getElementById('np-desc').value,
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    files: selectedFiles.map(f => {
+      const ext = f.name.split('.').pop().toLowerCase();
+      const typeMap = { sch:'sch', kicad_sch:'sch', brd:'pcb', pdf:'pdf', png:'img', jpg:'img', zip:'zip', rar:'zip', csv:'csv' };
+      return {
+        name: f.name,
+        size: f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB',
+        type: typeMap[ext] || 'other',
         uploadedAt: new Date().toISOString(),
         uploadedBy: user.id
-      });
+      };
+    }),
+    milestones: [
+      { id:'ms-1', name:'Component Placement', status:'pending', description:'Component placement according to schematic groupings, thermal and mechanical constraints.', files:[], comments:[], updatedAt:null },
+      { id:'ms-2', name:'Nets Routing', status:'pending', description:'Complete trace routing with controlled impedance and DRC compliance.', files:[], comments:[], updatedAt:null },
+      { id:'ms-3', name:'Final Gerbers', status:'pending', description:'DRC-clean Gerber files, fabrication notes, drill files, and 3D render.', files:[], comments:[], updatedAt:null }
+    ],
+    activity: [
+      { text: `<strong>${user.firstName}</strong> uploaded ${selectedFiles.length} schematic file(s)`, time: formatNow(), type: 'green' },
+      { text: `Project <strong>${document.getElementById('np-name').value}</strong> created`, time: formatNow(), type: 'green' }
+    ]
+  };
+  state.projects.push(project);
+  saveState(state);
+  closeModal('newProjectModal');
+  renderDashboard();
+  showToast('Project created successfully!', 'success');
+}
+
+function uploadProjectFile(event, projectId) {
+  const project = state.projects.find(p => p.id === projectId);
+  const user = getCurrentUser();
+  if (!project || !user) return;
+  const files = Array.from(event.target.files);
+  files.forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const typeMap = { sch:'sch', kicad_sch:'sch', brd:'pcb', pdf:'pdf', png:'img', jpg:'img', zip:'zip', rar:'zip', csv:'csv' };
+    project.files.push({
+      name: f.name,
+      size: f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB',
+      type: typeMap[ext] || 'other',
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: user.id
+    });
+  });
+  project.activity.unshift({ text: `<strong>${user.firstName}</strong> uploaded ${files.length} file(s)`, time: formatNow(), type: 'green' });
+  saveState(state);
+  openProject(projectId);
+  showToast(`${files.length} file(s) uploaded successfully.`, 'success');
+}
+
+function adminUploadMilestone(event, projectId, msIndex) {
+  const project = state.projects.find(p => p.id === projectId);
+  const user = getCurrentUser();
+  if (!project || !user) return;
+  const files = Array.from(event.target.files);
+  const ms = project.milestones[msIndex];
+  files.forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const typeMap = { pdf:'pdf', png:'img', jpg:'img', zip:'zip', rar:'zip', gerber:'gerber' };
+    ms.files.push({
+      name: f.name,
+      size: f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (f.size/1024).toFixed(0)+' KB',
+      type: typeMap[ext] || 'other',
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: user.id
+    });
+  });
+  if (ms.status === 'pending') ms.status = 'in-progress';
+  ms.updatedAt = new Date().toISOString();
+  project.activity.unshift({ text: `<strong>Admin</strong> uploaded ${files.length} file(s) to <strong>${ms.name}</strong>`, time: formatNow(), type: 'blue' });
+  saveState(state);
+  openProject(projectId);
+  showToast(`Files uploaded to ${ms.name}.`, 'success');
+}
+
+function submitForReview(projectId, msIndex) {
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) return;
+  const ms = project.milestones[msIndex];
+  if (ms.files.length === 0) {
+    showToast('Please upload design files before submitting for review.', 'warning');
+    return;
+  }
+  ms.status = 'awaiting';
+  ms.updatedAt = new Date().toISOString();
+  project.status = 'review';
+  project.activity.unshift({ text: `<strong>${ms.name}</strong> submitted for customer review`, time: formatNow(), type: 'yellow' });
+  saveState(state);
+  addNotification(
+    `${ms.name} — Ready for Review`,
+    `<strong>${ms.name}</strong> is ready for your review on <strong>${project.name}</strong>`,
+    'yellow',
+    emailMilestoneSubmitted(project.name, ms.name)
+  );
+  openProject(projectId);
+  showToast(`${ms.name} sent for customer review.`, 'success');
+}
+
+function approveMilestone(projectId, msIndex) {
+  const project = state.projects.find(p => p.id === projectId);
+  const user = getCurrentUser();
+  if (!project || !user) return;
+  const ms = project.milestones[msIndex];
+  const commentEl = document.getElementById(`comment-${projectId}-${msIndex}`);
+  const comment = commentEl ? commentEl.value.trim() : '';
+
+  ms.status = 'approved';
+  ms.updatedAt = new Date().toISOString();
+  if (comment) {
+    ms.comments.push({ author: user.firstName, text: comment, time: formatNow() });
+  }
+
+  project.activity.unshift({ text: `<strong>${user.firstName}</strong> approved <strong>${ms.name}</strong>`, time: formatNow(), type: 'green' });
+
+  // Activate next milestone
+  const nextMs = project.milestones[msIndex + 1];
+  if (nextMs && nextMs.status === 'pending') {
+    nextMs.status = 'in-progress';
+    project.status = 'active';
+    project.activity.unshift({ text: `<strong>${nextMs.name}</strong> is now in progress`, time: formatNow(), type: 'blue' });
+  }
+
+  // Check if all milestones approved
+  if (project.milestones.every(m => m.status === 'approved')) {
+    project.status = 'completed';
+    project.activity.unshift({ text: `Project <strong>${project.name}</strong> completed!`, time: formatNow(), type: 'green' });
+  }
+
+  saveState(state);
+  addNotification(
+    `${ms.name} — Approved`,
+    `<strong>${ms.name}</strong> has been approved on <strong>${project.name}</strong>`,
+    'green',
+    emailMilestoneApproved(project.name, ms.name, nextMs ? nextMs.name : null)
+  );
+  openProject(projectId);
+  showToast(`${ms.name} approved!`, 'success');
+}
+
+function requestRevision(projectId, msIndex) {
+  const project = state.projects.find(p => p.id === projectId);
+  const user = getCurrentUser();
+  if (!project || !user) return;
+  const ms = project.milestones[msIndex];
+  const commentEl = document.getElementById(`comment-${projectId}-${msIndex}`);
+  const comment = commentEl ? commentEl.value.trim() : '';
+
+  if (!comment) {
+    showToast('Please add feedback describing what needs to be revised.', 'warning');
+    return;
+  }
+
+  ms.status = 'in-progress';
+  ms.updatedAt = new Date().toISOString();
+  ms.comments.push({ author: user.firstName, text: comment, time: formatNow() });
+  project.status = 'active';
+
+  project.activity.unshift({ text: `<strong>${user.firstName}</strong> requested revision on <strong>${ms.name}</strong>`, time: formatNow(), type: 'red' });
+  saveState(state);
+  addNotification(
+    `Revision Requested — ${ms.name}`,
+    `Revision requested on <strong>${ms.name}</strong> for <strong>${project.name}</strong>`,
+    'red',
+    emailRevisionRequested(project.name, ms.name, comment)
+  );
+  openProject(projectId);
+  showToast('Revision requested. The team will be notified.', 'info');
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatNow() {
+  const d = new Date();
+  return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function showToast(message, type) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<div class="toast-text">${message}</div>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(40px)';
+    toast.style.transition = '0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATIONS SYSTEM
+// ══════════════════════════════════════════════════════════
+function getNotifications() {
+  return JSON.parse(localStorage.getItem('electrotrical_notifications') || '[]');
+}
+
+function saveNotifications(notifs) {
+  localStorage.setItem('electrotrical_notifications', JSON.stringify(notifs));
+}
+
+function addNotification(title, message, type, emailTemplate) {
+  const notifs = getNotifications();
+  notifs.unshift({
+    id: 'n-' + Date.now(),
+    title,
+    message,
+    type, // blue, green, yellow, red
+    emailTemplate,
+    read: false,
+    time: formatNow()
+  });
+  saveNotifications(notifs);
+  renderNotifications();
+}
+
+function renderNotifications() {
+  const notifs = getNotifications();
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const count = notifs.filter(n => !n.read).length;
+  const badge = document.getElementById('notifCount');
+  if (count > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = count > 9 ? '9+' : count;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const list = document.getElementById('notifList');
+  if (notifs.length === 0) {
+    list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+    return;
+  }
+
+  list.innerHTML = notifs.slice(0, 15).map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}" onclick="openNotification('${n.id}')">
+      <div class="notif-icon-wrap notif-icon-${n.type}">
+        ${n.type === 'green' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00E5A0" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
+        : n.type === 'yellow' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFB400" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+        : n.type === 'red' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D4D" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>'}
+      </div>
+      <div class="notif-content">
+        <div class="notif-text">${n.message}</div>
+        <div class="notif-time">${n.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleNotifications(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('notifDropdown');
+  dd.classList.toggle('open');
+}
+
+function markAllRead() {
+  const notifs = getNotifications();
+  notifs.forEach(n => n.read = true);
+  saveNotifications(notifs);
+  renderNotifications();
+}
+
+function openNotification(id) {
+  const notifs = getNotifications();
+  const notif = notifs.find(n => n.id === id);
+  if (!notif) return;
+
+  notif.read = true;
+  saveNotifications(notifs);
+  renderNotifications();
+
+  if (notif.emailTemplate) {
+    document.getElementById('emailSubject').textContent = notif.title;
+    document.getElementById('emailBody').innerHTML = notif.emailTemplate;
+    document.getElementById('emailPreviewModal').classList.add('active');
+  }
+
+  document.getElementById('notifDropdown').classList.remove('open');
+}
+
+// Close notifications dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('notifDropdown');
+  if (dd && !dd.parentElement.contains(e.target)) {
+    dd.classList.remove('open');
+  }
+});
+
+// Generate email templates for different events
+function emailMilestoneSubmitted(projectName, milestoneName) {
+  return `
+    <h2>Milestone Ready for Review</h2>
+    <p>Hi there,</p>
+    <p>Great news! The <strong>${milestoneName}</strong> milestone for your project <strong>${projectName}</strong> is ready for your review.</p>
+    <div class="email-highlight">
+      <strong>Project:</strong> ${projectName}<br>
+      <strong>Milestone:</strong> ${milestoneName}<br>
+      <strong>Status:</strong> Awaiting your approval
+    </div>
+    <p>Please log in to your dashboard to review the uploaded design files. You can approve the milestone or request revisions with feedback.</p>
+    <a href="#" class="email-btn">Review Now &rarr;</a>
+    <p style="color:#9CA3AF;font-size:13px;margin-top:20px;">If you have any questions, reply to this email and we'll get back to you within a few hours.</p>
+  `;
+}
+
+function emailMilestoneApproved(projectName, milestoneName, nextMilestone) {
+  return `
+    <h2>Milestone Approved</h2>
+    <p>Hi team,</p>
+    <p>The customer has <strong style="color:#059669;">approved</strong> the <strong>${milestoneName}</strong> milestone for <strong>${projectName}</strong>.</p>
+    <div class="email-highlight">
+      <strong>Project:</strong> ${projectName}<br>
+      <strong>Approved:</strong> ${milestoneName}<br>
+      ${nextMilestone ? '<strong>Next up:</strong> ' + nextMilestone : '<strong style="color:#059669;">All milestones complete!</strong>'}
+    </div>
+    ${nextMilestone ? '<p>Work on <strong>' + nextMilestone + '</strong> can now begin.</p>' : '<p>Congratulations! This project is now complete. Final deliverables have been sent to the customer.</p>'}
+  `;
+}
+
+function emailRevisionRequested(projectName, milestoneName, feedback) {
+  return `
+    <h2>Revision Requested</h2>
+    <p>Hi team,</p>
+    <p>The customer has requested revisions on <strong>${milestoneName}</strong> for <strong>${projectName}</strong>.</p>
+    <div class="email-highlight" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B;">
+      <strong>Customer Feedback:</strong><br>
+      "${feedback}"
+    </div>
+    <p>Please review the feedback and upload updated design files when ready.</p>
+    <a href="#" class="email-btn">View Project &rarr;</a>
+  `;
+}
+
+function emailOrderConfirmation(projectName, projectId, total) {
+  return `
+    <h2>Order Confirmed</h2>
+    <p>Hi there,</p>
+    <p>Thank you for your order! Your PCB layout project has been created and our team will begin work shortly.</p>
+    <div class="email-highlight">
+      <strong>Order:</strong> ${projectId}<br>
+      <strong>Project:</strong> ${projectName}<br>
+      <strong>Amount Paid:</strong> $${total}
+    </div>
+    <p><strong>Next step:</strong> Upload your schematic files, BOM, and any design notes through your dashboard.</p>
+    <a href="#" class="email-btn">Upload Files &rarr;</a>
+    <p style="color:#9CA3AF;font-size:13px;margin-top:20px;">Need help? Reply to this email or reach out at hello@electrotrical.com</p>
+  `;
+}
+
+// Click outside modal to close
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// CHECKOUT FLOW
+// ══════════════════════════════════════════════════════════
+let pendingQuote = null;
+let lastCreatedProjectId = null;
+
+function loadCheckout() {
+  const raw = localStorage.getItem('electrotrical_pending_quote');
+  if (!raw) { showView('auth'); return; }
+  pendingQuote = JSON.parse(raw);
+
+  // Fill the order summary
+  document.getElementById('co-s-layers').textContent = pendingQuote.layersLabel;
+  document.getElementById('co-s-complexity').textContent = pendingQuote.complexityLabel.split('—')[0].trim();
+  document.getElementById('co-s-size').textContent = pendingQuote.sizeLabel;
+  document.getElementById('co-s-turn').textContent = pendingQuote.turnaroundLabel;
+  document.getElementById('co-s-special').textContent = pendingQuote.specialLabel;
+  document.getElementById('co-s-base').textContent = '$' + pendingQuote.base;
+  document.getElementById('co-s-total').textContent = '$' + pendingQuote.total;
+  document.getElementById('co-pay-amount').textContent = '$' + pendingQuote.total;
+
+  // Pre-fill user info if logged in
+  const user = getCurrentUser();
+  if (user) {
+    document.getElementById('co-fname').value = user.firstName || '';
+    document.getElementById('co-lname').value = user.lastName || '';
+    document.getElementById('co-email').value = user.email || '';
+    document.getElementById('co-company').value = user.company || '';
+  }
+
+  showView('checkout');
+  updateNav();
+}
+
+function fmtCard(el) {
+  let v = el.value.replace(/\D/g, '').substring(0, 16);
+  v = v.replace(/(.{4})/g, '$1  ').trim();
+  el.value = v;
+}
+
+function fmtExpiry(el) {
+  let v = el.value.replace(/\D/g, '').substring(0, 4);
+  if (v.length >= 2) v = v.substring(0, 2) + ' / ' + v.substring(2);
+  el.value = v;
+}
+
+function processPayment() {
+  const fname = document.getElementById('co-fname').value.trim();
+  const lname = document.getElementById('co-lname').value.trim();
+  const email = document.getElementById('co-email').value.trim();
+
+  if (!fname || !lname || !email) {
+    showToast('Please fill in your contact details.', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" opacity="0.3"/><path d="M12 2a10 10 0 019.95 9"/></svg> Processing...';
+
+  // Add CSS for spinner
+  if (!document.getElementById('spin-style')) {
+    const style = document.createElement('style');
+    style.id = 'spin-style';
+    style.textContent = '@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+  }
+
+  setTimeout(() => {
+    // Check if user exists or register them
+    let user = getCurrentUser();
+    if (!user) {
+      // Auto-register the user
+      user = {
+        id: 'cust-' + Date.now(),
+        email: email,
+        password: 'pass' + Math.floor(Math.random() * 10000),
+        firstName: fname,
+        lastName: lname,
+        company: document.getElementById('co-company').value.trim(),
+        role: 'customer'
+      };
+      if (!state.users.find(u => u.email === email)) {
+        state.users.push(user);
+      } else {
+        user = state.users.find(u => u.email === email);
+      }
+      state.currentUser = user.id;
     }
-    
-    const { error } = await _supabase
-      .from('projects')
-      .update({ files: currentFiles })
-      .eq('id', projectId);
-    
-    if (error) {
-      showToast('Error uploading files: ' + error.message, 'warning');
-      return;
+
+    // Create the project from the quote
+    const sizeMap = { '1.0': 'Small', '1.4': 'Medium', '2.0': 'Large', '3.0': 'Extra Large' };
+    const projectId = 'PRJ-2026-' + String(state.projects.length + 1).padStart(3, '0');
+    const project = {
+      id: projectId,
+      name: pendingQuote.layersLabel + ' PCB — ' + pendingQuote.sizeLabel,
+      customerId: user.id,
+      layers: parseInt(pendingQuote.layers),
+      size: pendingQuote.sizeLabel,
+      description: 'Ordered via quote calculator. ' + pendingQuote.complexityLabel + '. ' + (pendingQuote.specialLabel !== 'None' ? 'Special: ' + pendingQuote.specialLabel + '. ' : '') + pendingQuote.turnaroundLabel + '.',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      quote: {
+        total: pendingQuote.total,
+        base: pendingQuote.base,
+        turnaround: pendingQuote.turnaround,
+        paid: true,
+        paidAt: new Date().toISOString()
+      },
+      files: [],
+      milestones: [
+        { id:'ms-1', name:'Component Placement', status:'pending', description:'Component placement per schematic grouping, thermal and mechanical constraints.', files:[], comments:[], updatedAt:null },
+        { id:'ms-2', name:'Nets Routing', status:'pending', description:'Complete trace routing with controlled impedance and DRC compliance.', files:[], comments:[], updatedAt:null },
+        { id:'ms-3', name:'Final Gerbers', status:'pending', description:'DRC-clean Gerber files, fabrication notes, drill files, and 3D render.', files:[], comments:[], updatedAt:null }
+      ],
+      activity: [
+        { text: '<strong>Payment confirmed</strong> — $' + pendingQuote.total + ' via Stripe', time: formatNow(), type: 'green' },
+        { text: 'Project <strong>' + pendingQuote.layersLabel + ' PCB</strong> created from quote', time: formatNow(), type: 'green' }
+      ]
+    };
+
+    state.projects.push(project);
+    lastCreatedProjectId = projectId;
+
+    // Mark the quote as paid and link to project
+    if (pendingQuote.quoteId && state.quoteRequests) {
+      const qIndex = state.quoteRequests.findIndex(q => q.id === pendingQuote.quoteId);
+      if (qIndex !== -1) {
+        state.quoteRequests[qIndex].status = 'paid';
+        state.quoteRequests[qIndex].paidAt = new Date().toISOString();
+        state.quoteRequests[qIndex].projectId = projectId;
+      }
     }
-    
-    showToast('Files uploaded successfully!', 'success');
-    await openProject(projectId);
-  } catch (err) {
-    showToast('Upload error: ' + (err.message || 'Unknown error'), 'warning');
+
+    saveState(state);
+
+    // Send order confirmation notification
+    addNotification(
+      'Order Confirmed — ' + projectId,
+      `Your order <strong>${projectId}</strong> has been confirmed. Payment of <strong>$${pendingQuote.total}</strong> received.`,
+      'green',
+      emailOrderConfirmation(project.name, projectId, pendingQuote.total)
+    );
+
+    // Clean up
+    localStorage.removeItem('electrotrical_pending_quote');
+
+    // Show success
+    document.getElementById('success-order-id').textContent = 'ORDER #' + projectId;
+    showView('success');
+    updateNav();
+  }, 2000);
+}
+
+function goToNewProject() {
+  if (lastCreatedProjectId) {
+    showView('dashboard');
+    renderDashboard();
+    openProject(lastCreatedProjectId);
+  } else {
+    showView('dashboard');
+    renderDashboard();
   }
 }
 
 // ══════════════════════════════════════════════════════════
-// QUOTE MANAGEMENT
+// QUOTE REQUEST SYSTEM
 // ══════════════════════════════════════════════════════════
-async function updateQuoteBadge() {
-  const user = getCurrentUser();
+
+function updateQuoteBadge() {
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
   if (!user) return;
-  
-  try {
-    const { count } = await _supabase
-      .from('quote_requests')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending');
-    
-    const badge = document.getElementById('quoteBadge');
-    if (badge && count > 0) {
-      badge.textContent = count;
-      badge.style.display = 'flex';
-    } else if (badge) {
-      badge.style.display = 'none';
-    }
-  } catch (err) {
-    console.error('Error updating quote badge:', err);
+
+  const badge = document.getElementById('quoteBadge');
+  if (!badge) return;
+
+  const quotes = state.quoteRequests || [];
+  let pendingCount = 0;
+
+  if (user.role === 'admin') {
+    pendingCount = quotes.filter(q => q.status === 'pending').length;
+  } else {
+    pendingCount = quotes.filter(q => q.customerId === user.id && q.status === 'approved').length;
+  }
+
+  if (pendingCount > 0) {
+    badge.textContent = pendingCount;
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
   }
 }
 
 function switchMainTab(tab) {
-  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-' + tab).forEach(t => t.classList.add('active'));
-  
-  if (tab === 'projects') renderDashboard();
-  else if (tab === 'quotes') renderQuoteRequests();
-  else if (tab === 'users') renderUsers();
-}
+  const tabs = document.querySelectorAll('#mainDashTabs .dash-tab');
+  tabs.forEach(t => t.classList.remove('active'));
 
-async function renderUsers() {
-  const user = getCurrentUser();
-  const admin = isAdmin();
-  if (!admin || !user) return;
-  
-  try {
-    const { data: profiles, error } = await _supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching users:', error);
-      return;
-    }
-    
-    const container = document.getElementById('usersSection');
-    if (!profiles || profiles.length === 0) {
-      container.innerHTML = '<p style="text-align:center;color:var(--text-muted);">No users found.</p>';
-      return;
-    }
-    
-    container.innerHTML = profiles.map(p => `
-      <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.75rem;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;">
-          <div>
-            <div style="font-size:16px;font-weight:600;color:var(--white);">${sanitizeInput(p.first_name)} ${sanitizeInput(p.last_name)}</div>
-            <div style="font-size:13px;color:var(--text-muted);">${sanitizeInput(p.email)}</div>
-            ${p.company ? '<div style="font-size:13px;color:var(--text-secondary);">' + sanitizeInput(p.company) + '</div>' : ''}
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span style="display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${p.role === 'admin' ? 'rgba(0,229,160,0.1);color:var(--accent)' : 'rgba(0,102,255,0.1);color:var(--primary-light)'};border:1px solid ${p.role === 'admin' ? 'rgba(0,229,160,0.2)' : 'rgba(0,102,255,0.2)'};">${p.role === 'admin' ? 'Admin' : 'Customer'}</span>
-          </div>
-        </div>
-      </div>`).join('');
-  } catch (err) {
-    console.error('Error rendering users:', err);
+  // Hide all sections
+  document.getElementById('projectsList').style.display = 'none';
+  document.getElementById('quoteRequestsSection').style.display = 'none';
+  document.getElementById('usersSection').style.display = 'none';
+  document.getElementById('projectDetail').style.display = 'none';
+
+  if (tab === 'projects') {
+    tabs[0].classList.add('active');
+    document.getElementById('projectsList').style.display = 'block';
+    renderDashboard();
+  } else if (tab === 'quotes') {
+    tabs[1].classList.add('active');
+    document.getElementById('quoteRequestsSection').style.display = 'block';
+    renderQuoteRequests();
+  updateQuoteBadge();
+  } else if (tab === 'users') {
+    const usersTab = document.getElementById('usersTab');
+    if (usersTab) usersTab.classList.add('active');
+    document.getElementById('usersSection').style.display = 'block';
+    renderUsers();
   }
 }
 
-async function renderQuoteRequests() {
-  const user = getCurrentUser();
-  if (!user) return;
-  
-  const admin = isAdmin();
-  
-  try {
-    let { data: quotes, error } = admin
-      ? await _supabase.from('quote_requests').select('*').order('created_at', { ascending: false })
-      : await _supabase.from('quote_requests').select('*').eq('customer_id', user.id).order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching quotes:', error);
-      quotes = [];
-    }
-    
-    const container = document.getElementById('quoteRequestsSection');
-    
-    if (!quotes || quotes.length === 0) {
-      container.innerHTML = `
-        <div style="text-align:center;padding:4rem 2rem;background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);">
-          <div style="width:72px;height:72px;margin:0 auto 1.5rem;background:rgba(0,102,255,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          </div>
-          <div style="font-size:20px;font-weight:600;color:var(--white);margin-bottom:8px;">No quote requests yet</div>
-          <p style="font-size:14px;color:var(--text-secondary);max-width:400px;margin:0 auto 1.25rem;">${admin ? 'Quote requests from customers will appear here for your review.' : 'Submit a quote request to get a price estimate for your PCB project.'}</p>
-          ${!admin ? '<button class="btn btn-primary btn-sm" onclick="goToQuoteCalculator()">Submit a Quote Request</button>' : ''}
-        </div>`;
-      return;
-    }
-    
-    let html = '';
-    quotes.forEach(q => {
-      const statusBadge = getQuoteStatusBadge(q.status);
-      const date = new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      
+// ══════════════════════════════════════════════════════════
+// REGISTERED USERS (Admin Only)
+// ══════════════════════════════════════════════════════════
+
+let userSearchQuery = '';
+
+function renderUsers() {
+  const state = getState();
+  const currentUser = state.users.find(u => u.id === state.currentUser);
+  if (!currentUser || currentUser.role !== 'admin') return;
+
+  const container = document.getElementById('usersSection');
+  const allUsers = state.users || [];
+  const customers = allUsers.filter(u => u.role === 'customer');
+  const admins = allUsers.filter(u => u.role === 'admin');
+  const activeCount = allUsers.filter(u => u.status !== 'suspended').length;
+
+  // Filter by search
+  let users = allUsers;
+  if (userSearchQuery) {
+    const q = userSearchQuery.toLowerCase();
+    users = allUsers.filter(u =>
+      (u.firstName + ' ' + u.lastName).toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.company || '').toLowerCase().includes(q)
+    );
+  }
+
+  // Count quotes per user
+  const quotes = state.quoteRequests || [];
+  function getUserQuoteCount(userId) {
+    return quotes.filter(q => q.customerId === userId).length;
+  }
+
+  let html = '';
+
+  // Stats overview
+  html += `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:24px;">
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:var(--white);margin-bottom:4px;">${allUsers.length}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Total Users</div>
+    </div>
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:var(--cyan);margin-bottom:4px;">${customers.length}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Customers</div>
+    </div>
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:var(--accent);margin-bottom:4px;">${activeCount}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Active</div>
+    </div>
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:var(--primary-light);margin-bottom:4px;">${admins.length}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Admins</div>
+    </div>
+  </div>`;
+
+  // Search bar
+  html += `
+  <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+    <div style="padding:1.25rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div style="font-size:16px;font-weight:600;color:var(--white);">Registered Users</div>
+      <div style="position:relative;flex:1;max-width:320px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search by name, email, or company..." value="${sanitizeInput(userSearchQuery)}" oninput="userSearchQuery=this.value;renderUsers();" style="width:100%;background:var(--dark-700);border:1px solid var(--border);color:var(--text);font-family:var(--font-sans);font-size:13px;padding:9px 14px 9px 36px;border-radius:var(--radius-sm);outline:none;">
+      </div>
+    </div>`;
+
+  if (users.length === 0) {
+    html += `<div style="padding:3rem;text-align:center;font-size:14px;color:var(--text-muted);">No users found matching "${sanitizeInput(userSearchQuery)}"</div>`;
+  } else {
+    html += `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:12px 1.75rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">User</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Email</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Registered</th>
+            <th style="text-align:center;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Quotes</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Status</th>
+            <th style="text-align:center;padding:12px 1.75rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    users.forEach(u => {
+      const initials = ((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '');
+      const uIsAdmin = u.role === 'admin';
+      const isSuspended = u.status === 'suspended';
+      const quoteCount = getUserQuoteCount(u.id);
+      const regDate = u.registeredAt
+        ? new Date(u.registeredAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '—';
+
+      const roleBadge = uIsAdmin
+        ? '<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(0,102,255,0.12);color:var(--primary-light);">Admin</span>'
+        : '';
+
+      const statusBadge = isSuspended
+        ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(255,77,77,0.1);color:var(--danger);border:1px solid rgba(255,77,77,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--danger);"></span>Suspended</span>'
+        : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>Active</span>';
+
+      const avatarBg = isSuspended ? 'rgba(255,77,77,0.12)' : (uIsAdmin ? 'rgba(0,102,255,0.15)' : 'rgba(0,229,160,0.12)');
+      const avatarBorder = isSuspended ? 'rgba(255,77,77,0.25)' : (uIsAdmin ? 'rgba(0,102,255,0.3)' : 'rgba(0,229,160,0.25)');
+      const avatarColor = isSuspended ? 'var(--danger)' : (uIsAdmin ? 'var(--primary-light)' : 'var(--accent)');
+
+      // Action buttons (don't show delete/suspend for admin accounts)
+      let actions = '';
+      if (!uIsAdmin) {
+        const toggleLabel = isSuspended ? 'Activate' : 'Suspend';
+        const toggleColor = isSuspended ? 'var(--accent)' : 'var(--warning)';
+        actions = `
+          <button onclick="toggleUserStatus('${u.id}')" title="${toggleLabel}" style="background:transparent;border:1px solid var(--border);color:${toggleColor};width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);margin-right:4px;outline:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'" onblur="this.style.background='transparent'" onfocus="this.style.background='transparent'">
+            ${isSuspended
+              ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
+              : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'
+            }
+          </button>
+          <button onclick="deleteUser('${u.id}')" title="Delete" style="background:transparent;border:1px solid var(--border);color:var(--danger);width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);outline:none;" onmouseover="this.style.background='rgba(255,77,77,0.08)'" onmouseout="this.style.background='transparent'" onblur="this.style.background='transparent'" onfocus="this.style.background='transparent'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>`;
+      } else {
+        actions = '<span style="font-size:11px;color:var(--text-muted);">—</span>';
+      }
+
       html += `
-      <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.75rem;margin-bottom:16px;transition:var(--transition);">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap;">
-          <div>
-            <div style="font-size:18px;font-weight:600;color:var(--white);margin-bottom:4px;">Quote ${q.id}</div>
-            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">${admin ? q.customer_name + ' (' + q.customer_email + ')' : 'Submitted ' + date}</div>
-          </div>
-          ${statusBadge}
-        </div>
-
-        ${q.specs.serviceLabel ? `<div style="display:inline-block;font-size:12px;font-weight:600;color:var(--primary-light);background:rgba(0,102,255,0.1);border:1px solid rgba(0,102,255,0.2);border-radius:6px;padding:4px 10px;margin-bottom:12px;">${q.specs.serviceLabel}</div>` : ''}
-        ${q.specs.pcbTypeLabel && q.specs.pcbTypeLabel !== 'Regular Rigid PCB' ? `<div style="display:inline-block;font-size:12px;font-weight:600;color:var(--cyan);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:4px 10px;margin-bottom:12px;margin-left:8px;">${q.specs.pcbTypeLabel}</div>` : ''}
-
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:1.25rem;">
-          <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">PCB Type</div>
-            <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.pcbTypeLabel || 'Rigid'}</div>
-          </div>
-          <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Layers</div>
-            <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.layersLabel}</div>
-          </div>
-          <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Size</div>
-            <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.sizeLabel}</div>
-          </div>
-          <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Components</div>
-            <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.sidesLabel || 'Both sides'}</div>
-          </div>
-          <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Turnaround</div>
-            <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.turnaroundLabel}</div>
-          </div>
-          <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Special Req.</div>
-            <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.specialLabel}</div>
-          </div>
-        </div>
-        ${q.specs.deliveryFormats && q.specs.deliveryFormats.length > 0 ? `
-        <div style="margin-bottom:1.25rem;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Delivery Formats</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            ${q.specs.deliveryFormats.map(f => '<span style="font-size:12px;color:var(--text-secondary);background:var(--dark-700);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">' + f + '</span>').join('')}
-          </div>
-        </div>` : ''}
-
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-          <div>
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Customer Estimate</div>
-            <div style="font-size:24px;font-weight:700;color:var(--text-secondary);font-family:var(--font-mono);">$${q.estimated_total}</div>
-          </div>
-          ${q.admin_price !== null ? `
-          <div>
-            <div style="font-size:12px;color:var(--accent);margin-bottom:2px;">Approved Price</div>
-            <div style="font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:var(--font-mono);">$${q.admin_price}</div>
-          </div>` : ''}
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            ${admin && q.status === 'pending' ? `
-              <button class="btn btn-primary btn-sm" onclick="openQuoteReview('${q.id}')">Review & Price</button>
-            ` : ''}
-            ${admin && q.status === 'approved' ? `
-              <span style="font-size:13px;color:var(--accent);">Approved — awaiting customer payment</span>
-            ` : ''}
-            ${!admin && q.status === 'approved' ? `
-              <button class="btn btn-success btn-sm" onclick="proceedToPayment('${q.id}')">Proceed to Payment — $${q.admin_price}</button>
-            ` : ''}
-            ${!admin && q.status === 'pending' ? `
-              <span style="font-size:13px;color:var(--text-muted);">Awaiting review by our team...</span>
-            ` : ''}
-            ${q.status === 'rejected' ? `
-              <span style="font-size:13px;color:var(--danger);">Quote declined${q.admin_notes ? ': ' + sanitizeInput(q.admin_notes) : ''}</span>
-            ` : ''}
-            ${q.status === 'paid' && q.project_id ? `
-              <button class="btn btn-primary btn-sm" onclick="switchMainTab('projects'); setTimeout(() => openProject('${q.project_id}'), 100);">View Project — ${q.project_id}</button>
-            ` : ''}
-          </div>
-        </div>
-      </div>`;
+          <tr style="border-bottom:1px solid var(--border);transition:var(--transition);${isSuspended ? 'opacity:0.6;' : ''}" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+            <td style="padding:14px 1.75rem;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:${avatarBg};border:2px solid ${avatarBorder};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${avatarColor};flex-shrink:0;">${sanitizeInput(initials.toUpperCase())}</div>
+                <div>
+                  <div style="font-weight:500;color:var(--white);display:flex;align-items:center;gap:6px;">${sanitizeInput(u.firstName || '')} ${sanitizeInput(u.lastName || '')} ${roleBadge}</div>
+                  <div style="font-size:12px;color:var(--text-muted);">${sanitizeInput(u.company || '')}</div>
+                </div>
+              </div>
+            </td>
+            <td style="padding:14px 1rem;color:var(--text-secondary);font-size:13px;">${sanitizeInput(u.email || '')}</td>
+            <td style="padding:14px 1rem;color:var(--text-muted);font-size:13px;">${regDate}</td>
+            <td style="padding:14px 1rem;text-align:center;font-family:var(--font-mono);font-size:13px;color:${quoteCount > 0 ? 'var(--cyan)' : 'var(--text-muted)'};">${quoteCount}</td>
+            <td style="padding:14px 1rem;">${statusBadge}</td>
+            <td style="padding:14px 1.75rem;text-align:center;">${actions}</td>
+          </tr>`;
     });
-    
-    container.innerHTML = html;
-  } catch (err) {
-    console.error('Error rendering quotes:', err);
-    showToast('Error loading quotes', 'warning');
+
+    html += `
+        </tbody>
+      </table>
+    </div>`;
   }
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function toggleUserStatus(userId) {
+  const state = getState();
+  const user = state.users.find(u => u.id === userId);
+  if (!user || user.role === 'admin') return;
+
+  const newStatus = user.status === 'suspended' ? 'active' : 'suspended';
+  user.status = newStatus;
+  saveState(state);
+  showToast(sanitizeInput(user.firstName) + ' ' + sanitizeInput(user.lastName) + ' is now ' + newStatus, newStatus === 'active' ? 'success' : 'warning');
+  renderUsers();
+}
+
+function deleteUser(userId) {
+  const state = getState();
+  const user = state.users.find(u => u.id === userId);
+  if (!user || user.role === 'admin') return;
+
+  if (!confirm('Delete ' + user.firstName + ' ' + user.lastName + ' (' + user.email + ')? This cannot be undone.')) return;
+
+  state.users = state.users.filter(u => u.id !== userId);
+  saveState(state);
+  showToast('User deleted successfully', 'info');
+  renderUsers();
+}
+
+function renderQuoteRequests() {
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!user) return;
+
+  const container = document.getElementById('quoteRequestsSection');
+  const isAdmin = user.role === 'admin';
+
+  let quotes = state.quoteRequests || [];
+  if (!isAdmin) {
+    quotes = quotes.filter(q => q.customerId === user.id);
+  }
+
+  if (quotes.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:4rem 2rem;background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);">
+        <div style="width:72px;height:72px;margin:0 auto 1.5rem;background:rgba(0,102,255,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div style="font-size:20px;font-weight:600;color:var(--white);margin-bottom:8px;">No quote requests yet</div>
+        <p style="font-size:14px;color:var(--text-secondary);max-width:400px;margin:0 auto 1.25rem;">${isAdmin ? 'Quote requests from customers will appear here for your review.' : 'Submit a quote request to get a price estimate for your PCB project.'}</p>
+        ${!isAdmin ? '<button class="btn btn-primary btn-sm" onclick="goToQuoteCalculator()">Submit a Quote Request</button>' : ''}
+      </div>`;
+    return;
+  }
+
+  let html = '';
+  quotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  quotes.forEach(q => {
+    const statusBadge = getQuoteStatusBadge(q.status);
+    const date = new Date(q.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    html += `
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.75rem;margin-bottom:16px;transition:var(--transition);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:18px;font-weight:600;color:var(--white);margin-bottom:4px;">Quote ${q.id}</div>
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">${isAdmin ? q.customerName + ' (' + q.customerEmail + ')' : 'Submitted ' + date}</div>
+        </div>
+        ${statusBadge}
+      </div>
+
+      ${q.specs.serviceLabel ? `<div style="display:inline-block;font-size:12px;font-weight:600;color:var(--primary-light);background:rgba(0,102,255,0.1);border:1px solid rgba(0,102,255,0.2);border-radius:6px;padding:4px 10px;margin-bottom:12px;">${q.specs.serviceLabel}</div>` : ''}
+      ${q.specs.pcbTypeLabel && q.specs.pcbTypeLabel !== 'Regular Rigid PCB' ? `<div style="display:inline-block;font-size:12px;font-weight:600;color:var(--cyan);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:4px 10px;margin-bottom:12px;margin-left:8px;">${q.specs.pcbTypeLabel}</div>` : ''}
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:1.25rem;">
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">PCB Type</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.pcbTypeLabel || 'Rigid'}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Layers</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.layersLabel}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Size</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.sizeLabel}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Components</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.sidesLabel || 'Both sides'}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Turnaround</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.turnaroundLabel}</div>
+        </div>
+        <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Special Req.</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;">${q.specs.specialLabel}</div>
+        </div>
+      </div>
+      ${q.specs.deliveryFormats && q.specs.deliveryFormats.length > 0 ? `
+      <div style="margin-bottom:1.25rem;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Delivery Formats</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${q.specs.deliveryFormats.map(f => '<span style="font-size:12px;color:var(--text-secondary);background:var(--dark-700);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">' + f + '</span>').join('')}
+        </div>
+      </div>` : ''}
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Customer Estimate</div>
+          <div style="font-size:24px;font-weight:700;color:var(--text-secondary);font-family:var(--font-mono);">$${q.estimatedTotal}</div>
+        </div>
+        ${q.adminPrice !== null ? `
+        <div>
+          <div style="font-size:12px;color:var(--accent);margin-bottom:2px;">Approved Price</div>
+          <div style="font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:var(--font-mono);">$${q.adminPrice}</div>
+        </div>` : ''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${isAdmin && q.status === 'pending' ? `
+            <button class="btn btn-primary btn-sm" onclick="openQuoteReview('${q.id}')">Review & Price</button>
+          ` : ''}
+          ${isAdmin && q.status === 'approved' ? `
+            <span style="font-size:13px;color:var(--accent);">Approved — awaiting customer payment</span>
+          ` : ''}
+          ${!isAdmin && q.status === 'approved' ? `
+            <button class="btn btn-success btn-sm" onclick="proceedToPayment('${q.id}')">Proceed to Payment — $${q.adminPrice}</button>
+          ` : ''}
+          ${!isAdmin && q.status === 'pending' ? `
+            <span style="font-size:13px;color:var(--text-muted);">Awaiting review by our team...</span>
+          ` : ''}
+          ${q.status === 'rejected' ? `
+            <span style="font-size:13px;color:var(--danger);">Quote declined${q.adminNotes ? ': ' + sanitizeInput(q.adminNotes) : ''}</span>
+          ` : ''}
+          ${q.status === 'paid' && q.projectId ? `
+            <button class="btn btn-primary btn-sm" onclick="switchMainTab('projects'); setTimeout(() => openProject('${q.projectId}'), 100);">View Project — ${q.projectId}</button>
+          ` : ''}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
 }
 
 function getQuoteStatusBadge(status) {
@@ -2164,62 +2981,53 @@ function getQuoteStatusBadge(status) {
   return badges[status] || badges.pending;
 }
 
-async function openQuoteReview(quoteId) {
-  try {
-    const { data: quote } = await _supabase
-      .from('quote_requests')
-      .select('*')
-      .eq('id', quoteId)
-      .single();
-    
-    if (!quote) return;
+function openQuoteReview(quoteId) {
+  const state = getState();
+  const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
+  if (!quote) return;
 
-    const modal = document.getElementById('newProjectModal');
-    modal.querySelector('.modal-title').textContent = 'Review Quote ' + quoteId;
-    modal.querySelector('.modal-sub').textContent = 'From ' + quote.customer_name + ' — adjust price and approve or decline.';
+  const modal = document.getElementById('newProjectModal');
+  modal.querySelector('.modal-title').textContent = 'Review Quote ' + quoteId;
+  modal.querySelector('.modal-sub').textContent = 'From ' + quote.customerName + ' — adjust price and approve or decline.';
 
-    modal.querySelector('.modal form').innerHTML = `
-      <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:20px;">
-        <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">CUSTOMER SPECS</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div><span style="color:var(--text-secondary);font-size:13px;">Service:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.serviceLabel || 'PCB Layout Design'}</span></div>
-          <div><span style="color:var(--text-secondary);font-size:13px;">PCB Type:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.pcbTypeLabel || 'Rigid'}</span></div>
-          <div><span style="color:var(--text-secondary);font-size:13px;">Layers:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.layersLabel}</span></div>
-          <div><span style="color:var(--text-secondary);font-size:13px;">Size:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.sizeLabel}</span></div>
-          <div><span style="color:var(--text-secondary);font-size:13px;">Components:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.sidesLabel || 'Both sides'}</span></div>
-          <div><span style="color:var(--text-secondary);font-size:13px;">Complexity:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.complexityLabel}</span></div>
-          <div><span style="color:var(--text-secondary);font-size:13px;">Turnaround:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.turnaroundLabel}</span></div>
-          <div><span style="color:var(--text-secondary);font-size:13px;">Special:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.specialLabel}</span></div>
-          <div style="grid-column:span 2;"><span style="color:var(--text-secondary);font-size:13px;">Estimate:</span> <span style="color:var(--white);font-size:13px;font-weight:600;">$${quote.estimated_total}</span></div>
-          ${quote.specs.deliveryFormats && quote.specs.deliveryFormats.length > 0 ? '<div style="grid-column:span 2;"><span style="color:var(--text-secondary);font-size:13px;">Delivery:</span> <span style="color:var(--white);font-size:13px;">' + quote.specs.deliveryFormats.join(', ') + '</span></div>' : ''}
-        </div>
+  modal.querySelector('.modal form').innerHTML = `
+    <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:20px;">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">CUSTOMER SPECS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><span style="color:var(--text-secondary);font-size:13px;">Service:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.serviceLabel || 'PCB Layout Design'}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">PCB Type:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.pcbTypeLabel || 'Rigid'}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Layers:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.layersLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Size:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.sizeLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Components:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.sidesLabel || 'Both sides'}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Complexity:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.complexityLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Turnaround:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.turnaroundLabel}</span></div>
+        <div><span style="color:var(--text-secondary);font-size:13px;">Special:</span> <span style="color:var(--white);font-size:13px;">${quote.specs.specialLabel}</span></div>
+        <div style="grid-column:span 2;"><span style="color:var(--text-secondary);font-size:13px;">Estimate:</span> <span style="color:var(--white);font-size:13px;font-weight:600;">$${quote.estimatedTotal}</span></div>
+        ${quote.specs.deliveryFormats && quote.specs.deliveryFormats.length > 0 ? '<div style="grid-column:span 2;"><span style="color:var(--text-secondary);font-size:13px;">Delivery:</span> <span style="color:var(--white);font-size:13px;">' + quote.specs.deliveryFormats.join(', ') + '</span></div>' : ''}
       </div>
-      <div class="form-group">
-        <label class="form-label">Final Price (USD)</label>
-        <input class="form-input" type="number" id="review-price" value="${quote.estimated_total}" min="1" step="1" required style="font-size:20px;font-weight:600;">
-        <div class="form-hint">Adjust the price if needed. The customer estimated $${quote.estimated_total}.</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Notes to Customer <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <textarea class="review-comment" id="review-notes" placeholder="e.g. Price adjusted due to high-density BGA routing complexity..." style="min-height:80px;"></textarea>
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button type="button" class="btn btn-success" style="flex:2;" onclick="approveQuote('${quoteId}')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Approve Quote
-        </button>
-        <button type="button" class="btn btn-danger-outline" style="flex:1;" onclick="rejectQuote('${quoteId}')">Decline</button>
-      </div>
-    `;
+    </div>
+    <div class="form-group">
+      <label class="form-label">Final Price (USD)</label>
+      <input class="form-input" type="number" id="review-price" value="${quote.estimatedTotal}" min="1" step="1" required style="font-size:20px;font-weight:600;">
+      <div class="form-hint">Adjust the price if needed. The customer estimated $${quote.estimatedTotal}.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes to Customer <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <textarea class="review-comment" id="review-notes" placeholder="e.g. Price adjusted due to high-density BGA routing complexity..." style="min-height:80px;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button type="button" class="btn btn-success" style="flex:2;" onclick="approveQuote('${quoteId}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve Quote
+      </button>
+      <button type="button" class="btn btn-danger-outline" style="flex:1;" onclick="rejectQuote('${quoteId}')">Decline</button>
+    </div>
+  `;
 
-    modal.classList.add('active');
-  } catch (err) {
-    console.error('Error opening quote review:', err);
-    showToast('Error loading quote', 'warning');
-  }
+  modal.classList.add('active');
 }
 
-async function approveQuote(quoteId) {
+function approveQuote(quoteId) {
   const priceEl = document.getElementById('review-price');
   const notesEl = document.getElementById('review-notes');
   if (!priceEl) { showToast('Error: price field not found', 'warning'); return; }
@@ -2228,468 +3036,215 @@ async function approveQuote(quoteId) {
   const notes = notesEl ? notesEl.value : '';
   if (!price || price < 1) { showToast('Please enter a valid price', 'warning'); return; }
 
-  try {
-    const { data: quote } = await _supabase
-      .from('quote_requests')
-      .select('*')
-      .eq('id', quoteId)
-      .single();
-    
-    if (!quote) { showToast('Quote not found', 'warning'); return; }
+  const state = getState();
+  if (!state.quoteRequests) state.quoteRequests = [];
+  const quoteIndex = state.quoteRequests.findIndex(q => q.id === quoteId);
+  if (quoteIndex === -1) { showToast('Quote not found', 'warning'); return; }
 
-    const { error: updateError } = await _supabase
-      .from('quote_requests')
-      .update({
-        admin_price: price,
-        admin_notes: notes,
-        status: 'approved',
-        reviewed_at: new Date().toISOString()
-      })
-      .eq('id', quoteId);
+  // Update directly by index to ensure it saves
+  state.quoteRequests[quoteIndex].adminPrice = price;
+  state.quoteRequests[quoteIndex].adminNotes = notes;
+  state.quoteRequests[quoteIndex].status = 'approved';
+  state.quoteRequests[quoteIndex].reviewedAt = new Date().toISOString();
 
-    if (updateError) {
-      showToast('Error approving quote: ' + updateError.message, 'warning');
-      return;
-    }
+  // Add notification for the customer
+  if (!state.notifications) state.notifications = [];
+  state.notifications.push({
+    id: 'notif-' + Date.now(),
+    userId: state.quoteRequests[quoteIndex].customerId,
+    type: 'quote_approved',
+    title: 'Quote Approved!',
+    message: 'Your quote ' + quoteId + ' has been approved at $' + price + '.' + (notes ? ' Note: ' + notes : '') + ' You can now proceed to payment.',
+    quoteId: quoteId,
+    read: false,
+    createdAt: new Date().toISOString()
+  });
 
-    // Create notification for customer
-    await _supabase.from('notifications').insert({
-      id: 'notif-' + Date.now(),
-      user_id: quote.customer_id,
-      type: 'quote_approved',
-      title: 'Quote Approved!',
-      message: 'Your quote ' + quoteId + ' has been approved at $' + price + '.' + (notes ? ' Note: ' + notes : '') + ' You can now proceed to payment.',
-      quote_id: quoteId,
-      read: false
-    });
+  saveState(state);
 
+  // Verify it actually saved
+  const verify = getState();
+  const saved = verify.quoteRequests.find(q => q.id === quoteId);
+  if (saved && saved.status === 'approved') {
     closeModal('newProjectModal');
     showToast('Quote approved at $' + price + '! Customer can now proceed to payment.', 'success');
-    await renderQuoteRequests();
-    await updateQuoteBadge();
-    await renderNotifications();
-  } catch (err) {
-    console.error('Error approving quote:', err);
-    showToast('Error: ' + (err.message || 'Unknown error'), 'warning');
+  } else {
+    showToast('Warning: approval may not have saved properly. Please try again.', 'warning');
   }
+
+  renderQuoteRequests();
+  updateQuoteBadge();
+  renderNotifications();
 }
 
-async function rejectQuote(quoteId) {
+function rejectQuote(quoteId) {
   const notesEl = document.getElementById('review-notes');
   const notes = notesEl ? notesEl.value : '';
-  
-  try {
-    const { data: quote } = await _supabase
-      .from('quote_requests')
-      .select('*')
-      .eq('id', quoteId)
-      .single();
-    
-    if (!quote) { showToast('Quote not found', 'warning'); return; }
+  const state = getState();
+  if (!state.quoteRequests) state.quoteRequests = [];
+  const quoteIndex = state.quoteRequests.findIndex(q => q.id === quoteId);
+  if (quoteIndex === -1) { showToast('Quote not found', 'warning'); return; }
 
-    const { error: updateError } = await _supabase
-      .from('quote_requests')
-      .update({
-        status: 'rejected',
-        admin_notes: notes,
-        reviewed_at: new Date().toISOString()
-      })
-      .eq('id', quoteId);
+  state.quoteRequests[quoteIndex].status = 'rejected';
+  state.quoteRequests[quoteIndex].adminNotes = notes;
+  state.quoteRequests[quoteIndex].reviewedAt = new Date().toISOString();
 
-    if (updateError) {
-      showToast('Error rejecting quote: ' + updateError.message, 'warning');
-      return;
-    }
+  if (!state.notifications) state.notifications = [];
+  state.notifications.push({
+    id: 'notif-' + Date.now(),
+    userId: state.quoteRequests[quoteIndex].customerId,
+    type: 'quote_rejected',
+    title: 'Quote Update',
+    message: 'Your quote ' + quoteId + ' needs revision.' + (notes ? ' Note: ' + notes : ''),
+    quoteId: quoteId,
+    read: false,
+    createdAt: new Date().toISOString()
+  });
 
-    await _supabase.from('notifications').insert({
-      id: 'notif-' + Date.now(),
-      user_id: quote.customer_id,
-      type: 'quote_rejected',
-      title: 'Quote Update',
-      message: 'Your quote ' + quoteId + ' needs revision.' + (notes ? ' Note: ' + notes : ''),
-      quote_id: quoteId,
-      read: false
-    });
-
-    closeModal('newProjectModal');
-    showToast('Quote declined', 'warning');
-    await renderQuoteRequests();
-    await updateQuoteBadge();
-    await renderNotifications();
-  } catch (err) {
-    console.error('Error rejecting quote:', err);
-    showToast('Error: ' + (err.message || 'Unknown error'), 'warning');
-  }
+  saveState(state);
+  closeModal('newProjectModal');
+  showToast('Quote declined', 'warning');
+  renderQuoteRequests();
+  updateQuoteBadge();
+  renderNotifications();
 }
 
-async function proceedToPayment(quoteId) {
-  try {
-    const { data: quote } = await _supabase
-      .from('quote_requests')
-      .select('*')
-      .eq('id', quoteId)
-      .single();
-    
-    if (!quote || quote.status !== 'approved') return;
+function proceedToPayment(quoteId) {
+  const state = getState();
+  const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
+  if (!quote || quote.status !== 'approved') return;
 
-    const checkoutData = {
-      ...quote.specs,
-      total: quote.admin_price,
-      quoteId: quote.id,
-      timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('electrotrical_pending_quote', JSON.stringify(checkoutData));
+  // Populate checkout with approved price
+  const checkoutData = {
+    ...quote.specs,
+    total: quote.adminPrice,
+    quoteId: quote.id,
+    timestamp: new Date().toISOString()
+  };
+  localStorage.setItem('electrotrical_pending_quote', JSON.stringify(checkoutData));
 
-    document.getElementById('co-pay-amount').textContent = '$' + quote.admin_price;
-    document.getElementById('co-s-layers').textContent = quote.specs.layersLabel;
-    document.getElementById('co-s-complexity').textContent = quote.specs.complexityLabel;
-    document.getElementById('co-s-size').textContent = quote.specs.sizeLabel;
-    document.getElementById('co-s-turn').textContent = quote.specs.turnaroundLabel;
-    document.getElementById('co-s-special').textContent = quote.specs.specialLabel;
-    document.getElementById('co-s-base').textContent = '$' + quote.specs.base;
-    document.getElementById('co-s-total').textContent = '$' + quote.admin_price;
+  // Update checkout view totals
+  document.getElementById('co-pay-amount').textContent = '$' + quote.adminPrice;
+  document.getElementById('co-s-layers').textContent = quote.specs.layersLabel;
+  document.getElementById('co-s-complexity').textContent = quote.specs.complexityLabel;
+  document.getElementById('co-s-size').textContent = quote.specs.sizeLabel;
+  document.getElementById('co-s-turn').textContent = quote.specs.turnaroundLabel;
+  document.getElementById('co-s-special').textContent = quote.specs.specialLabel;
+  document.getElementById('co-s-base').textContent = '$' + quote.specs.base;
+  document.getElementById('co-s-total').textContent = '$' + quote.adminPrice;
 
-    showView('checkout');
-  } catch (err) {
-    console.error('Error proceeding to payment:', err);
-    showToast('Error: ' + (err.message || 'Unknown error'), 'warning');
-  }
+  showView('checkout');
 }
 
-async function handleQuoteSubmission() {
+function handleQuoteSubmission() {
   const quoteDataStr = localStorage.getItem('electrotrical_quote_request');
   if (!quoteDataStr) return;
 
   const quoteData = JSON.parse(quoteDataStr);
-  const user = getCurrentUser();
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
   if (!user) return;
 
-  try {
-    // Fetch user profile for name/email
-    const { data: profile } = await _supabase
-      .from('profiles')
-      .select('first_name, last_name')
-      .eq('id', user.id)
-      .single();
+  // Create new quote request
+  const quoteId = 'QR-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000).padStart(3, '0');
+  if (!state.quoteRequests) state.quoteRequests = [];
 
-    const quoteId = 'QR-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000).padStart(3, '0');
+  state.quoteRequests.push({
+    id: quoteId,
+    customerId: user.id,
+    customerName: user.firstName + ' ' + user.lastName,
+    customerEmail: user.email,
+    specs: {
+      serviceType: quoteData.serviceType || 'design',
+      serviceLabel: quoteData.serviceLabel || 'PCB Layout Design',
+      pcbType: quoteData.pcbType || 'rigid',
+      pcbTypeLabel: quoteData.pcbTypeLabel || 'Regular Rigid PCB',
+      layers: quoteData.layers,
+      layersLabel: quoteData.layersLabel,
+      complexity: quoteData.complexity,
+      complexityLabel: quoteData.complexityLabel,
+      size: quoteData.size,
+      sizeLabel: quoteData.sizeLabel,
+      sides: quoteData.sides || 'both',
+      sidesLabel: quoteData.sidesLabel || 'Both sides',
+      special: quoteData.special,
+      specialLabel: quoteData.specialLabel,
+      turnaround: quoteData.turnaround,
+      turnaroundLabel: quoteData.turnaroundLabel,
+      turnMult: quoteData.turnMult,
+      deliveryFormats: quoteData.deliveryFormats || ['Source document', 'Gerber files'],
+      base: quoteData.base
+    },
+    estimatedTotal: quoteData.total,
+    adminPrice: null,
+    adminNotes: '',
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    reviewedAt: null
+  });
 
-    const { error: insertError } = await _supabase.from('quote_requests').insert({
-      id: quoteId,
-      customer_id: user.id,
-      customer_name: (profile?.first_name || '') + ' ' + (profile?.last_name || ''),
-      customer_email: user.email,
-      specs: {
-        serviceType: quoteData.serviceType || 'design',
-        serviceLabel: quoteData.serviceLabel || 'PCB Layout Design',
-        pcbType: quoteData.pcbType || 'rigid',
-        pcbTypeLabel: quoteData.pcbTypeLabel || 'Regular Rigid PCB',
-        layers: quoteData.layers,
-        layersLabel: quoteData.layersLabel,
-        complexity: quoteData.complexity,
-        complexityLabel: quoteData.complexityLabel,
-        size: quoteData.size,
-        sizeLabel: quoteData.sizeLabel,
-        sides: quoteData.sides || 'both',
-        sidesLabel: quoteData.sidesLabel || 'Both sides',
-        special: quoteData.special,
-        specialLabel: quoteData.specialLabel,
-        turnaround: quoteData.turnaround,
-        turnaroundLabel: quoteData.turnaroundLabel,
-        turnMult: quoteData.turnMult,
-        deliveryFormats: quoteData.deliveryFormats || ['Source document', 'Gerber files'],
-        base: quoteData.base
-      },
-      estimated_total: quoteData.total,
-      admin_price: null,
-      admin_notes: '',
-      status: 'pending'
-    });
+  // Notify admin
+  if (!state.notifications) state.notifications = [];
+  state.notifications.push({
+    id: 'notif-' + Date.now(),
+    userId: 'admin-001',
+    type: 'new_quote',
+    title: 'New Quote Request',
+    message: user.firstName + ' ' + user.lastName + ' submitted a quote request (' + quoteId + ') for $' + quoteData.total + ' estimated.',
+    quoteId: quoteId,
+    read: false,
+    createdAt: new Date().toISOString()
+  });
 
-    if (insertError) {
-      showToast('Error submitting quote: ' + insertError.message, 'warning');
-      return;
-    }
+  saveState(state);
+  localStorage.removeItem('electrotrical_quote_request');
 
-    // Notify admin - insert notification for admin user
-    await _supabase.from('notifications').insert({
-      id: 'notif-' + Date.now(),
-      user_id: 'admin-001', // This would need to be the actual admin user ID from profiles
-      type: 'new_quote',
-      title: 'New Quote Request',
-      message: (profile?.first_name || 'Customer') + ' submitted a quote request (' + quoteId + ') for $' + quoteData.total + ' estimated.',
-      quote_id: quoteId,
-      read: false
-    });
+  showToast('Quote request submitted! We\'ll review it shortly.', 'success');
 
-    localStorage.removeItem('electrotrical_quote_request');
-    showToast('Quote request submitted! We\'ll review it shortly.', 'success');
+  // Set up dashboard UI basics first, then switch to Quotes tab
+  const admin = isAdmin();
+  document.getElementById('adminBar').style.display = admin ? 'flex' : 'none';
+  document.getElementById('dashTitle').textContent = admin ? 'All Projects' : 'My Projects';
+  document.getElementById('dashSubtitle').textContent = admin
+    ? 'Manage all customer projects, upload designs, and track milestones'
+    : 'Manage your PCB design orders and track progress';
+  document.getElementById('newQuoteBtn').style.display = admin ? 'none' : 'inline-flex';
+  const usersTab = document.getElementById('usersTab');
+  if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
 
-    const admin = isAdmin();
-    document.getElementById('adminBar').style.display = admin ? 'flex' : 'none';
-    document.getElementById('dashTitle').textContent = admin ? 'All Projects' : 'My Projects';
-    document.getElementById('dashSubtitle').textContent = admin
-      ? 'Manage all customer projects, upload designs, and track milestones'
-      : 'Manage your PCB design orders and track progress';
-    document.getElementById('newQuoteBtn').style.display = admin ? 'none' : 'inline-flex';
-    const usersTab = document.getElementById('usersTab');
-    if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
+  // Switch to Quotes tab
+  switchMainTab('quotes');
+}
 
-    switchMainTab('quotes');
-  } catch (err) {
-    console.error('Error handling quote submission:', err);
-    showToast('Error: ' + (err.message || 'Unknown error'), 'warning');
+// ═══ SECURITY: Session Timeout (30 min inactivity) ═══
+let sessionTimer;
+function resetSessionTimer() {
+  clearTimeout(sessionTimer);
+  const state = getState();
+  if (state.currentUser) {
+    sessionTimer = setTimeout(() => {
+      showToast('Session expired due to inactivity', 'warning');
+      setTimeout(() => logout(), 2000);
+    }, 30 * 60 * 1000);
   }
 }
-
-// ══════════════════════════════════════════════════════════
-// NOTIFICATIONS
-// ══════════════════════════════════════════════════════════
-async function renderNotifications() {
-  const user = getCurrentUser();
-  if (!user) return;
-
-  try {
-    const { data: notifications } = await _supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    const unreadCount = (notifications || []).filter(n => !n.read).length;
-    const badge = document.getElementById('notificationBadge');
-    if (badge && unreadCount > 0) {
-      badge.textContent = unreadCount;
-      badge.style.display = 'flex';
-    } else if (badge) {
-      badge.style.display = 'none';
-    }
-  } catch (err) {
-    console.error('Error rendering notifications:', err);
-  }
-}
-
-function toggleNotifications(e) {
-  e.stopPropagation();
-  const panel = document.getElementById('notificationPanel');
-  panel.classList.toggle('active');
-}
-
-async function markAllRead() {
-  const user = getCurrentUser();
-  if (!user) return;
-
-  try {
-    await _supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('user_id', user.id)
-      .eq('read', false);
-
-    await renderNotifications();
-  } catch (err) {
-    console.error('Error marking notifications as read:', err);
-  }
-}
-
-// ══════════════════════════════════════════════════════════
-// UTILITIES
-// ══════════════════════════════════════════════════════════
-function formatDate(iso) {
-  if (!iso) return '';
-  const date = new Date(iso);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function formatNow() {
-  const now = new Date();
-  return now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-}
-
-function showToast(message, type) {
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.style.cssText = `
-    position: fixed; bottom: 24px; right: 24px; z-index: 10000;
-    background: ${type === 'success' ? 'var(--accent)' : type === 'warning' ? 'var(--warning)' : 'var(--primary-light)'};
-    color: ${type === 'success' || type === 'warning' ? '#000' : '#fff'};
-    padding: 12px 20px; border-radius: var(--radius-md);
-    font-size: 13px; font-weight: 500;
-    animation: slideIn 0.3s ease-out;
-    max-width: 300px;
-    word-wrap: break-word;
-  `;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  
-  setTimeout(() => toast.remove(), 4000);
-}
-
-// ══════════════════════════════════════════════════════════
-// CHECKOUT (Simulated Payment)
-// ══════════════════════════════════════════════════════════
-function loadCheckout() {
-  const checkoutData = localStorage.getItem('electrotrical_pending_quote');
-  if (!checkoutData) return;
-  
-  const data = JSON.parse(checkoutData);
-  document.getElementById('co-pay-amount').textContent = '$' + data.total;
-  document.getElementById('co-s-layers').textContent = data.layersLabel;
-  document.getElementById('co-s-complexity').textContent = data.complexityLabel;
-  document.getElementById('co-s-size').textContent = data.sizeLabel;
-  document.getElementById('co-s-turn').textContent = data.turnaroundLabel;
-  document.getElementById('co-s-special').textContent = data.specialLabel;
-  document.getElementById('co-s-base').textContent = '$' + data.base;
-  document.getElementById('co-s-total').textContent = '$' + data.total;
-  showView('checkout');
-}
-
-function fmtCard(el) {
-  let val = el.value.replace(/\s/g, '');
-  el.value = val.replace(/(.{4})/g, '$1 ').trim();
-}
-
-function fmtExpiry(el) {
-  let val = el.value.replace(/\D/g, '');
-  if (val.length >= 2) {
-    val = val.slice(0, 2) + '/' + val.slice(2, 4);
-  }
-  el.value = val;
-}
-
-async function processPayment() {
-  const user = getCurrentUser();
-  if (!user) { showToast('You must be logged in', 'warning'); return; }
-  
-  const checkoutData = localStorage.getItem('electrotrical_pending_quote');
-  if (!checkoutData) { showToast('No quote data found', 'warning'); return; }
-
-  const data = JSON.parse(checkoutData);
-  const cardName = document.getElementById('co-card-name').value.trim();
-  const cardNum = document.getElementById('co-card-num').value.replace(/\s/g, '');
-  const cardExp = document.getElementById('co-card-exp').value;
-  const cardCvc = document.getElementById('co-card-cvc').value;
-  
-  if (!cardName || !cardNum || !cardExp || !cardCvc) {
-    showToast('Please fill in all payment fields', 'warning');
-    return;
-  }
-
-  const btn = document.getElementById('co-pay-btn');
-  btn.disabled = true;
-  btn.textContent = 'Processing...';
-
-  try {
-    const quoteId = data.quoteId;
-    const { data: quote } = await _supabase
-      .from('quote_requests')
-      .select('*')
-      .eq('id', quoteId)
-      .single();
-
-    if (!quote) { showToast('Quote not found', 'warning'); return; }
-
-    // Create project from quote
-    const projectId = 'PRJ-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000).padStart(3, '0');
-    
-    const { error: projectError } = await _supabase.from('projects').insert({
-      id: projectId,
-      name: 'Project from Quote ' + quoteId,
-      customer_id: quote.customer_id,
-      layers: parseInt(quote.specs.layers) || 4,
-      size: quote.specs.sizeLabel || 'Medium',
-      description: 'Created from quote ' + quoteId,
-      status: 'active',
-      quote: quote,
-      milestones: [
-        { id: 'ms-1', name: 'Component Placement', status: 'pending', description: '', files: [], comments: [], updatedAt: null },
-        { id: 'ms-2', name: 'Nets Routing', status: 'pending', description: '', files: [], comments: [], updatedAt: null },
-        { id: 'ms-3', name: 'Final Gerbers', status: 'pending', description: '', files: [], comments: [], updatedAt: null }
-      ],
-      files: [],
-      activity: [
-        { text: 'Project created from approved quote', time: formatNow(), type: 'green' }
-      ]
-    });
-
-    if (projectError) {
-      showToast('Error creating project: ' + projectError.message, 'warning');
-      btn.disabled = false;
-      btn.textContent = 'Complete Payment';
-      return;
-    }
-
-    // Update quote status to paid
-    const { error: updateError } = await _supabase
-      .from('quote_requests')
-      .update({ status: 'paid', project_id: projectId, paid_at: new Date().toISOString() })
-      .eq('id', quoteId);
-
-    if (updateError) {
-      console.error('Error updating quote:', updateError);
-    }
-
-    localStorage.removeItem('electrotrical_pending_quote');
-    showToast('Payment successful! Your project has been created.', 'success');
-    
-    setTimeout(() => {
-      showView('dashboard');
-      renderDashboard();
-    }, 1500);
-  } catch (err) {
-    console.error('Payment processing error:', err);
-    showToast('Error: ' + (err.message || 'Payment failed'), 'warning');
-    btn.disabled = false;
-    btn.textContent = 'Complete Payment';
-  }
-}
-
-// ══════════════════════════════════════════════════════════
-// SESSION & AUTH STATE INITIALIZATION
-// ══════════════════════════════════════════════════════════
-async function initializeAuth() {
-  const { data: { session } } = await _supabase.auth.getSession();
-  
-  if (session) {
-    _currentUser = session.user;
-    const params = new URLSearchParams(window.location.search);
-    const isCheckout = params.get('checkout') === 'true';
-    const submitQuote = params.get('submit_quote') === 'true';
-
-    if (isCheckout && localStorage.getItem('electrotrical_pending_quote')) {
-      loadCheckout();
-    } else if (submitQuote) {
-      showView('dashboard');
-      await updateNav();
-      await handleQuoteSubmission();
-    } else {
-      showView('dashboard');
-      await updateNav();
-      await renderDashboard();
-    }
-  } else {
-    showView('auth');
-    updateNav();
-  }
-
-  if (window.location.search) {
-    window.history.replaceState({}, '', 'dashboard.html');
-  }
-}
-
-// Listen for auth state changes
-_supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN' && session && !_currentUser) {
-    await loginAs(session.user);
-  } else if (event === 'SIGNED_OUT') {
-    _currentUser = null;
-    showView('auth');
-    updateNav();
-  }
+['mousemove','keydown','click','scroll','touchstart'].forEach(evt => {
+  document.addEventListener(evt, resetSessionTimer, { passive: true });
 });
+resetSessionTimer();
+
+// ═══ Cookie Consent ═══
+function acceptCookies() {
+  localStorage.setItem('cookie_consent', 'accepted');
+  document.getElementById('cookie-consent').style.display = 'none';
+}
+function declineCookies() {
+  localStorage.setItem('cookie_consent', 'declined');
+  document.getElementById('cookie-consent').style.display = 'none';
+}
+if (!localStorage.getItem('cookie_consent')) {
+  document.getElementById('cookie-consent').style.display = 'block';
+}
 
 // Attach password strength checker
 if (document.getElementById('reg-pass')) {
@@ -2707,7 +3262,7 @@ if (document.getElementById('reg-confirm-pass')) {
   });
 }
 
-// Real-time validation
+// ═══ Real-time name & email validation ═══
 const nameRegex = /^[A-Za-z\s\-']*$/;
 ['reg-fname', 'reg-lname'].forEach(id => {
   const el = document.getElementById(id);
@@ -2725,21 +3280,43 @@ if (regEmailEl) {
   });
 }
 
-// Cookie consent
-function acceptCookies() {
-  localStorage.setItem('cookie_consent', 'accepted');
-  document.getElementById('cookie-consent').style.display = 'none';
-}
-function declineCookies() {
-  localStorage.setItem('cookie_consent', 'declined');
-  document.getElementById('cookie-consent').style.display = 'none';
-}
-if (!localStorage.getItem('cookie_consent')) {
-  document.getElementById('cookie-consent').style.display = 'block';
-}
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+(function init() {
+  state = getState();
+  const params = new URLSearchParams(window.location.search);
+  const isCheckout = params.get('checkout') === 'true';
+  const submitQuote = params.get('submit_quote') === 'true';
 
-// Initialize on page load
-window.addEventListener('DOMContentLoaded', initializeAuth);
+  if (isCheckout && localStorage.getItem('electrotrical_pending_quote')) {
+    // Coming from quote calculator — show checkout
+    loadCheckout();
+  } else if (submitQuote) {
+    // Handle quote submission after login
+    if (state.currentUser) {
+      showView('dashboard');
+      updateNav();
+      handleQuoteSubmission();
+    } else {
+      // Not logged in yet — show auth view, quote will be processed after login via loginAs()
+      showView('auth');
+      updateNav();
+    }
+  } else if (state.currentUser) {
+    showView('dashboard');
+    updateNav();
+    renderDashboard();
+  } else {
+    showView('auth');
+    updateNav();
+  }
+
+  // Clean URL params without reloading
+  if (isCheckout || submitQuote) {
+    window.history.replaceState({}, '', 'dashboard.html');
+  }
+})();
 </script>
 </body>
 </html>
