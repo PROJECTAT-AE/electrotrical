@@ -1546,12 +1546,19 @@ function demoLogin(role) {
   showToast('Demo accounts are disabled. Please create your own account.', 'warning');
 }
 
-async function loginAs(user) {
-  _currentUser = user;
-  showView('dashboard');
-  updateNav();
+async function loginAs(authUser) {
+  // Fetch profile from Supabase and merge with auth user
+  const { data: profile } = await _supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', authUser.id)
+    .single();
 
-  // Check for pending quote request after login/registration
+  _currentUser = { ...authUser, ...(profile || {}) };
+
+  showView('dashboard');
+  await updateNav();
+
   if (localStorage.getItem('electrotrical_quote_request')) {
     await handleQuoteSubmission();
   } else {
@@ -1573,18 +1580,8 @@ function getCurrentUser() {
   return _currentUser;
 }
 
-async function isAdmin() {
-  const user = getCurrentUser();
-  if (!user) return false;
-  
-  const { data, error } = await _supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  
-  if (error || !data) return false;
-  return data.role === 'admin';
+function isAdmin() {
+  return _currentUser?.role === 'admin';
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1626,7 +1623,7 @@ async function renderDashboard() {
   const user = getCurrentUser();
   if (!user) return;
 
-  const admin = await isAdmin();
+  const admin = isAdmin();
   document.getElementById('adminBar').style.display = admin ? 'flex' : 'none';
   document.getElementById('dashTitle').textContent = admin ? 'All Projects' : 'My Projects';
   document.getElementById('dashSubtitle').textContent = admin
@@ -1724,7 +1721,7 @@ async function openProject(projectId) {
     const detail = document.getElementById('projectDetail');
     detail.style.display = 'block';
 
-    const admin = await isAdmin();
+    const admin = isAdmin();
     const { data: customerProfile } = await _supabase
       .from('profiles')
       .select('first_name, last_name')
@@ -2006,7 +2003,7 @@ function switchMainTab(tab) {
 
 async function renderUsers() {
   const user = getCurrentUser();
-  const admin = await isAdmin();
+  const admin = isAdmin();
   if (!admin || !user) return;
   
   try {
@@ -2048,7 +2045,7 @@ async function renderQuoteRequests() {
   const user = getCurrentUser();
   if (!user) return;
   
-  const admin = await isAdmin();
+  const admin = isAdmin();
   
   try {
     let { data: quotes, error } = admin
@@ -2439,7 +2436,7 @@ async function handleQuoteSubmission() {
     localStorage.removeItem('electrotrical_quote_request');
     showToast('Quote request submitted! We\'ll review it shortly.', 'success');
 
-    const admin = await isAdmin();
+    const admin = isAdmin();
     document.getElementById('adminBar').style.display = admin ? 'flex' : 'none';
     document.getElementById('dashTitle').textContent = admin ? 'All Projects' : 'My Projects';
     document.getElementById('dashSubtitle').textContent = admin
@@ -2695,12 +2692,9 @@ async function initializeAuth() {
 }
 
 // Listen for auth state changes
-_supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    _currentUser = session.user;
-    showView('dashboard');
-    updateNav();
-    renderDashboard();
+_supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session && !_currentUser) {
+    await loginAs(session.user);
   } else if (event === 'SIGNED_OUT') {
     _currentUser = null;
     showView('auth');
