@@ -1427,17 +1427,14 @@ async function handleLogin(e) {
   loginBtn.textContent = 'Signing in...';
   
   try {
-    const { data, error } = await _supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
     if (error) {
       showToast(error.message || 'Invalid email or password', 'warning');
       loginBtn.disabled = false;
       loginBtn.textContent = 'Sign In';
       return;
     }
-    loginAs(data.user);
+    await loginAs(data.user);
   } catch (err) {
     showToast('Login error: ' + (err.message || 'Unknown error'), 'warning');
     loginBtn.disabled = false;
@@ -1547,14 +1544,16 @@ function demoLogin(role) {
 }
 
 async function loginAs(authUser) {
-  // Fetch profile from Supabase and merge with auth user
-  const { data: profile } = await _supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', authUser.id)
-    .single();
-
-  _currentUser = { ...authUser, ...(profile || {}) };
+  // Fetch profile with timeout — fallback to auth user if it fails
+  try {
+    const profilePromise = _supabase.from('profiles').select('*').eq('id', authUser.id).single();
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+    const { data: profile } = await Promise.race([profilePromise, timeoutPromise]);
+    _currentUser = { ...authUser, ...(profile || {}) };
+  } catch (e) {
+    // Profile fetch failed — proceed with auth user only (customer view)
+    _currentUser = { ...authUser };
+  }
 
   showView('dashboard');
   await updateNav();
