@@ -1060,42 +1060,72 @@ a { color: inherit; text-decoration: none; }
     </div>
     <div class="portfolio-grid">
 
-      <!-- Card 1 — CubeSat EPS -->
+      <!-- Card 1 — CubeSat OBC -->
       <div class="portfolio-card reveal reveal-delay-1">
         <div class="portfolio-img">
           <div class="portfolio-overlay"></div>
-          <!-- EPS board: solar input traces, battery management, power bus rails -->
+          <!-- OBC board: ARM processor, NOR flash, SRAM, CAN bus, PC-104 connector -->
           <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
             <!-- PCB outline -->
             <rect x="8" y="8" width="124" height="124" rx="6" stroke="#0066FF" stroke-width="1.5" fill="none"/>
-            <!-- Solar array input pads (left edge) -->
-            <rect x="8" y="22" width="10" height="6" rx="1" fill="#0066FF"/>
-            <rect x="8" y="34" width="10" height="6" rx="1" fill="#0066FF"/>
-            <rect x="8" y="46" width="10" height="6" rx="1" fill="#0066FF"/>
-            <!-- MPPT controller IC -->
-            <rect x="28" y="26" width="28" height="22" rx="3" stroke="#00D4FF" stroke-width="1.5"/>
-            <text x="34" y="40" font-size="7" fill="#00D4FF" font-family="monospace">MPPT</text>
-            <!-- Inductor (power stage) -->
-            <path d="M68 30 Q71 25 74 30 Q77 35 80 30 Q83 25 86 30" stroke="#0066FF" stroke-width="1.5" fill="none"/>
-            <!-- Battery connector -->
-            <rect x="96" y="22" width="20" height="14" rx="2" stroke="#00E5A0" stroke-width="1.5"/>
-            <line x1="99" y1="26" x2="99" y2="32" stroke="#00E5A0" stroke-width="1"/>
-            <line x1="103" y1="26" x2="103" y2="32" stroke="#00E5A0" stroke-width="1"/>
-            <line x1="107" y1="26" x2="107" y2="32" stroke="#00E5A0" stroke-width="1"/>
-            <!-- Power bus horizontal rail -->
-            <line x1="18" y1="60" x2="122" y2="60" stroke="#0066FF" stroke-width="2"/>
-            <line x1="18" y1="66" x2="122" y2="66" stroke="#0066FF" stroke-width="2" opacity="0.4"/>
-            <!-- Bus capacitors -->
-            <rect x="34" y="72" width="6" height="12" rx="1" fill="#0066FF" opacity="0.7"/>
-            <rect x="46" y="72" width="6" height="12" rx="1" fill="#0066FF" opacity="0.7"/>
-            <rect x="58" y="72" width="6" height="12" rx="1" fill="#0066FF" opacity="0.7"/>
-            <!-- Voltage regulators -->
-            <rect x="24" y="90" width="22" height="16" rx="3" stroke="#00D4FF" stroke-width="1.5"/>
-            <text x="26" y="101" font-size="6" fill="#00D4FF" font-family="monospace">3V3</text>
-            <rect x="54" y="90" width="22" height="16" rx="3" stroke="#00D4FF" stroke-width="1.5"/>
-            <text x="57" y="101" font-size="6" fill="#00D4FF" font-family="monospace">5V0</text>
-            <rect x="84" y="90" width="22" height="16" rx="3" stroke="#00D4FF" stroke-width="1.5"/>
-            <text x="87" y="101" font-size="6" fill="#00D4FF" font-family="monospace">12V</text>
+            <!-- Main processor (ARM Cortex-R5 rad-hard) -->
+            <rect x="38" y="18" width="44" height="40" rx="3" stroke="#0066FF" stroke-width="2"/>
+            <!-- BGA ball array inside processor -->
+            <circle cx="48" cy="28" r="1.5" fill="#0066FF"/>
+            <circle cx="54" cy="28" r="1.5" fill="#0066FF"/>
+            <circle cx="60" cy="28" r="1.5" fill="#0066FF"/>
+            <circle cx="66" cy="28" r="1.5" fill="#0066FF"/>
+            <circle cx="72" cy="28" r="1.5" fill="#0066FF"/>
+            <circle cx="48" cy="34" r="1.5" fill="#0066FF"/>
+            <circle cx="54" cy="34" r="1.5" fill="#0066FF"/>
+            <circle cx="60" cy="34" r="1.5" fill="#0066FF"/>
+            <circle cx="66" cy="34" r="1.5" fill="#0066FF"/>
+            <circle cx="72" cy="34" r="1.5" fill="#0066FF"/>
+            <circle cx="48" cy="40" r="1.5" fill="#0066FF"/>
+            <circle cx="54" cy="40" r="1.5" fill="#0066FF"/>
+            <circle cx="60" cy="40" r="1.5" fill="#0066FF"/>
+            <circle cx="66" cy="40" r="1.5" fill="#0066FF"/>
+            <circle cx="72" cy="40" r="1.5" fill="#0066FF"/>
+            <circle cx="48" cy="46" r="1.5" fill="#0066FF"/>
+            <circle cx="54" cy="46" r="1.5" fill="#0066FF"/>
+            <circle cx="60" cy="46" r="1.5" fill="#0066FF"/>
+            <circle cx="66" cy="46" r="1.5" fill="#0066FF"/>
+            <circle cx="72" cy="46" r="1.5" fill="#0066FF"/>
+            <text x="44" y="54" font-size="5.5" fill="#0066FF" font-family="monospace">ARM Cortex-R5</text>
+            <!-- NOR Flash (left) -->
+            <rect x="12" y="22" width="22" height="14" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="14" y="31" font-size="5.5" fill="#00D4FF" font-family="monospace">NOR 256M</text>
+            <!-- SRAM (right) -->
+            <rect x="86" y="22" width="22" height="14" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="88" y="31" font-size="5.5" fill="#00D4FF" font-family="monospace">SRAM 8M</text>
+            <!-- Address/data bus lines -->
+            <line x1="34" y1="29" x2="38" y2="29" stroke="#00D4FF" stroke-width="1"/>
+            <line x1="34" y1="32" x2="38" y2="32" stroke="#00D4FF" stroke-width="1"/>
+            <line x1="82" y1="29" x2="86" y2="29" stroke="#00D4FF" stroke-width="1"/>
+            <line x1="82" y1="32" x2="86" y2="32" stroke="#00D4FF" stroke-width="1"/>
+            <!-- Watchdog timer IC -->
+            <rect x="12" y="46" width="22" height="12" rx="2" stroke="#00E5A0" stroke-width="1.5"/>
+            <text x="14" y="55" font-size="5.5" fill="#00E5A0" font-family="monospace">WDT / RTC</text>
+            <!-- CAN bus transceiver -->
+            <rect x="86" y="44" width="26" height="14" rx="2" stroke="#00E5A0" stroke-width="1.5"/>
+            <text x="88" y="53" font-size="5.5" fill="#00E5A0" font-family="monospace">CAN 2.0B</text>
+            <!-- SpaceWire interface -->
+            <rect x="12" y="68" width="30" height="14" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="14" y="77" font-size="5.5" fill="#00D4FF" font-family="monospace">SpaceWire</text>
+            <!-- I2C / SPI bus block -->
+            <rect x="54" y="68" width="30" height="14" rx="2" stroke="#0066FF" stroke-width="1.5"/>
+            <text x="57" y="74" font-size="5.5" fill="#0066FF" font-family="monospace">I2C / SPI</text>
+            <text x="57" y="80" font-size="5" fill="#0066FF" font-family="monospace">Subsys. Bus</text>
+            <!-- UART debug header -->
+            <rect x="96" y="68" width="20" height="14" rx="2" stroke="#00E5A0" stroke-width="1"/>
+            <text x="98" y="77" font-size="5.5" fill="#00E5A0" font-family="monospace">UART</text>
+            <!-- Crystal oscillator -->
+            <rect x="54" y="92" width="30" height="12" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="57" y="101" font-size="5.5" fill="#00D4FF" font-family="monospace">TCXO 10MHz</text>
+            <!-- Routing traces -->
+            <line x1="42" y1="58" x2="42" y2="68" stroke="#0066FF" stroke-width="1" opacity="0.5"/>
+            <line x1="60" y1="58" x2="60" y2="68" stroke="#0066FF" stroke-width="1" opacity="0.5"/>
+            <line x1="78" y1="58" x2="78" y2="68" stroke="#0066FF" stroke-width="1" opacity="0.5"/>
             <!-- PC-104 edge connector (bottom) -->
             <rect x="20" y="118" width="100" height="6" rx="1" stroke="#00E5A0" stroke-width="1"/>
             <line x1="26" y1="118" x2="26" y2="124" stroke="#00E5A0" stroke-width="1"/>
@@ -1121,9 +1151,9 @@ a { color: inherit; text-decoration: none; }
           </svg>
         </div>
         <div class="portfolio-info">
-          <span class="portfolio-tag">Power Electronics · Space</span>
-          <h3 class="portfolio-title">CubeSat Electrical Power System</h3>
-          <p class="portfolio-desc">6-layer EPS board for a 3U CubeSat with MPPT solar array regulation, Li-ion battery management, and triple-redundant power rails. PC-104 form factor, ECSS-E-ST-20C compliant with latch-up protection on all supply lines.</p>
+          <span class="portfolio-tag">Embedded Systems · Space</span>
+          <h3 class="portfolio-title">CubeSat On-Board Computer (OBC)</h3>
+          <p class="portfolio-desc">8-layer OBC for a 3U CubeSat built around a radiation-tolerant ARM Cortex-R5 processor with 256 MB NOR flash, 8 MB SRAM, SpaceWire interface, CAN 2.0B bus, hardware watchdog, and TCXO-disciplined RTC. PC-104 form factor, ECSS-E-ST-40C compliant.</p>
         </div>
       </div>
 
