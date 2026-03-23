@@ -1059,39 +1059,191 @@ a { color: inherit; text-decoration: none; }
       <p class="section-desc">A selection of boards we have designed and delivered for clients across industries.</p>
     </div>
     <div class="portfolio-grid">
+
+      <!-- Card 1 — CubeSat EPS -->
       <div class="portfolio-card reveal reveal-delay-1">
         <div class="portfolio-img">
           <div class="portfolio-overlay"></div>
-          <svg width="120" height="120" viewBox="0 0 120 120" fill="none"><rect x="10" y="10" width="100" height="100" rx="8" stroke="#0066FF" stroke-width="2"/><rect x="25" y="25" width="20" height="20" rx="3" fill="#0066FF"/><rect x="55" y="25" width="20" height="20" rx="3" fill="#00D4FF"/><rect x="25" y="55" width="20" height="20" rx="3" fill="#00D4FF"/><rect x="55" y="55" width="20" height="20" rx="3" fill="#0066FF"/><circle cx="95" cy="30" r="8" stroke="#0066FF" stroke-width="1.5"/><circle cx="95" cy="60" r="5" fill="#00D4FF" opacity="0.5"/><line x1="45" y1="35" x2="55" y2="35" stroke="#0066FF" stroke-width="1.5"/><line x1="35" y1="45" x2="35" y2="55" stroke="#00D4FF" stroke-width="1.5"/></svg>
+          <!-- EPS board: solar input traces, battery management, power bus rails -->
+          <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
+            <!-- PCB outline -->
+            <rect x="8" y="8" width="124" height="124" rx="6" stroke="#0066FF" stroke-width="1.5" fill="none"/>
+            <!-- Solar array input pads (left edge) -->
+            <rect x="8" y="22" width="10" height="6" rx="1" fill="#0066FF"/>
+            <rect x="8" y="34" width="10" height="6" rx="1" fill="#0066FF"/>
+            <rect x="8" y="46" width="10" height="6" rx="1" fill="#0066FF"/>
+            <!-- MPPT controller IC -->
+            <rect x="28" y="26" width="28" height="22" rx="3" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="34" y="40" font-size="7" fill="#00D4FF" font-family="monospace">MPPT</text>
+            <!-- Inductor (power stage) -->
+            <path d="M68 30 Q71 25 74 30 Q77 35 80 30 Q83 25 86 30" stroke="#0066FF" stroke-width="1.5" fill="none"/>
+            <!-- Battery connector -->
+            <rect x="96" y="22" width="20" height="14" rx="2" stroke="#00E5A0" stroke-width="1.5"/>
+            <line x1="99" y1="26" x2="99" y2="32" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="103" y1="26" x2="103" y2="32" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="107" y1="26" x2="107" y2="32" stroke="#00E5A0" stroke-width="1"/>
+            <!-- Power bus horizontal rail -->
+            <line x1="18" y1="60" x2="122" y2="60" stroke="#0066FF" stroke-width="2"/>
+            <line x1="18" y1="66" x2="122" y2="66" stroke="#0066FF" stroke-width="2" opacity="0.4"/>
+            <!-- Bus capacitors -->
+            <rect x="34" y="72" width="6" height="12" rx="1" fill="#0066FF" opacity="0.7"/>
+            <rect x="46" y="72" width="6" height="12" rx="1" fill="#0066FF" opacity="0.7"/>
+            <rect x="58" y="72" width="6" height="12" rx="1" fill="#0066FF" opacity="0.7"/>
+            <!-- Voltage regulators -->
+            <rect x="24" y="90" width="22" height="16" rx="3" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="26" y="101" font-size="6" fill="#00D4FF" font-family="monospace">3V3</text>
+            <rect x="54" y="90" width="22" height="16" rx="3" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="57" y="101" font-size="6" fill="#00D4FF" font-family="monospace">5V0</text>
+            <rect x="84" y="90" width="22" height="16" rx="3" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="87" y="101" font-size="6" fill="#00D4FF" font-family="monospace">12V</text>
+            <!-- PC-104 edge connector (bottom) -->
+            <rect x="20" y="118" width="100" height="6" rx="1" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="26" y1="118" x2="26" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="32" y1="118" x2="32" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="38" y1="118" x2="38" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="44" y1="118" x2="44" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="50" y1="118" x2="50" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="56" y1="118" x2="56" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="62" y1="118" x2="62" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="68" y1="118" x2="68" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="74" y1="118" x2="74" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="80" y1="118" x2="80" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="86" y1="118" x2="86" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="92" y1="118" x2="92" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="98" y1="118" x2="98" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="104" y1="118" x2="104" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <line x1="110" y1="118" x2="110" y2="124" stroke="#00E5A0" stroke-width="1"/>
+            <!-- Mounting holes -->
+            <circle cx="18" cy="18" r="4" stroke="#0066FF" stroke-width="1" fill="none"/>
+            <circle cx="122" cy="18" r="4" stroke="#0066FF" stroke-width="1" fill="none"/>
+            <circle cx="18" cy="122" r="4" stroke="#0066FF" stroke-width="1" fill="none"/>
+            <circle cx="122" cy="122" r="4" stroke="#0066FF" stroke-width="1" fill="none"/>
+          </svg>
         </div>
         <div class="portfolio-info">
-          <span class="portfolio-tag">High-Speed Digital</span>
-          <h3 class="portfolio-title">8-Layer DDR4 SoC Module</h3>
-          <p class="portfolio-desc">High-speed 8-layer design with controlled impedance differential pairs, BGA fanout, and thermal optimization for an IoT SoC platform.</p>
+          <span class="portfolio-tag">Power Electronics · Space</span>
+          <h3 class="portfolio-title">CubeSat Electrical Power System</h3>
+          <p class="portfolio-desc">6-layer EPS board for a 3U CubeSat with MPPT solar array regulation, Li-ion battery management, and triple-redundant power rails. PC-104 form factor, ECSS-E-ST-20C compliant with latch-up protection on all supply lines.</p>
         </div>
       </div>
+
+      <!-- Card 2 — S-Band Transceiver -->
       <div class="portfolio-card reveal reveal-delay-2">
         <div class="portfolio-img">
           <div class="portfolio-overlay" style="background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,229,160,0.1));"></div>
-          <svg width="120" height="120" viewBox="0 0 120 120" fill="none"><circle cx="60" cy="60" r="45" stroke="#00D4FF" stroke-width="1.5"/><circle cx="60" cy="60" r="30" stroke="#00D4FF" stroke-width="1.5" opacity="0.6"/><circle cx="60" cy="60" r="15" stroke="#00D4FF" stroke-width="1.5" opacity="0.3"/><circle cx="60" cy="60" r="5" fill="#00D4FF"/><line x1="60" y1="15" x2="60" y2="25" stroke="#00E5A0" stroke-width="1.5"/><line x1="95" y1="60" x2="105" y2="60" stroke="#00E5A0" stroke-width="1.5"/></svg>
+          <!-- S-Band RF board: patch antenna feed, LNA, transmission lines -->
+          <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
+            <!-- PCB outline -->
+            <rect x="8" y="8" width="124" height="124" rx="6" stroke="#00D4FF" stroke-width="1.5" fill="none"/>
+            <!-- Ground plane hatching (top half) -->
+            <line x1="8" y1="18" x2="18" y2="8" stroke="#00D4FF" stroke-width="0.5" opacity="0.2"/>
+            <line x1="8" y1="32" x2="32" y2="8" stroke="#00D4FF" stroke-width="0.5" opacity="0.2"/>
+            <line x1="8" y1="46" x2="46" y2="8" stroke="#00D4FF" stroke-width="0.5" opacity="0.2"/>
+            <line x1="8" y1="60" x2="60" y2="8" stroke="#00D4FF" stroke-width="0.5" opacity="0.2"/>
+            <!-- Patch antenna (top-right) -->
+            <rect x="78" y="14" width="44" height="36" rx="2" stroke="#00D4FF" stroke-width="1.5" fill="rgba(0,212,255,0.06)"/>
+            <text x="83" y="30" font-size="6.5" fill="#00D4FF" font-family="monospace">PATCH</text>
+            <text x="83" y="40" font-size="6.5" fill="#00D4FF" font-family="monospace">ANTENNA</text>
+            <!-- Feed line from antenna to LNA -->
+            <line x1="78" y1="32" x2="64" y2="32" stroke="#00D4FF" stroke-width="2"/>
+            <line x1="64" y1="32" x2="64" y2="52" stroke="#00D4FF" stroke-width="2"/>
+            <!-- LNA block -->
+            <rect x="48" y="52" width="32" height="20" rx="3" stroke="#00E5A0" stroke-width="1.5"/>
+            <text x="52" y="60" font-size="6" fill="#00E5A0" font-family="monospace">LNA</text>
+            <text x="52" y="68" font-size="5.5" fill="#00E5A0" font-family="monospace">NF 0.8dB</text>
+            <!-- Microstrip trace to mixer -->
+            <path d="M48 62 L32 62 L32 82" stroke="#00D4FF" stroke-width="1.5" fill="none"/>
+            <!-- Mixer -->
+            <rect x="20" y="82" width="24" height="18" rx="3" stroke="#0066FF" stroke-width="1.5"/>
+            <text x="24" y="92" font-size="6" fill="#0066FF" font-family="monospace">MIX</text>
+            <text x="24" y="99" font-size="5" fill="#0066FF" font-family="monospace">2.4GHz</text>
+            <!-- LO input -->
+            <line x1="32" y1="100" x2="32" y2="110" stroke="#0066FF" stroke-width="1.5"/>
+            <rect x="20" y="110" width="24" height="14" rx="2" stroke="#0066FF" stroke-width="1.5"/>
+            <text x="24" y="120" font-size="6" fill="#0066FF" font-family="monospace">TCXO</text>
+            <!-- PA block -->
+            <rect x="80" y="76" width="32" height="20" rx="3" stroke="#00E5A0" stroke-width="1.5"/>
+            <text x="85" y="84" font-size="6" fill="#00E5A0" font-family="monospace">PA</text>
+            <text x="84" y="92" font-size="5.5" fill="#00E5A0" font-family="monospace">+30dBm</text>
+            <!-- RF output connector -->
+            <circle cx="120" cy="110" r="8" stroke="#00D4FF" stroke-width="1.5" fill="none"/>
+            <circle cx="120" cy="110" r="3" fill="#00D4FF"/>
+            <line x1="96" y1="86" x2="112" y2="86" stroke="#00D4FF" stroke-width="1.5"/>
+            <line x1="112" y1="86" x2="112" y2="110" stroke="#00D4FF" stroke-width="1.5"/>
+            <!-- Mounting holes -->
+            <circle cx="18" cy="18" r="4" stroke="#00D4FF" stroke-width="1" fill="none"/>
+            <circle cx="122" cy="18" r="4" stroke="#00D4FF" stroke-width="1" fill="none"/>
+            <circle cx="18" cy="122" r="4" stroke="#00D4FF" stroke-width="1" fill="none"/>
+            <circle cx="122" cy="122" r="4" stroke="#00D4FF" stroke-width="1" fill="none"/>
+          </svg>
         </div>
         <div class="portfolio-info">
-          <span class="portfolio-tag">RF Design</span>
-          <h3 class="portfolio-title">5.8 GHz Radar Front-End</h3>
-          <p class="portfolio-desc">4-layer RF board with microstrip transmission lines, antenna matching networks, and precision ground plane design for automotive radar.</p>
+          <span class="portfolio-tag">RF Design · Space</span>
+          <h3 class="portfolio-title">S-Band Satellite Transceiver</h3>
+          <p class="portfolio-desc">4-layer RF PCB for CubeSat S-band uplink/downlink (2.025–2.29 GHz) with integrated LNA (NF 0.8 dB), +30 dBm PA, TCXO reference, and impedance-matched microstrip feed to an on-board patch antenna. Meets ITU space radiocommunication requirements.</p>
         </div>
       </div>
+
+      <!-- Card 3 — Star Tracker -->
       <div class="portfolio-card reveal reveal-delay-3">
         <div class="portfolio-img">
           <div class="portfolio-overlay" style="background: linear-gradient(135deg, rgba(0,229,160,0.2), rgba(0,102,255,0.1));"></div>
-          <svg width="120" height="120" viewBox="0 0 120 120" fill="none"><path d="M20 60 Q40 20 60 60 Q80 100 100 60" stroke="#00E5A0" stroke-width="2" fill="none"/><path d="M20 70 Q40 30 60 70 Q80 110 100 70" stroke="#00E5A0" stroke-width="1.5" fill="none" opacity="0.4"/><rect x="30" y="45" width="15" height="10" rx="2" stroke="#0066FF" stroke-width="1.5"/><rect x="70" y="55" width="15" height="10" rx="2" stroke="#0066FF" stroke-width="1.5"/></svg>
+          <!-- Star tracker: CMOS sensor, FPGA, LVDS differential pairs -->
+          <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
+            <!-- PCB outline -->
+            <rect x="8" y="8" width="124" height="124" rx="6" stroke="#00E5A0" stroke-width="1.5" fill="none"/>
+            <!-- Camera lens opening (top-center) -->
+            <circle cx="70" cy="32" r="18" stroke="#00E5A0" stroke-width="1.5" fill="rgba(0,229,160,0.05)"/>
+            <circle cx="70" cy="32" r="11" stroke="#00E5A0" stroke-width="1" opacity="0.6"/>
+            <circle cx="70" cy="32" r="5" fill="#00E5A0" opacity="0.4"/>
+            <!-- CMOS image sensor IC -->
+            <rect x="44" y="56" width="52" height="32" rx="3" stroke="#00E5A0" stroke-width="1.5"/>
+            <text x="48" y="69" font-size="6" fill="#00E5A0" font-family="monospace">CMOS SENSOR</text>
+            <text x="54" y="79" font-size="5.5" fill="#00E5A0" font-family="monospace">4MP / 60fps</text>
+            <!-- LVDS differential pairs from sensor to FPGA -->
+            <line x1="44" y1="64" x2="28" y2="64" stroke="#00E5A0" stroke-width="1.5"/>
+            <line x1="44" y1="68" x2="28" y2="68" stroke="#00E5A0" stroke-width="1.5"/>
+            <line x1="44" y1="76" x2="28" y2="76" stroke="#00E5A0" stroke-width="1" opacity="0.5"/>
+            <line x1="44" y1="80" x2="28" y2="80" stroke="#00E5A0" stroke-width="1" opacity="0.5"/>
+            <!-- FPGA BGA package -->
+            <rect x="14" y="92" width="36" height="36" rx="3" stroke="#0066FF" stroke-width="1.5"/>
+            <!-- BGA ball array -->
+            <circle cx="22" cy="100" r="1.5" fill="#0066FF"/>
+            <circle cx="28" cy="100" r="1.5" fill="#0066FF"/>
+            <circle cx="34" cy="100" r="1.5" fill="#0066FF"/>
+            <circle cx="40" cy="100" r="1.5" fill="#0066FF"/>
+            <circle cx="22" cy="106" r="1.5" fill="#0066FF"/>
+            <circle cx="28" cy="106" r="1.5" fill="#0066FF"/>
+            <circle cx="34" cy="106" r="1.5" fill="#0066FF"/>
+            <circle cx="40" cy="106" r="1.5" fill="#0066FF"/>
+            <circle cx="22" cy="112" r="1.5" fill="#0066FF"/>
+            <circle cx="28" cy="112" r="1.5" fill="#0066FF"/>
+            <circle cx="34" cy="112" r="1.5" fill="#0066FF"/>
+            <circle cx="40" cy="112" r="1.5" fill="#0066FF"/>
+            <text x="17" y="122" font-size="5.5" fill="#0066FF" font-family="monospace">FPGA BGA</text>
+            <!-- Memory (SRAM) -->
+            <rect x="60" y="96" width="28" height="16" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="63" y="106" font-size="6" fill="#00D4FF" font-family="monospace">SRAM</text>
+            <!-- I2C/SPI bus to OBC connector -->
+            <rect x="96" y="92" width="32" height="12" rx="2" stroke="#00E5A0" stroke-width="1"/>
+            <text x="98" y="100" font-size="5.5" fill="#00E5A0" font-family="monospace">OBC CONN.</text>
+            <!-- Quartz oscillator -->
+            <rect x="96" y="112" width="20" height="12" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="98" y="121" font-size="5.5" fill="#00D4FF" font-family="monospace">40MHz</text>
+            <!-- Mounting holes -->
+            <circle cx="18" cy="18" r="4" stroke="#00E5A0" stroke-width="1" fill="none"/>
+            <circle cx="122" cy="18" r="4" stroke="#00E5A0" stroke-width="1" fill="none"/>
+            <circle cx="18" cy="122" r="4" stroke="#00E5A0" stroke-width="1" fill="none"/>
+            <circle cx="122" cy="122" r="4" stroke="#00E5A0" stroke-width="1" fill="none"/>
+          </svg>
         </div>
         <div class="portfolio-info">
-          <span class="portfolio-tag">Flex Circuit</span>
-          <h3 class="portfolio-title">Wearable Sensor Flex PCB</h3>
-          <p class="portfolio-desc">6-layer rigid-flex design for a medical wearable device with dynamic flex zones, fine-pitch connectors, and biocompatible materials.</p>
+          <span class="portfolio-tag">High-Speed Digital · Space</span>
+          <h3 class="portfolio-title">Star Tracker Image Sensor Board</h3>
+          <p class="portfolio-desc">8-layer high-density board pairing a 4 MP CMOS star tracker sensor with an FPGA attitude processor. Features LVDS differential data pairs, precision 40 MHz clock distribution, radiation-tolerant SRAM, and thermal management designed for LEO thermal cycling (−40 °C to +85 °C).</p>
         </div>
       </div>
+
     </div>
   </div>
 </section>
