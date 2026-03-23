@@ -507,6 +507,21 @@ a { color: inherit; text-decoration: none; }
   background: rgba(0,102,255,0.08);
 }
 
+/* Milestone Locked State */
+.milestone-locked {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.milestone-locked svg { flex-shrink: 0; opacity: 0.5; }
+
 /* Milestone Detail Panel */
 .milestone-detail {
   background: var(--dark-700); border: 1px solid var(--border);
@@ -1836,7 +1851,7 @@ function openProject(projectId) {
     <div class="project-detail-grid">
       <div>
         <!-- Milestone Panels -->
-        ${project.milestones.map((m, i) => renderMilestonePanel(project.id, m, i, admin)).join('')}
+        ${project.milestones.map((m, i) => renderMilestonePanel(project, m, i, admin)).join('')}
 
         <!-- Customer Schematic Files -->
         <div class="detail-card">
@@ -1894,7 +1909,13 @@ function openProject(projectId) {
   `;
 }
 
-function renderMilestonePanel(projectId, milestone, index, admin) {
+function renderMilestonePanel(project, milestone, index, admin) {
+  const projectId = project.id;
+
+  // Check if all previous milestones are approved
+  const prevAllApproved = project.milestones
+    .slice(0, index)
+    .every(m => m.status === 'approved');
   const isReview = milestone.status === 'awaiting';
   const isCurrent = milestone.status === 'in-progress';
   const isPending = milestone.status === 'pending';
@@ -1910,15 +1931,29 @@ function renderMilestonePanel(projectId, milestone, index, admin) {
 
   if (admin) {
     if (isPending || isCurrent) {
-      actions = `
-        <div style="margin-top:12px;">
-          <div class="upload-zone" style="padding:1.25rem;">
-            <div class="upload-zone-title" style="font-size:13px;">Upload design files for review</div>
-            <div class="upload-zone-desc" style="font-size:12px;">.pdf, .png, .zip, .gerber</div>
-            <input type="file" multiple onchange="adminUploadMilestone(event, '${projectId}', ${index})">
-          </div>
-          <button class="btn btn-primary btn-sm" style="margin-top:10px;width:100%;" onclick="submitForReview('${projectId}', ${index})">Submit for Customer Review</button>
-        </div>`;
+      if (index === 0 || prevAllApproved) {
+        // Previous milestone(s) approved — allow upload and submit
+        actions = `
+          <div style="margin-top:12px;">
+            <div class="upload-zone" style="padding:1.25rem;">
+              <div class="upload-zone-title" style="font-size:13px;">Upload design files for review</div>
+              <div class="upload-zone-desc" style="font-size:12px;">.pdf, .png, .zip, .gerber</div>
+              <input type="file" multiple onchange="adminUploadMilestone(event, '${projectId}', ${index})">
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-top:10px;width:100%;" onclick="submitForReview('${projectId}', ${index})">Submit for Customer Review</button>
+          </div>`;
+      } else {
+        // Previous milestone not yet approved — show locked state
+        const prevName = project.milestones[index - 1].name;
+        actions = `
+          <div class="milestone-locked">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            <span>Locked — <strong>${prevName}</strong> must be approved by the customer before you can work on this milestone.</span>
+          </div>`;
+      }
     }
   } else {
     if (isReview) {
@@ -2144,6 +2179,14 @@ function adminUploadMilestone(event, projectId, msIndex) {
   const project = state.projects.find(p => p.id === projectId);
   const user = getCurrentUser();
   if (!project || !user) return;
+
+  // Guard: all previous milestones must be approved
+  const prevAllApproved = project.milestones.slice(0, msIndex).every(m => m.status === 'approved');
+  if (msIndex > 0 && !prevAllApproved) {
+    const prevName = project.milestones[msIndex - 1].name;
+    showToast(`"${prevName}" must be approved by the customer before uploading to this milestone.`, 'warning');
+    return;
+  }
   const files = Array.from(event.target.files);
   const ms = project.milestones[msIndex];
   files.forEach(f => {
@@ -2168,6 +2211,15 @@ function adminUploadMilestone(event, projectId, msIndex) {
 function submitForReview(projectId, msIndex) {
   const project = state.projects.find(p => p.id === projectId);
   if (!project) return;
+
+  // Guard: all previous milestones must be approved
+  const prevAllApproved = project.milestones.slice(0, msIndex).every(m => m.status === 'approved');
+  if (msIndex > 0 && !prevAllApproved) {
+    const prevName = project.milestones[msIndex - 1].name;
+    showToast(`"${prevName}" must be approved by the customer before submitting this milestone.`, 'warning');
+    return;
+  }
+
   const ms = project.milestones[msIndex];
   if (ms.files.length === 0) {
     showToast('Please upload design files before submitting for review.', 'warning');
