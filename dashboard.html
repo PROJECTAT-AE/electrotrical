@@ -1280,7 +1280,7 @@ a { color: inherit; text-decoration: none; }
     <div class="email-body" id="emailBody"></div>
     <div class="email-footer-bar">
       &copy; 2026 ElectroTrical &middot; Professional PCB Layout Services<br>
-      <a href="#" rel="noopener noreferrer" style="color:#6B7280;">Unsubscribe</a> &middot; <a href="#" rel="noopener noreferrer" style="color:#6B7280;">Email preferences</a>
+      <a href="dashboard.html" rel="noopener noreferrer" style="color:#6B7280;">Manage Preferences</a> &middot; <a href="privacy.html" rel="noopener noreferrer" style="color:#6B7280;">Privacy Policy</a>
     </div>
   </div>
 </div>
@@ -2400,7 +2400,7 @@ function emailMilestoneSubmitted(projectName, milestoneName) {
       <strong>Status:</strong> Awaiting your approval
     </div>
     <p>Please log in to your dashboard to review the uploaded design files. You can approve the milestone or request revisions with feedback.</p>
-    <a href="#" class="email-btn">Review Now &rarr;</a>
+    <a href="dashboard.html" class="email-btn">Review Now &rarr;</a>
     <p style="color:#9CA3AF;font-size:13px;margin-top:20px;">If you have any questions, reply to this email and we'll get back to you within a few hours.</p>
   `;
 }
@@ -2429,7 +2429,7 @@ function emailRevisionRequested(projectName, milestoneName, feedback) {
       "${feedback}"
     </div>
     <p>Please review the feedback and upload updated design files when ready.</p>
-    <a href="#" class="email-btn">View Project &rarr;</a>
+    <a href="dashboard.html" class="email-btn">View Project &rarr;</a>
   `;
 }
 
@@ -2444,7 +2444,7 @@ function emailOrderConfirmation(projectName, projectId, total) {
       <strong>Amount Paid:</strong> $${total}
     </div>
     <p><strong>Next step:</strong> Upload your schematic files, BOM, and any design notes through your dashboard.</p>
-    <a href="#" class="email-btn">Upload Files &rarr;</a>
+    <a href="dashboard.html" class="email-btn">Upload Files &rarr;</a>
     <p style="color:#9CA3AF;font-size:13px;margin-top:20px;">Need help? Reply to this email or reach out at hello@electrotrical.com</p>
   `;
 }
