@@ -1157,49 +1157,81 @@ a { color: inherit; text-decoration: none; }
         </div>
       </div>
 
-      <!-- Card 2 — S-Band Transceiver -->
+      <!-- Card 2 — Industrial IoT Gateway -->
       <div class="portfolio-card reveal reveal-delay-2">
         <div class="portfolio-img">
           <div class="portfolio-overlay" style="background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,229,160,0.1));"></div>
-          <!-- S-Band RF board: patch antenna feed, LNA, transmission lines -->
+          <!-- IoT Gateway: ARM SoC, Ethernet magnetics, RS-485, LTE modem, isolated PSU -->
           <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
             <!-- PCB outline -->
             <rect x="8" y="8" width="124" height="124" rx="6" stroke="#00D4FF" stroke-width="1.5" fill="none"/>
-            <!-- Ground plane hatching (top half) -->
-            <line x1="8" y1="18" x2="18" y2="8" stroke="#00D4FF" stroke-width="0.5" opacity="0.2"/>
-            <line x1="8" y1="32" x2="32" y2="8" stroke="#00D4FF" stroke-width="0.5" opacity="0.2"/>
-            <line x1="8" y1="46" x2="46" y2="8" stroke="#00D4FF" stroke-width="0.5" opacity="0.2"/>
-            <line x1="8" y1="60" x2="60" y2="8" stroke="#00D4FF" stroke-width="0.5" opacity="0.2"/>
-            <!-- Patch antenna (top-right) -->
-            <rect x="78" y="14" width="44" height="36" rx="2" stroke="#00D4FF" stroke-width="1.5" fill="rgba(0,212,255,0.06)"/>
-            <text x="83" y="30" font-size="6.5" fill="#00D4FF" font-family="monospace">PATCH</text>
-            <text x="83" y="40" font-size="6.5" fill="#00D4FF" font-family="monospace">ANTENNA</text>
-            <!-- Feed line from antenna to LNA -->
-            <line x1="78" y1="32" x2="64" y2="32" stroke="#00D4FF" stroke-width="2"/>
-            <line x1="64" y1="32" x2="64" y2="52" stroke="#00D4FF" stroke-width="2"/>
-            <!-- LNA block -->
-            <rect x="48" y="52" width="32" height="20" rx="3" stroke="#00E5A0" stroke-width="1.5"/>
-            <text x="52" y="60" font-size="6" fill="#00E5A0" font-family="monospace">LNA</text>
-            <text x="52" y="68" font-size="5.5" fill="#00E5A0" font-family="monospace">NF 0.8dB</text>
-            <!-- Microstrip trace to mixer -->
-            <path d="M48 62 L32 62 L32 82" stroke="#00D4FF" stroke-width="1.5" fill="none"/>
-            <!-- Mixer -->
-            <rect x="20" y="82" width="24" height="18" rx="3" stroke="#0066FF" stroke-width="1.5"/>
-            <text x="24" y="92" font-size="6" fill="#0066FF" font-family="monospace">MIX</text>
-            <text x="24" y="99" font-size="5" fill="#0066FF" font-family="monospace">2.4GHz</text>
-            <!-- LO input -->
-            <line x1="32" y1="100" x2="32" y2="110" stroke="#0066FF" stroke-width="1.5"/>
-            <rect x="20" y="110" width="24" height="14" rx="2" stroke="#0066FF" stroke-width="1.5"/>
-            <text x="24" y="120" font-size="6" fill="#0066FF" font-family="monospace">TCXO</text>
-            <!-- PA block -->
-            <rect x="80" y="76" width="32" height="20" rx="3" stroke="#00E5A0" stroke-width="1.5"/>
-            <text x="85" y="84" font-size="6" fill="#00E5A0" font-family="monospace">PA</text>
-            <text x="84" y="92" font-size="5.5" fill="#00E5A0" font-family="monospace">+30dBm</text>
-            <!-- RF output connector -->
-            <circle cx="120" cy="110" r="8" stroke="#00D4FF" stroke-width="1.5" fill="none"/>
-            <circle cx="120" cy="110" r="3" fill="#00D4FF"/>
-            <line x1="96" y1="86" x2="112" y2="86" stroke="#00D4FF" stroke-width="1.5"/>
-            <line x1="112" y1="86" x2="112" y2="110" stroke="#00D4FF" stroke-width="1.5"/>
+            <!-- ARM SoC (centre) -->
+            <rect x="44" y="14" width="50" height="40" rx="3" stroke="#00D4FF" stroke-width="2"/>
+            <circle cx="52" cy="24" r="1.5" fill="#00D4FF"/><circle cx="58" cy="24" r="1.5" fill="#00D4FF"/>
+            <circle cx="64" cy="24" r="1.5" fill="#00D4FF"/><circle cx="70" cy="24" r="1.5" fill="#00D4FF"/>
+            <circle cx="76" cy="24" r="1.5" fill="#00D4FF"/><circle cx="82" cy="24" r="1.5" fill="#00D4FF"/>
+            <circle cx="52" cy="30" r="1.5" fill="#00D4FF"/><circle cx="58" cy="30" r="1.5" fill="#00D4FF"/>
+            <circle cx="64" cy="30" r="1.5" fill="#00D4FF"/><circle cx="70" cy="30" r="1.5" fill="#00D4FF"/>
+            <circle cx="76" cy="30" r="1.5" fill="#00D4FF"/><circle cx="82" cy="30" r="1.5" fill="#00D4FF"/>
+            <circle cx="52" cy="36" r="1.5" fill="#00D4FF"/><circle cx="58" cy="36" r="1.5" fill="#00D4FF"/>
+            <circle cx="64" cy="36" r="1.5" fill="#00D4FF"/><circle cx="70" cy="36" r="1.5" fill="#00D4FF"/>
+            <circle cx="76" cy="36" r="1.5" fill="#00D4FF"/><circle cx="82" cy="36" r="1.5" fill="#00D4FF"/>
+            <circle cx="52" cy="42" r="1.5" fill="#00D4FF"/><circle cx="58" cy="42" r="1.5" fill="#00D4FF"/>
+            <circle cx="64" cy="42" r="1.5" fill="#00D4FF"/><circle cx="70" cy="42" r="1.5" fill="#00D4FF"/>
+            <circle cx="76" cy="42" r="1.5" fill="#00D4FF"/><circle cx="82" cy="42" r="1.5" fill="#00D4FF"/>
+            <text x="48" y="52" font-size="5.5" fill="#00D4FF" font-family="monospace">ARM Cortex-A7</text>
+            <!-- Gigabit Ethernet magnetics (left) -->
+            <rect x="10" y="16" width="30" height="16" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="12" y="22" font-size="5" fill="#00D4FF" font-family="monospace">GbE MAG</text>
+            <text x="12" y="29" font-size="5" fill="#00D4FF" font-family="monospace">1000BASE-T</text>
+            <line x1="40" y1="24" x2="44" y2="24" stroke="#00D4FF" stroke-width="1"/>
+            <line x1="40" y1="27" x2="44" y2="27" stroke="#00D4FF" stroke-width="1"/>
+            <!-- LTE modem module (right) -->
+            <rect x="98" y="14" width="32" height="22" rx="2" stroke="#00E5A0" stroke-width="1.5"/>
+            <text x="100" y="23" font-size="5.5" fill="#00E5A0" font-family="monospace">LTE Cat-4</text>
+            <text x="100" y="31" font-size="5" fill="#00E5A0" font-family="monospace">SIM + ANT</text>
+            <line x1="94" y1="24" x2="98" y2="24" stroke="#00E5A0" stroke-width="1"/>
+            <!-- RS-485 isolated transceiver -->
+            <rect x="10" y="44" width="30" height="14" rx="2" stroke="#0066FF" stroke-width="1.5"/>
+            <text x="12" y="50" font-size="5" fill="#0066FF" font-family="monospace">RS-485</text>
+            <text x="12" y="56" font-size="5" fill="#0066FF" font-family="monospace">ISO 2500V</text>
+            <!-- CAN bus transceiver -->
+            <rect x="10" y="66" width="30" height="14" rx="2" stroke="#0066FF" stroke-width="1.5"/>
+            <text x="12" y="72" font-size="5" fill="#0066FF" font-family="monospace">CAN FD</text>
+            <text x="12" y="78" font-size="5" fill="#0066FF" font-family="monospace">ISO 1500V</text>
+            <!-- Isolation barrier (vertical dashed line) -->
+            <line x1="44" y1="44" x2="44" y2="84" stroke="#00D4FF" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+            <text x="42" y="92" font-size="5" fill="#00D4FF" font-family="monospace" opacity="0.6">ISO</text>
+            <!-- DDR3 RAM -->
+            <rect x="100" y="44" width="30" height="14" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="102" y="50" font-size="5.5" fill="#00D4FF" font-family="monospace">DDR3L</text>
+            <text x="102" y="57" font-size="5" fill="#00D4FF" font-family="monospace">512 MB</text>
+            <!-- eMMC flash -->
+            <rect x="100" y="66" width="30" height="14" rx="2" stroke="#00D4FF" stroke-width="1.5"/>
+            <text x="102" y="72" font-size="5.5" fill="#00D4FF" font-family="monospace">eMMC</text>
+            <text x="102" y="79" font-size="5" fill="#00D4FF" font-family="monospace">8 GB</text>
+            <!-- Wi-Fi / BT combo -->
+            <rect x="54" y="60" width="30" height="14" rx="2" stroke="#00E5A0" stroke-width="1.5"/>
+            <text x="56" y="66" font-size="5.5" fill="#00E5A0" font-family="monospace">Wi-Fi 5</text>
+            <text x="56" y="73" font-size="5" fill="#00E5A0" font-family="monospace">BT 5.0</text>
+            <!-- Isolated DC-DC converter -->
+            <rect x="10" y="88" width="36" height="16" rx="2" stroke="#00E5A0" stroke-width="1.5"/>
+            <text x="12" y="95" font-size="5.5" fill="#00E5A0" font-family="monospace">ISO DC-DC</text>
+            <text x="12" y="102" font-size="5" fill="#00E5A0" font-family="monospace">9–36V input</text>
+            <!-- DIN rail power connector (left edge) -->
+            <rect x="8" y="108" width="8" height="24" rx="1" fill="#00D4FF" opacity="0.4"/>
+            <text x="9" y="118" font-size="4.5" fill="#00D4FF" font-family="monospace">PWR</text>
+            <!-- Field terminal blocks (bottom) -->
+            <rect x="30" y="120" width="80" height="10" rx="1" stroke="#0066FF" stroke-width="1"/>
+            <line x1="38" y1="120" x2="38" y2="130" stroke="#0066FF" stroke-width="1"/>
+            <line x1="46" y1="120" x2="46" y2="130" stroke="#0066FF" stroke-width="1"/>
+            <line x1="54" y1="120" x2="54" y2="130" stroke="#0066FF" stroke-width="1"/>
+            <line x1="62" y1="120" x2="62" y2="130" stroke="#0066FF" stroke-width="1"/>
+            <line x1="70" y1="120" x2="70" y2="130" stroke="#0066FF" stroke-width="1"/>
+            <line x1="78" y1="120" x2="78" y2="130" stroke="#0066FF" stroke-width="1"/>
+            <line x1="86" y1="120" x2="86" y2="130" stroke="#0066FF" stroke-width="1"/>
+            <line x1="94" y1="120" x2="94" y2="130" stroke="#0066FF" stroke-width="1"/>
+            <line x1="102" y1="120" x2="102" y2="130" stroke="#0066FF" stroke-width="1"/>
             <!-- Mounting holes -->
             <circle cx="18" cy="18" r="4" stroke="#00D4FF" stroke-width="1" fill="none"/>
             <circle cx="122" cy="18" r="4" stroke="#00D4FF" stroke-width="1" fill="none"/>
@@ -1208,9 +1240,9 @@ a { color: inherit; text-decoration: none; }
           </svg>
         </div>
         <div class="portfolio-info">
-          <span class="portfolio-tag">RF Design · Space</span>
-          <h3 class="portfolio-title">S-Band Satellite Transceiver</h3>
-          <p class="portfolio-desc">4-layer RF PCB for CubeSat S-band uplink/downlink (2.025–2.29 GHz) with integrated LNA (NF 0.8 dB), +30 dBm PA, TCXO reference, and impedance-matched microstrip feed to an on-board patch antenna. Meets ITU space radiocommunication requirements.</p>
+          <span class="portfolio-tag">Industrial IoT · Embedded</span>
+          <h3 class="portfolio-title">Industrial IoT Gateway</h3>
+          <p class="portfolio-desc">6-layer mixed-signal gateway built around an ARM Cortex-A7 SoC with 512 MB DDR3L, 8 GB eMMC, and dual isolated field buses (RS-485 at 2500 V, CAN FD at 1500 V). Connectivity stack includes 1000BASE-T Ethernet with integrated magnetics, LTE Cat-4 modem, and Wi-Fi 5 / BT 5.0. Wide-input isolated DC-DC converter accepts 9–36 V for DIN rail deployment. Designed to IEC 61000-4 EMC requirements for heavy industrial environments.</p>
         </div>
       </div>
 
