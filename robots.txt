@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /PCBcraft.html
+
+Sitemap: https://electrotrical.com/sitemap.xml
