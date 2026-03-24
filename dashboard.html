@@ -805,6 +805,30 @@ input[type=number].price-input::-webkit-inner-spin-button {
   display: flex; align-items: center; gap: 8px;
 }
 .account-card-title svg { color: var(--primary); }
+/* ── Notification Toggle Switch ───────────────────────── */
+.notif-toggle {
+  position: relative; display: inline-block;
+  width: 44px; height: 24px; flex-shrink: 0;
+}
+.notif-toggle input { opacity: 0; width: 0; height: 0; }
+.notif-toggle-slider {
+  position: absolute; cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--border); border-radius: 24px;
+  transition: 0.25s;
+}
+.notif-toggle-slider::before {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; border-radius: 50%;
+  left: 3px; top: 3px;
+  background: var(--text-muted);
+  transition: 0.25s;
+}
+.notif-toggle input:checked + .notif-toggle-slider { background: var(--accent); }
+.notif-toggle input:checked + .notif-toggle-slider::before {
+  transform: translateX(20px); background: #fff;
+}
+/* ─────────────────────────────────────────────────────── */
 .account-field { margin-bottom: 14px; }
 .account-label {
   font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
@@ -2617,7 +2641,7 @@ function openProject(projectId) {
       </div>
     </div>
 
-    <div class="project-detail-grid">
+    <div class="project-detail-grid" data-project-id="${project.id}">
       <div>
         <!-- Cancelled Banner -->
         ${project.status === 'cancelled' ? `
@@ -3651,6 +3675,7 @@ function switchMainTab(tab) {
     if (accountTab) accountTab.classList.add('active');
     document.getElementById('accountSection').style.display = 'block';
     renderAccount();
+    setTimeout(renderNotifPrefs, 50);
   } else if (tab === 'summary') {
     const summaryTab = document.getElementById('summaryTab');
     if (summaryTab) summaryTab.classList.add('active');
@@ -4248,6 +4273,17 @@ function renderAccount() {
             ${user.superAdmin ? '★ Super Admin' : user.role === 'admin' ? '⚙ Administrator' : user.role === 'designer' ? '◈ Designer' : '◎ Customer'}
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Notification Preferences -->
+    <div style="margin-bottom:28px;">
+      <div style="margin-bottom:16px;">
+        <h3 style="font-size:17px;font-weight:600;color:var(--white);margin-bottom:4px;">Notification Preferences</h3>
+        <p style="font-size:13px;color:var(--text-secondary);">Choose which notifications you want to receive.</p>
+      </div>
+      <div class="account-card" style="padding:8px 20px;">
+        <div id="notifPrefsContainer"></div>
       </div>
     </div>
 
@@ -4875,7 +4911,10 @@ function renderQuoteRequests() {
             <span style="font-size:13px;color:var(--accent);">Approved — awaiting customer payment</span>
           ` : ''}
           ${!isAdmin && q.status === 'approved' ? `
-            <button class="btn btn-success btn-sm" onclick="proceedToPayment('${q.id}')">Proceed to Payment — $${q.adminPrice}</button>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+              <button class="btn btn-success btn-sm" onclick="proceedToPayment('${q.id}')">Proceed to Payment — $${q.adminPrice}</button>
+              ${q.expiresAt ? `<div id="expiry-${q.id}" style="font-size:11px;color:var(--text-muted);"></div>` : ''}
+            </div>
           ` : ''}
           ${!isAdmin && q.status === 'pending' ? `
             <span style="font-size:13px;color:var(--text-muted);">Awaiting review by our team...</span>
@@ -4892,6 +4931,10 @@ function renderQuoteRequests() {
   });
 
   container.innerHTML = html;
+
+  // Auto-expire quotes + start expiry countdowns
+  autoExpireQuotes();
+  startExpiryCountdowns();
 }
 
 function getQuoteStatusBadge(status) {
@@ -4899,7 +4942,8 @@ function getQuoteStatusBadge(status) {
     pending: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(255,180,0,0.1);color:var(--warning);border:1px solid rgba(255,180,0,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--warning);animation:pulse 2s infinite;"></span>Pending Review</span>',
     approved: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>Approved</span>',
     rejected: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(255,77,77,0.1);color:var(--danger);border:1px solid rgba(255,77,77,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--danger);"></span>Declined</span>',
-    paid: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(0,102,255,0.1);color:var(--primary-light);border:1px solid rgba(0,102,255,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary-light);"></span>Paid</span>'
+    paid: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(0,102,255,0.1);color:var(--primary-light);border:1px solid rgba(0,102,255,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary-light);"></span>Paid</span>',
+    expired: '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:rgba(150,150,150,0.1);color:#999;border:1px solid rgba(150,150,150,0.25);"><span style="width:6px;height:6px;border-radius:50%;background:#999;"></span>Expired</span>'
   };
   return badges[status] || badges.pending;
 }
@@ -4995,6 +5039,7 @@ function approveQuote(quoteId) {
   state.quoteRequests[quoteIndex].adminNotes = notes;
   state.quoteRequests[quoteIndex].status = 'approved';
   state.quoteRequests[quoteIndex].reviewedAt = new Date().toISOString();
+  state.quoteRequests[quoteIndex].expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7-day expiry
 
   // Add notification for the customer
   if (!state.notifications) state.notifications = [];
@@ -5280,6 +5325,556 @@ if (regEmailEl) {
     window.history.replaceState({}, '', 'dashboard.html');
   }
 })();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// #10 ── QUOTE EXPIRY
+// ══════════════════════════════════════════════════════════════════════════════
+function autoExpireQuotes() {
+  const state = getState();
+  if (!state.quoteRequests) return;
+  let changed = false;
+  state.quoteRequests.forEach((q, i) => {
+    if (q.status === 'approved' && q.expiresAt && new Date(q.expiresAt) < new Date()) {
+      state.quoteRequests[i].status = 'expired';
+      changed = true;
+    }
+  });
+  if (changed) saveState(state);
+}
+
+function startExpiryCountdowns() {
+  const state = getState();
+  if (!state.quoteRequests) return;
+  state.quoteRequests.forEach(q => {
+    if (q.status === 'approved' && q.expiresAt) {
+      updateExpiryCountdown(q.id, q.expiresAt);
+    }
+  });
+}
+
+function updateExpiryCountdown(quoteId, expiresAt) {
+  const el = document.getElementById('expiry-' + quoteId);
+  if (!el) return;
+  const end = new Date(expiresAt).getTime();
+  function tick() {
+    const diff = end - Date.now();
+    if (diff <= 0) {
+      el.innerHTML = '<span style="color:#EF4444;font-weight:600;">Quote expired</span>';
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const color = diff < 3600000 ? '#EF4444' : diff < 86400000 ? '#F59E0B' : '#00E5A0';
+    el.innerHTML = `<span style="color:${color};">⏱ Quote expires in: ${d > 0 ? d + 'd ' : ''}${h}h ${m}m ${s}s</span>`;
+    setTimeout(tick, 1000);
+  }
+  tick();
+}
+
+// 'expired' status is handled directly in getQuoteStatusBadge badges map above.
+
+// ══════════════════════════════════════════════════════════════════════════════
+// #9 ── NOTIFICATION PREFERENCES
+// ══════════════════════════════════════════════════════════════════════════════
+const DEFAULT_NOTIF_PREFS = {
+  quoteUpdates:    true,
+  projectStatus:   true,
+  messages:        true,
+  fileUploads:     true,
+  deadlineReminders: true,
+  browserNotifs:   false,
+};
+
+function getNotifPrefs() {
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  return Object.assign({}, DEFAULT_NOTIF_PREFS, user?.notifPrefs || {});
+}
+
+function renderNotifPrefs() {
+  const prefs = getNotifPrefs();
+  const container = document.getElementById('notifPrefsContainer');
+  if (!container) return;
+
+  const items = [
+    { key: 'quoteUpdates',      label: 'Quote Updates',         desc: 'Approvals, rejections, and revised quotes' },
+    { key: 'projectStatus',     label: 'Project Status Changes', desc: 'When your project moves to a new stage' },
+    { key: 'messages',          label: 'New Messages',           desc: 'Messages from engineers on your projects' },
+    { key: 'fileUploads',       label: 'File Uploads',           desc: 'When new files are shared on your project' },
+    { key: 'deadlineReminders', label: 'Deadline Reminders',     desc: 'Upcoming project deadline alerts' },
+    { key: 'browserNotifs',     label: 'Browser Notifications',  desc: 'Show desktop notifications while tab is open' },
+  ];
+
+  container.innerHTML = items.map(item => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--white);">${item.label}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${item.desc}</div>
+      </div>
+      <label class="notif-toggle">
+        <input type="checkbox" ${prefs[item.key] ? 'checked' : ''} onchange="saveNotifPref('${item.key}', this.checked)">
+        <span class="notif-toggle-slider"></span>
+      </label>
+    </div>
+  `).join('');
+}
+
+function saveNotifPref(key, value) {
+  const state = getState();
+  const userIdx = state.users.findIndex(u => u.id === state.currentUser);
+  if (userIdx === -1) return;
+  if (!state.users[userIdx].notifPrefs) state.users[userIdx].notifPrefs = {};
+  state.users[userIdx].notifPrefs[key] = value;
+  saveState(state);
+  if (key === 'browserNotifs' && value) requestBrowserNotifPermission();
+  showToast('Preference saved', 'success');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// #5 ── QUOTE PDF EXPORT
+// ══════════════════════════════════════════════════════════════════════════════
+function downloadQuotePDF(quoteId) {
+  const state = getState();
+  const q = (state.quoteRequests || []).find(q => q.id === quoteId);
+  if (!q) return;
+  const customer = state.users.find(u => u.id === q.customerId);
+  const date = new Date(q.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const reviewDate = q.reviewedAt ? new Date(q.reviewedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+  const expiryDate = q.expiresAt ? new Date(q.expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quote ${q.id} — ElectroTrical</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Arial, sans-serif; color: #1A202C; background: #fff; }
+    .header { background: #080D1A; color: #fff; padding: 32px 40px; display:flex; justify-content:space-between; align-items:flex-start; }
+    .logo { font-size: 24px; font-weight: 700; } .logo span { color: #00E5A0; }
+    .header-right { text-align:right; }
+    .header-right h2 { font-size: 20px; font-weight:700; color:#fff; }
+    .header-right p { font-size:12px; color:rgba(255,255,255,0.5); margin-top:4px; }
+    .accent-bar { height: 4px; background: linear-gradient(90deg, #0066FF, #00E5A0); }
+    .body { padding: 36px 40px; }
+    .section { margin-bottom: 28px; }
+    .section-title { font-size: 11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color: #0066FF; margin-bottom: 12px; padding-bottom:6px; border-bottom:2px solid #EFF6FF; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .field { background:#F8FAFC; border-radius:8px; padding:12px 16px; }
+    .field-label { font-size:10px; color:#64748B; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }
+    .field-value { font-size:14px; font-weight:600; color:#1A202C; }
+    .price-box { background:#080D1A; border-radius:12px; padding:28px; text-align:center; margin:24px 0; }
+    .price-label { font-size:11px; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.1em; }
+    .price-value { font-size:42px; font-weight:700; color:#00E5A0; margin-top:6px; }
+    .notes-box { background:#F0F9FF; border-left:4px solid #0066FF; border-radius:0 8px 8px 0; padding:16px 20px; }
+    .notes-label { font-size:11px; color:#0066FF; font-weight:700; text-transform:uppercase; margin-bottom:6px; }
+    .footer { background:#F8FAFC; border-top:1px solid #E2E8F0; padding:20px 40px; display:flex; justify-content:space-between; font-size:11px; color:#94A3B8; margin-top:auto; }
+    .badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; background:#ECFDF5; color:#059669; }
+    .specs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+  </style></head><body>
+  <div class="header">
+    <div>
+      <div class="logo">Electro<span>Trical</span></div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px;letter-spacing:0.05em;">PCB LAYOUT & DESIGN SERVICES</div>
+    </div>
+    <div class="header-right">
+      <h2>QUOTE ${q.id}</h2>
+      <p>Issued: ${date}</p>
+      <p>Valid Until: ${expiryDate}</p>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+  <div class="body">
+    <div class="section">
+      <div class="section-title">Client Information</div>
+      <div class="grid">
+        <div class="field"><div class="field-label">Full Name</div><div class="field-value">${customer?.name || q.customerName || '—'}</div></div>
+        <div class="field"><div class="field-label">Email</div><div class="field-value">${q.customerEmail || '—'}</div></div>
+        <div class="field"><div class="field-label">Quote ID</div><div class="field-value">${q.id}</div></div>
+        <div class="field"><div class="field-label">Status</div><div class="field-value"><span class="badge">${q.status.toUpperCase()}</span></div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Project Specifications</div>
+      <div class="specs-grid">
+        <div class="field"><div class="field-label">PCB Type</div><div class="field-value">${q.specs.pcbTypeLabel || 'Rigid'}</div></div>
+        <div class="field"><div class="field-label">Layer Count</div><div class="field-value">${q.specs.layersLabel}</div></div>
+        <div class="field"><div class="field-label">Board Size</div><div class="field-value">${q.specs.sizeLabel}</div></div>
+        <div class="field"><div class="field-label">Components</div><div class="field-value">${q.specs.sidesLabel || 'Both sides'}</div></div>
+        <div class="field"><div class="field-label">Turnaround</div><div class="field-value">${q.specs.turnaroundLabel}</div></div>
+        <div class="field"><div class="field-label">Special Req.</div><div class="field-value">${q.specs.specialLabel || 'None'}</div></div>
+      </div>
+    </div>
+    ${q.adminPrice ? `
+    <div class="price-box">
+      <div class="price-label">Approved Quote Price</div>
+      <div class="price-value">$${q.adminPrice}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:6px;">Reviewed on ${reviewDate}</div>
+    </div>` : `
+    <div class="price-box">
+      <div class="price-label">Customer Estimate</div>
+      <div class="price-value" style="color:#00D4FF;">$${q.estimatedTotal}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:6px;">Pending admin review</div>
+    </div>`}
+    ${q.adminNotes ? `
+    <div class="section">
+      <div class="section-title">Engineer's Notes</div>
+      <div class="notes-box"><div class="notes-label">Note from ElectroTrical</div><div style="font-size:14px;color:#374151;line-height:1.6;">${q.adminNotes}</div></div>
+    </div>` : ''}
+  </div>
+  <div class="footer">
+    <div>ElectroTrical · www.electrotrical.com · projectat.ae@gmail.com</div>
+    <div>Quote ${q.id} · Generated ${new Date().toLocaleDateString()}</div>
+  </div>
+  <script>window.onload=()=>{ window.print(); }<\/script>
+  </body></html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=700');
+  if (win) { win.document.write(html); win.document.close(); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// #8 ── IN-PROJECT MESSAGING
+// ══════════════════════════════════════════════════════════════════════════════
+function getProjectMessages(projectId) {
+  const state = getState();
+  return (state.projectMessages || {})[projectId] || [];
+}
+
+function sendProjectMessage(projectId) {
+  const input = document.getElementById('msg-input-' + projectId);
+  const text = (input?.value || '').trim();
+  if (!text) return;
+
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!user) return;
+
+  if (!state.projectMessages) state.projectMessages = {};
+  if (!state.projectMessages[projectId]) state.projectMessages[projectId] = [];
+
+  const msg = {
+    id: 'msg-' + Date.now(),
+    senderId: user.id,
+    senderName: user.name,
+    senderRole: user.isSuperAdmin ? 'Super Admin' : user.isAdmin ? 'Admin' : user.isDesigner ? 'Designer' : 'Customer',
+    text,
+    timestamp: new Date().toISOString(),
+  };
+  state.projectMessages[projectId].push(msg);
+
+  // Notify other parties
+  const project = (state.projects || []).find(p => p.id === projectId);
+  if (project) {
+    const recipientId = user.id === project.customerId ? project.assignedDesigner : project.customerId;
+    if (recipientId) {
+      addNotificationForUser(recipientId, 'New Message', `${user.name} sent a message on "${project.title}"`, 'message', state);
+    }
+  }
+
+  saveState(state);
+  input.value = '';
+  renderMessagesPanel(projectId);
+
+  // Scroll to bottom
+  setTimeout(() => {
+    const feed = document.getElementById('msg-feed-' + projectId);
+    if (feed) feed.scrollTop = feed.scrollHeight;
+  }, 50);
+}
+
+function renderMessagesPanel(projectId) {
+  const container = document.getElementById('msg-panel-' + projectId);
+  if (!container) return;
+
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  const messages = getProjectMessages(projectId);
+
+  const roleColor = { 'Admin': 'var(--primary-light)', 'Super Admin': 'var(--primary-light)', 'Designer': '#C77DFF', 'Customer': 'var(--cyan)' };
+
+  const feedHtml = messages.length === 0
+    ? `<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:13px;">No messages yet. Start the conversation!</div>`
+    : messages.map(m => {
+        const isOwn = m.senderId === user.id;
+        const time = new Date(m.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const date = new Date(m.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const color = roleColor[m.senderRole] || 'var(--text-secondary)';
+        return `
+        <div style="display:flex;flex-direction:${isOwn ? 'row-reverse' : 'row'};gap:8px;margin-bottom:14px;align-items:flex-end;">
+          <div style="width:30px;height:30px;border-radius:50%;background:${isOwn ? 'rgba(0,102,255,0.3)' : 'rgba(0,212,255,0.15)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${color};flex-shrink:0;">
+            ${m.senderName.charAt(0).toUpperCase()}
+          </div>
+          <div style="max-width:75%;">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;${isOwn ? 'text-align:right;' : ''}">
+              <span style="color:${color};font-weight:600;">${isOwn ? 'You' : m.senderName}</span>
+              · <span style="color:${color};opacity:0.7;">${m.senderRole}</span>
+              · ${date} ${time}
+            </div>
+            <div style="background:${isOwn ? 'rgba(0,102,255,0.2)' : 'var(--dark-700)'};border:1px solid ${isOwn ? 'rgba(0,102,255,0.35)' : 'var(--border)'};border-radius:${isOwn ? '12px 12px 2px 12px' : '12px 12px 12px 2px'};padding:10px 14px;font-size:13px;color:var(--white);line-height:1.5;">
+              ${sanitizeInput(m.text)}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  container.innerHTML = `
+    <div id="msg-feed-${projectId}" style="height:280px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;justify-content:flex-start;">
+      ${feedHtml}
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;">
+      <input id="msg-input-${projectId}" class="form-input" placeholder="Type a message..." style="flex:1;margin-bottom:0;"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendProjectMessage('${projectId}');}">
+      <button class="btn btn-primary btn-sm" onclick="sendProjectMessage('${projectId}')">Send</button>
+    </div>`;
+
+  // Scroll to bottom
+  const feed = document.getElementById('msg-feed-' + projectId);
+  if (feed) feed.scrollTop = feed.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// #6 ── PROJECT TIMELINE / GANTT VIEW
+// ══════════════════════════════════════════════════════════════════════════════
+function renderProjectTimeline(projectId) {
+  const container = document.getElementById('timeline-panel-' + projectId);
+  if (!container) return;
+
+  const state = getState();
+  const project = (state.projects || []).find(p => p.id === projectId);
+  if (!project) return;
+
+  const milestones = project.milestones || [];
+  if (milestones.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:13px;">No milestones defined for this project yet.</div>`;
+    return;
+  }
+
+  const statusConfig = {
+    completed: { color: '#00E5A0', bg: 'rgba(0,229,160,0.15)', label: 'Completed', icon: '✓' },
+    active:    { color: '#0066FF', bg: 'rgba(0,102,255,0.15)', label: 'In Progress', icon: '▶' },
+    review:    { color: '#00D4FF', bg: 'rgba(0,212,255,0.12)', label: 'In Review',   icon: '◎' },
+    pending:   { color: '#64748B', bg: 'rgba(100,116,139,0.1)', label: 'Upcoming', icon: '○' },
+    rejected:  { color: '#EF4444', bg: 'rgba(239,68,68,0.12)', label: 'Needs Work',  icon: '✗' },
+  };
+
+  const total = milestones.length;
+  const done  = milestones.filter(m => m.status === 'completed').length;
+  const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  const timelineHtml = milestones.map((m, i) => {
+    const cfg = statusConfig[m.status] || statusConfig.pending;
+    const isLast = i === total - 1;
+    return `
+    <div style="display:flex;gap:16px;margin-bottom:${isLast ? '0' : '8px'};">
+      <!-- Spine -->
+      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:36px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:${cfg.bg};border:2px solid ${cfg.color};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${cfg.color};flex-shrink:0;">${cfg.icon}</div>
+        ${!isLast ? `<div style="width:2px;flex:1;min-height:16px;background:var(--border);margin:4px 0;"></div>` : ''}
+      </div>
+      <!-- Content -->
+      <div style="flex:1;background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:${isLast ? '0' : '8px'};">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+          <div style="font-size:14px;font-weight:600;color:var(--white);">${i + 1}. ${sanitizeInput(m.title)}</div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.color}33;">${cfg.label}</span>
+        </div>
+        ${m.description ? `<div style="font-size:12px;color:var(--text-muted);line-height:1.5;">${sanitizeInput(m.description)}</div>` : ''}
+        ${m.completedAt ? `<div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Completed: ${new Date(m.completedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:13px;color:var(--text-secondary);">Overall Progress</span>
+        <span style="font-size:14px;font-weight:700;color:${pct === 100 ? '#00E5A0' : 'var(--primary-light)'};">${pct}%</span>
+      </div>
+      <div style="height:8px;background:var(--dark-700);border-radius:99px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#0066FF,#00E5A0);border-radius:99px;transition:width 0.5s ease;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;">
+        <span style="font-size:11px;color:var(--text-muted);">${done} of ${total} milestones complete</span>
+        <span style="font-size:11px;color:var(--text-muted);">Status: <strong style="color:var(--white);">${project.status || 'Active'}</strong></span>
+      </div>
+    </div>
+    <div style="padding-top:4px;">${timelineHtml}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// #14 ── BROWSER NOTIFICATIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function requestBrowserNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') return;
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') showToast('Browser notifications enabled!', 'success');
+    else showToast('Browser notifications blocked. You can enable them in browser settings.', 'warning');
+  });
+}
+
+function sendBrowserNotif(title, body, icon) {
+  const prefs = getNotifPrefs();
+  if (!prefs.browserNotifs) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    new Notification(title, {
+      body,
+      icon: icon || 'Logo/navbar_logo.png',
+      badge: 'Logo/navbar_logo.png',
+      tag: 'electrotrical-' + Date.now(),
+    });
+  } catch(e) { /* silently fail */ }
+}
+
+// Patch addNotificationForUser to:
+//  1. Accept either a user object OR a user ID string (for messaging code compatibility)
+//  2. Fire a browser notification when the target is the current logged-in user
+const _origAddNotificationForUser = addNotificationForUser;
+function addNotificationForUser(targetUserOrId, title, message, type, stateObj) {
+  const s = stateObj || getState();
+  // Resolve: if a string ID was passed, look up the full user object
+  const targetUser = (typeof targetUserOrId === 'string')
+    ? (s.users || []).find(u => u.id === targetUserOrId)
+    : targetUserOrId;
+  if (!targetUser) return;
+  // Fire browser notification if this is for the currently logged-in user
+  if (targetUser.id === s.currentUser) {
+    sendBrowserNotif('ElectroTrical \u2014 ' + title, message);
+  }
+  // Call the original with the resolved user object (it expects targetUser.id)
+  return _origAddNotificationForUser(targetUser, title, message, type);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INJECT MESSAGING + TIMELINE + PDF BUTTON INTO PROJECT DETAIL
+// ══════════════════════════════════════════════════════════════════════════════
+// Hook into the existing showView / navigation to inject panels after project detail renders
+const _origShowProjectDetail = typeof showProjectDetail === 'function' ? showProjectDetail : null;
+
+function injectProjectExtras(projectId) {
+  // Wait for DOM
+  setTimeout(() => {
+    injectMessagingPanel(projectId);
+    injectTimelinePanel(projectId);
+    injectQuotePDFButtons();
+  }, 80);
+}
+
+function injectMessagingPanel(projectId) {
+  if (document.getElementById('msg-panel-' + projectId)) {
+    renderMessagesPanel(projectId);
+    return;
+  }
+  // Find the milestone section or project detail grid to append after
+  const grid = document.querySelector('.project-detail-grid');
+  if (!grid) return;
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'margin-top:24px;';
+  wrap.innerHTML = `
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <span style="font-size:15px;font-weight:600;color:var(--white);">Project Messages</span>
+      </div>
+      <div id="msg-panel-${projectId}"></div>
+    </div>`;
+  grid.parentNode.insertBefore(wrap, grid.nextSibling);
+  renderMessagesPanel(projectId);
+}
+
+function injectTimelinePanel(projectId) {
+  if (document.getElementById('timeline-panel-' + projectId)) {
+    renderProjectTimeline(projectId);
+    return;
+  }
+  const grid = document.querySelector('.project-detail-grid');
+  if (!grid) return;
+
+  // Find or create sidebar column
+  const sidebar = grid.children[1];
+  if (!sidebar) return;
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'margin-top:20px;';
+  wrap.innerHTML = `
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span style="font-size:15px;font-weight:600;color:var(--white);">Milestone Timeline</span>
+      </div>
+      <div id="timeline-panel-${projectId}"></div>
+    </div>`;
+  sidebar.appendChild(wrap);
+  renderProjectTimeline(projectId);
+}
+
+function injectQuotePDFButtons() {
+  document.querySelectorAll('[data-quote-id]').forEach(el => {
+    const qid = el.dataset.quoteId;
+    if (!document.getElementById('pdf-btn-' + qid)) {
+      const btn = document.createElement('button');
+      btn.id = 'pdf-btn-' + qid;
+      btn.className = 'btn btn-secondary btn-sm';
+      btn.style.marginLeft = '8px';
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF`;
+      btn.onclick = () => downloadQuotePDF(qid);
+      el.appendChild(btn);
+    }
+  });
+}
+
+// ── Auto-inject when navigating to project detail ────────────────────────────
+// Observe DOM changes to detect when project detail is shown
+(function() {
+  let lastProjectId = null;
+  setInterval(() => {
+    const projectView = document.getElementById('view-dashboard');
+    if (!projectView) return;
+    const grid = document.querySelector('.project-detail-grid');
+    if (!grid) { lastProjectId = null; return; }
+    const titleEl = grid.querySelector('[data-project-id]');
+    const pid = titleEl?.dataset?.projectId || grid.dataset?.projectId;
+    // Fallback: try URL hash or active project from state
+    const state = getState();
+    const activeProject = state?.activeProjectId;
+    const currentPid = pid || activeProject;
+    if (currentPid && currentPid !== lastProjectId) {
+      lastProjectId = currentPid;
+      injectProjectExtras(currentPid);
+    }
+  }, 400);
+})();
+
+// ── PDF button injection: also hook into quote rendering ─────────────────────
+// Add data-quote-id markers to quote action rows after render
+const _origRenderQuoteRequests = renderQuoteRequests;
+function renderQuoteRequests() {
+  _origRenderQuoteRequests();
+  // Inject PDF download links on approved/paid quotes
+  setTimeout(() => {
+    const state = getState();
+    (state.quoteRequests || []).forEach(q => {
+      if (['approved','paid','expired'].includes(q.status)) {
+        // Find amount display row for this quote
+        const allDivs = document.querySelectorAll('[style*="font-family:var(--font-mono)"]');
+        allDivs.forEach(div => {
+          const card = div.closest('[style*="margin-bottom:16px"]');
+          if (card && card.textContent.includes(q.id) && !card.querySelector('.pdf-dl-btn')) {
+            const pdfBtn = document.createElement('button');
+            pdfBtn.className = 'btn btn-secondary btn-sm pdf-dl-btn';
+            pdfBtn.title = 'Download Quote as PDF';
+            pdfBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Download PDF`;
+            pdfBtn.onclick = () => downloadQuotePDF(q.id);
+            const btnRow = card.querySelector('[style*="display:flex;gap:8px"]');
+            if (btnRow) btnRow.appendChild(pdfBtn);
+          }
+        });
+      }
+    });
+  }, 100);
+}
+
 </script>
 </body>
 </html>
