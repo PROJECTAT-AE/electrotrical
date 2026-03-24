@@ -507,6 +507,117 @@ a { color: inherit; text-decoration: none; }
   background: rgba(0,102,255,0.08);
 }
 
+/* ── Account Settings ─────────────────────────────── */
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 768px) { .account-grid { grid-template-columns: 1fr; } }
+
+.account-card {
+  background: var(--dark-800);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+}
+.account-card-title {
+  font-size: 16px; font-weight: 600; color: var(--white);
+  margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.account-card-title svg { color: var(--primary); }
+.account-field { margin-bottom: 14px; }
+.account-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.account-value {
+  font-size: 14px; color: var(--text);
+  background: var(--dark-700); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 14px;
+  width: 100%;
+}
+.account-value.readonly {
+  color: var(--text-muted); cursor: not-allowed; opacity: 0.7;
+}
+.account-save-row {
+  display: flex; align-items: center; gap: 12px; margin-top: 20px;
+}
+.account-success {
+  font-size: 13px; color: var(--accent);
+  display: flex; align-items: center; gap: 6px; opacity: 0;
+  transition: opacity 0.3s;
+}
+.account-success.show { opacity: 1; }
+
+/* ── Invoice History ──────────────────────────────── */
+.invoice-card {
+  background: var(--dark-800); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+  margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+  transition: var(--transition);
+}
+.invoice-card:hover { border-color: var(--border-hover); }
+.invoice-id {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--cyan); font-weight: 600; margin-bottom: 3px;
+}
+.invoice-meta { font-size: 12px; color: var(--text-muted); }
+.invoice-amount {
+  font-size: 20px; font-weight: 700; color: var(--white);
+  font-family: var(--font-mono);
+}
+.invoice-status-paid {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--accent);
+  background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.25);
+  border-radius: 20px; padding: 3px 10px;
+}
+
+/* ── Invoice Print Modal ──────────────────────────── */
+.invoice-modal-overlay {
+  position: fixed; inset: 0; z-index: 3000;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.invoice-modal {
+  background: #fff; color: #111;
+  border-radius: 12px; width: 100%; max-width: 680px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+}
+.invoice-print-header {
+  background: #0A0F1E; color: #fff;
+  padding: 1.5rem 2rem;
+  display: flex; justify-content: space-between; align-items: center;
+  border-radius: 12px 12px 0 0;
+  gap: 1rem;
+}
+.invoice-print-body { padding: 2rem; }
+.invoice-print-row {
+  display: flex; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+  font-size: 13px; gap: 1rem;
+}
+.invoice-print-row:last-child { border-bottom: none; }
+.invoice-print-label { color: #666; }
+.invoice-print-val { font-weight: 500; color: #111; text-align: right; }
+.invoice-total-row {
+  display: flex; justify-content: space-between;
+  padding: 14px 0; border-top: 2px solid #0A0F1E;
+  margin-top: 8px; font-size: 16px; font-weight: 700;
+}
+@media print {
+  .invoice-modal-overlay { background: none; }
+  .invoice-modal { box-shadow: none; border-radius: 0; max-height: none; }
+  .invoice-print-actions { display: none !important; }
+}
+
 /* Milestone Locked State */
 .milestone-locked {
   margin-top: 12px;
@@ -1123,6 +1234,7 @@ a { color: inherit; text-decoration: none; }
       <button class="dash-tab active" onclick="switchMainTab('projects')">Projects</button>
       <button class="dash-tab" onclick="switchMainTab('quotes')" id="quotesTab">Quotes <span id="quoteBadge" style="display:none;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;"></span></button>
       <button class="dash-tab" onclick="switchMainTab('users')" id="usersTab" style="display:none;">Users</button>
+      <button class="dash-tab" onclick="switchMainTab('account')" id="accountTab">Account</button>
     </div>
 
     <!-- Projects List -->
@@ -1133,6 +1245,9 @@ a { color: inherit; text-decoration: none; }
 
     <!-- Registered Users (Admin only) -->
     <div id="usersSection" style="display:none;"></div>
+
+    <!-- Account Settings -->
+    <div id="accountSection" style="display:none;"></div>
 
     <!-- Project Detail -->
     <div id="projectDetail" style="display:none;"></div>
@@ -2753,6 +2868,7 @@ function switchMainTab(tab) {
   document.getElementById('projectsList').style.display = 'none';
   document.getElementById('quoteRequestsSection').style.display = 'none';
   document.getElementById('usersSection').style.display = 'none';
+  document.getElementById('accountSection').style.display = 'none';
   document.getElementById('projectDetail').style.display = 'none';
 
   if (tab === 'projects') {
@@ -2763,13 +2879,296 @@ function switchMainTab(tab) {
     tabs[1].classList.add('active');
     document.getElementById('quoteRequestsSection').style.display = 'block';
     renderQuoteRequests();
-  updateQuoteBadge();
+    updateQuoteBadge();
   } else if (tab === 'users') {
     const usersTab = document.getElementById('usersTab');
     if (usersTab) usersTab.classList.add('active');
     document.getElementById('usersSection').style.display = 'block';
     renderUsers();
+  } else if (tab === 'account') {
+    const accountTab = document.getElementById('accountTab');
+    if (accountTab) accountTab.classList.add('active');
+    document.getElementById('accountSection').style.display = 'block';
+    renderAccount();
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// ACCOUNT SETTINGS
+// ══════════════════════════════════════════════════════════
+function renderAccount() {
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!user) return;
+
+  const container = document.getElementById('accountSection');
+  const paidQuotes = (state.quoteRequests || []).filter(q =>
+    q.customerId === user.id && q.status === 'paid'
+  ).sort((a, b) => new Date(b.paidAt || b.createdAt) - new Date(a.paidAt || a.createdAt));
+
+  container.innerHTML = `
+    <div style="margin-bottom:24px;">
+      <h2 style="font-size:20px;font-weight:700;color:var(--white);margin-bottom:4px;">Account Settings</h2>
+      <p style="font-size:14px;color:var(--text-secondary);">Manage your personal information and view your invoice history.</p>
+    </div>
+
+    <div class="account-grid" style="margin-bottom:32px;">
+
+      <!-- Personal Info -->
+      <div class="account-card">
+        <div class="account-card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Personal Information
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="account-field">
+            <div class="account-label">First Name</div>
+            <input class="account-value form-input" id="acc-fname" type="text" value="${sanitizeInput(user.firstName)}" placeholder="First name">
+          </div>
+          <div class="account-field">
+            <div class="account-label">Last Name</div>
+            <input class="account-value form-input" id="acc-lname" type="text" value="${sanitizeInput(user.lastName)}" placeholder="Last name">
+          </div>
+        </div>
+
+        <div class="account-field">
+          <div class="account-label">Email Address</div>
+          <input class="account-value readonly" type="email" value="${sanitizeInput(user.email)}" readonly title="Email cannot be changed as it is used for login">
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Email cannot be changed — it is used to log in.</div>
+        </div>
+
+        <div class="account-field">
+          <div class="account-label">Company <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></div>
+          <input class="account-value form-input" id="acc-company" type="text" value="${sanitizeInput(user.company || '')}" placeholder="Your company name">
+        </div>
+
+        <div class="account-field">
+          <div class="account-label">Member Since</div>
+          <div class="account-value readonly" style="font-size:13px;">${formatDate(user.registeredAt)}</div>
+        </div>
+
+        <div class="account-save-row">
+          <button class="btn btn-primary btn-sm" onclick="saveProfile()">Save Changes</button>
+          <div class="account-success" id="profile-success">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Saved!
+          </div>
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="account-card">
+        <div class="account-card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Change Password
+        </div>
+
+        <div class="account-field">
+          <div class="account-label">Current Password</div>
+          <input class="account-value form-input" id="acc-pass-current" type="password" placeholder="Enter current password">
+        </div>
+        <div class="account-field">
+          <div class="account-label">New Password</div>
+          <input class="account-value form-input" id="acc-pass-new" type="password" placeholder="Min. 8 characters" minlength="8">
+        </div>
+        <div class="account-field">
+          <div class="account-label">Confirm New Password</div>
+          <input class="account-value form-input" id="acc-pass-confirm" type="password" placeholder="Re-enter new password">
+        </div>
+
+        <div class="account-save-row">
+          <button class="btn btn-primary btn-sm" onclick="changePassword()">Update Password</button>
+          <div class="account-success" id="password-success">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Password updated!
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:6px;">Account Role</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:4px 12px;border-radius:20px;${user.role === 'admin' ? 'background:rgba(0,102,255,0.15);color:var(--primary-light);border:1px solid rgba(0,102,255,0.3);' : 'background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.25);'}">
+            ${user.role === 'admin' ? '⚙ Administrator' : '◎ Customer'}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice History -->
+    <div style="margin-bottom:16px;">
+      <h3 style="font-size:17px;font-weight:600;color:var(--white);margin-bottom:4px;">Invoice History</h3>
+      <p style="font-size:13px;color:var(--text-secondary);">All your paid orders. Click View to open and print a full invoice.</p>
+    </div>
+
+    ${paidQuotes.length === 0 ? `
+      <div style="text-align:center;padding:3rem 2rem;background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);">
+        <div style="width:56px;height:56px;margin:0 auto 1rem;background:rgba(0,102,255,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div style="font-size:16px;font-weight:600;color:var(--white);margin-bottom:6px;">No invoices yet</div>
+        <p style="font-size:13px;color:var(--text-secondary);">Invoices will appear here after you complete payment for an approved quote.</p>
+      </div>` :
+      paidQuotes.map(q => {
+        const amount = q.adminPrice || q.estimatedTotal || 0;
+        const date = formatDate(q.paidAt || q.createdAt);
+        return `
+        <div class="invoice-card">
+          <div>
+            <div class="invoice-id">${q.id}</div>
+            <div class="invoice-meta">${date} &middot; ${q.specs.layersLabel || ''} &middot; ${q.specs.sizeLabel || ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <span class="invoice-status-paid">&#10003; Paid</span>
+            <div class="invoice-amount">$${amount.toLocaleString()}</div>
+            <button class="btn btn-secondary btn-sm" onclick="openInvoice('${q.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              View Invoice
+            </button>
+          </div>
+        </div>`;
+      }).join('')
+    }`;
+}
+
+function saveProfile() {
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!user) return;
+
+  const fname = document.getElementById('acc-fname').value.trim();
+  const lname = document.getElementById('acc-lname').value.trim();
+  const company = document.getElementById('acc-company').value.trim();
+
+  if (!fname || !lname) { showToast('First and last name are required.', 'warning'); return; }
+
+  user.firstName = sanitizeInput(fname);
+  user.lastName  = sanitizeInput(lname);
+  user.company   = sanitizeInput(company);
+  saveState(state);
+
+  // Update nav display name
+  updateNav();
+
+  const el = document.getElementById('profile-success');
+  if (el) { el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000); }
+  showToast('Profile updated successfully.', 'success');
+}
+
+function changePassword() {
+  const state = getState();
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!user) return;
+
+  const current = document.getElementById('acc-pass-current').value;
+  const newPass  = document.getElementById('acc-pass-new').value;
+  const confirm  = document.getElementById('acc-pass-confirm').value;
+
+  if (!current || !newPass || !confirm) { showToast('Please fill in all password fields.', 'warning'); return; }
+  if (current !== user.password) { showToast('Current password is incorrect.', 'warning'); return; }
+  if (newPass.length < 8) { showToast('New password must be at least 8 characters.', 'warning'); return; }
+  if (newPass !== confirm) { showToast('New passwords do not match.', 'warning'); return; }
+
+  user.password = newPass;
+  saveState(state);
+
+  document.getElementById('acc-pass-current').value = '';
+  document.getElementById('acc-pass-new').value = '';
+  document.getElementById('acc-pass-confirm').value = '';
+
+  const el = document.getElementById('password-success');
+  if (el) { el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000); }
+  showToast('Password updated successfully.', 'success');
+}
+
+function openInvoice(quoteId) {
+  const state = getState();
+  const q = (state.quoteRequests || []).find(r => r.id === quoteId);
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!q || !user) return;
+
+  const amount = q.adminPrice || q.estimatedTotal || 0;
+  const paidDate = formatDate(q.paidAt || q.createdAt);
+  const invoiceNum = 'INV-' + q.id.replace('QR-', '');
+
+  const modal = document.createElement('div');
+  modal.className = 'invoice-modal-overlay';
+  modal.id = 'invoiceModalOverlay';
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+  modal.innerHTML = `
+    <div class="invoice-modal">
+      <!-- Header -->
+      <div class="invoice-print-header">
+        <div>
+          <div style="font-size:20px;font-weight:700;letter-spacing:-0.5px;">ElectroTrical</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">Professional PCB Layout & Design Services</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);">hello@electrotrical.com &middot; electrotrical.com</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:22px;font-weight:700;color:#00D4FF;">${invoiceNum}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">Date: ${paidDate}</div>
+          <div style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;background:#00E5A0;color:#0A0F1E;padding:3px 10px;border-radius:20px;">PAID</div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="invoice-print-body">
+
+        <!-- Bill To -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem;">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#999;margin-bottom:8px;">Bill To</div>
+            <div style="font-size:14px;font-weight:600;color:#111;">${sanitizeInput(user.firstName)} ${sanitizeInput(user.lastName)}</div>
+            ${user.company ? `<div style="font-size:13px;color:#555;">${sanitizeInput(user.company)}</div>` : ''}
+            <div style="font-size:13px;color:#555;">${sanitizeInput(user.email)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#999;margin-bottom:8px;">Reference</div>
+            <div style="font-size:13px;color:#555;">Quote: <strong style="color:#111;">${q.id}</strong></div>
+            <div style="font-size:13px;color:#555;">Paid: <strong style="color:#111;">${paidDate}</strong></div>
+          </div>
+        </div>
+
+        <!-- Specs table -->
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#999;margin-bottom:10px;">Service Details</div>
+        <div style="border:1px solid #eee;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;">
+          <div style="background:#f8f9fa;padding:8px 14px;display:grid;grid-template-columns:1fr auto;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#666;">
+            <span>Description</span><span>Amount</span>
+          </div>
+          <div style="padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:4px;">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:4px;">PCB Layout & Design Service</div>
+              <div style="font-size:12px;color:#666;">${q.specs.serviceLabel || 'PCB Layout Design'} &middot; ${q.specs.pcbTypeLabel || 'Rigid'} &middot; ${q.specs.layersLabel || ''}</div>
+              <div style="font-size:12px;color:#666;">${q.specs.complexityLabel || ''} &middot; ${q.specs.sizeLabel || ''} board &middot; ${q.specs.turnaroundLabel || ''}</div>
+              ${q.specs.specialLabel && q.specs.specialLabel !== 'None' ? `<div style="font-size:12px;color:#666;">Special: ${q.specs.specialLabel}</div>` : ''}
+            </div>
+            <div style="font-size:15px;font-weight:600;color:#111;">$${amount.toLocaleString()}</div>
+          </div>
+        </div>
+
+        <!-- Total -->
+        <div class="invoice-total-row">
+          <span>Total Paid</span>
+          <span style="color:#0066FF;font-size:22px;">$${amount.toLocaleString()} USD</span>
+        </div>
+
+        <!-- Footer note -->
+        <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center;line-height:1.7;">
+          Thank you for your business! For questions about this invoice, contact hello@electrotrical.com
+        </div>
+
+        <!-- Actions -->
+        <div class="invoice-print-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.5rem;">
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('invoiceModalOverlay').remove()">Close</button>
+          <button class="btn btn-primary btn-sm" onclick="window.print()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print / Save PDF
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
 }
 
 // ══════════════════════════════════════════════════════════
