@@ -2255,6 +2255,16 @@ function loginAs(user) {
 function logout() {
   state.currentUser = null;
   saveState(state);
+
+  // Clear all active tabs and wipe section content so the next
+  // user never sees a flash of the previous user's view on login
+  document.querySelectorAll('#mainDashTabs .dash-tab').forEach(t => t.classList.remove('active'));
+  ['projectsList','quoteRequestsSection','usersSection','accountSection','summarySection','projectDetail']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+    });
+
   showView('auth');
   updateNav();
 }
