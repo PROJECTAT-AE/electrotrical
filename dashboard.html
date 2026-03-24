@@ -2408,6 +2408,7 @@ function openProject(projectId) {
   detail.style.display = 'block';
 
   const admin = isAdmin();
+  const designer = isDesigner();
   const customer = state.users.find(u => u.id === project.customerId);
 
   detail.innerHTML = `
