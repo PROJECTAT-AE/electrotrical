@@ -1885,6 +1885,7 @@ function initState() {
         lastName: 'ElectroTrical',
         company: 'ElectroTrical',
         role: 'admin',
+        superAdmin: true,
         status: 'active',
         registeredAt: '2026-01-15T08:00:00'
       },
@@ -2148,7 +2149,25 @@ function getCurrentUser() {
 
 function isAdmin() {
   const user = getCurrentUser();
-  return user && user.role === 'admin';
+  return user && (user.role === 'admin');
+}
+function isDesigner() {
+  const user = getCurrentUser();
+  return user && user.role === 'designer';
+}
+function isSuperAdmin() {
+  const user = getCurrentUser();
+  return user && user.superAdmin === true;
+}
+function canUploadMilestones() {
+  const user = getCurrentUser();
+  return user && (user.role === 'admin' || user.role === 'designer');
+}
+function canManageQuotes() {
+  return isAdmin();
+}
+function canManageRoles() {
+  return isSuperAdmin();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2180,17 +2199,23 @@ function renderDashboard() {
   if (!user) return;
 
   const admin = isAdmin();
+  const designer = isDesigner();
   document.getElementById('adminBar').style.display = admin ? 'flex' : 'none';
-  document.getElementById('dashTitle').textContent = admin ? 'All Projects' : 'My Projects';
+  document.getElementById('dashTitle').textContent = (admin || designer) ? 'All Projects' : 'My Projects';
   document.getElementById('dashSubtitle').textContent = admin
     ? 'Manage all customer projects, upload designs, and track milestones'
+    : designer
+    ? 'View all projects and upload your design work for customer review'
     : 'Manage your PCB design orders and track progress';
-  document.getElementById('newQuoteBtn').style.display = admin ? 'none' : 'inline-flex';
+  document.getElementById('newQuoteBtn').style.display = (admin || designer) ? 'none' : 'inline-flex';
   // Show Users + Summary tabs only for admin
   const usersTab = document.getElementById('usersTab');
   if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
   const summaryTabEl = document.getElementById('summaryTab');
   if (summaryTabEl) summaryTabEl.style.display = admin ? 'inline-flex' : 'none';
+  // Quotes tab: admin sees all, designer hidden, customer sees own
+  const quotesTabEl = document.getElementById('quotesTab');
+  if (quotesTabEl) quotesTabEl.style.display = designer ? 'none' : 'inline-flex';
 
   // Update quotes badge count
   updateQuoteBadge();
@@ -2211,7 +2236,7 @@ function renderDashboard() {
     document.getElementById('projectsList').style.display = 'block';
   }
 
-  const projects = admin
+  const projects = (admin || designer)
     ? state.projects
     : state.projects.filter(p => p.customerId === user.id);
 
@@ -2332,6 +2357,7 @@ function openProject(projectId) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:5px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
               Cancel Project
             </button>` : ''}
+          ${designer ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.25);letter-spacing:0.05em;">◈ Designer View</span>` : ''}
         </div>
       </div>
     </div>
@@ -2456,6 +2482,8 @@ function renderMilestonePanel(project, milestone, index, admin) {
       </div>`;
   }
   const projectId = project.id;
+  const isDesignerUser = isDesigner();
+  const canUpload = admin || isDesignerUser;
 
   // Check if all previous milestones are approved
   const prevAllApproved = project.milestones
@@ -2474,7 +2502,7 @@ function renderMilestonePanel(project, milestone, index, admin) {
 
   let actions = '';
 
-  if (admin) {
+  if (canUpload) {
     if (isPending || isCurrent) {
       if (index === 0 || prevAllApproved) {
         // Previous milestone(s) approved — allow upload and submit
@@ -2927,8 +2955,9 @@ function renderNotifications() {
   if (!user) return;
 
   const admin = user.role === 'admin';
-  // Admin sees everything; customer only sees notifs targeted to them
-  const notifs = admin
+  const designerUser = user.role === 'designer';
+  // Admin + designer see all; customer only sees notifs targeted to them
+  const notifs = (admin || designerUser)
     ? allNotifs
     : allNotifs.filter(n => n.targetUserId === user.id);
 
@@ -2973,8 +3002,9 @@ function markAllRead() {
   const allNotifs = getNotifications();
   const user = getCurrentUser();
   const admin = user && user.role === 'admin';
+  const designerUser = user && user.role === 'designer';
   allNotifs.forEach(n => {
-    if (admin || n.targetUserId === (user && user.id)) n.read = true;
+    if (admin || designerUser || n.targetUserId === (user && user.id)) n.read = true;
   });
   saveNotifications(allNotifs);
   renderNotifications();
@@ -3452,7 +3482,7 @@ function renderSummary() {
   const totalProjects     = projects.length;
 
   const pendingQuotes = quotes.filter(q => q.status === 'pending' || q.status === 'submitted').length;
-  const customers     = users.filter(u => u.role !== 'admin').length;
+  const customers     = users.filter(u => u.role === 'customer').length;
 
   // ── Status breakdown percentages ──────────────────────
   const pct = n => totalProjects ? Math.round((n / totalProjects) * 100) : 0;
@@ -3478,7 +3508,7 @@ function renderSummary() {
     });
   });
 
-  users.filter(u => u.role !== 'admin' && u.registeredAt).forEach(u => {
+  users.filter(u => u.role === 'customer' && u.registeredAt).forEach(u => {
     events.push({ ts: new Date(u.registeredAt), type: 'user',
       text: `New customer registered: <strong>${u.firstName} ${u.lastName}</strong>.` });
   });
@@ -3806,8 +3836,12 @@ function renderAccount() {
 
         <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
           <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:6px;">Account Role</div>
-          <div style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:4px 12px;border-radius:20px;${user.role === 'admin' ? 'background:rgba(0,102,255,0.15);color:var(--primary-light);border:1px solid rgba(0,102,255,0.3);' : 'background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.25);'}">
-            ${user.role === 'admin' ? '⚙ Administrator' : '◎ Customer'}
+          <div style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:4px 12px;border-radius:20px;${
+            user.superAdmin ? 'background:rgba(0,102,255,0.2);color:var(--primary-light);border:1px solid rgba(0,102,255,0.4);' :
+            user.role === 'admin' ? 'background:rgba(0,102,255,0.15);color:var(--primary-light);border:1px solid rgba(0,102,255,0.3);' :
+            user.role === 'designer' ? 'background:rgba(155,93,229,0.15);color:#C77DFF;border:1px solid rgba(155,93,229,0.3);' :
+            'background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.25);'}">
+            ${user.superAdmin ? '★ Super Admin' : user.role === 'admin' ? '⚙ Administrator' : user.role === 'designer' ? '◈ Designer' : '◎ Customer'}
           </div>
         </div>
       </div>
@@ -4002,9 +4036,11 @@ function renderUsers() {
   if (!currentUser || currentUser.role !== 'admin') return;
 
   const container = document.getElementById('usersSection');
+  const isSA = currentUser.superAdmin === true;
   const allUsers = state.users || [];
-  const customers = allUsers.filter(u => u.role === 'customer');
-  const admins = allUsers.filter(u => u.role === 'admin');
+  const customers  = allUsers.filter(u => u.role === 'customer');
+  const designers  = allUsers.filter(u => u.role === 'designer');
+  const admins     = allUsers.filter(u => u.role === 'admin');
   const activeCount = allUsers.filter(u => u.status !== 'suspended').length;
 
   // Filter by search
@@ -4042,6 +4078,10 @@ function renderUsers() {
       <div style="font-size:13px;color:var(--text-secondary);">Active</div>
     </div>
     <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
+      <div style="font-size:32px;font-weight:700;color:#9B5DE5;margin-bottom:4px;">${designers.length}</div>
+      <div style="font-size:13px;color:var(--text-secondary);">Designers</div>
+    </div>
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;">
       <div style="font-size:32px;font-weight:700;color:var(--primary-light);margin-bottom:4px;">${admins.length}</div>
       <div style="font-size:13px;color:var(--text-secondary);">Admins</div>
     </div>
@@ -4070,6 +4110,7 @@ function renderUsers() {
             <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Email</th>
             <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Registered</th>
             <th style="text-align:center;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Quotes</th>
+            <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Role</th>
             <th style="text-align:left;padding:12px 1rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Status</th>
             <th style="text-align:center;padding:12px 1.75rem;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Actions</th>
           </tr>
@@ -4078,42 +4119,65 @@ function renderUsers() {
 
     users.forEach(u => {
       const initials = ((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '');
-      const uIsAdmin = u.role === 'admin';
+      const uIsAdmin   = u.role === 'admin';
+      const uIsDesigner = u.role === 'designer';
+      const uIsSuperAdmin = u.superAdmin === true;
       const isSuspended = u.status === 'suspended';
       const quoteCount = getUserQuoteCount(u.id);
       const regDate = u.registeredAt
         ? new Date(u.registeredAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : '—';
 
-      const roleBadge = uIsAdmin
-        ? '<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(0,102,255,0.12);color:var(--primary-light);">Admin</span>'
-        : '';
+      const roleBadgeColors = {
+        admin:    { bg:'rgba(0,102,255,0.12)',    color:'var(--primary-light)', label: uIsSuperAdmin ? '★ Super Admin' : 'Admin' },
+        designer: { bg:'rgba(155,93,229,0.12)',   color:'#C77DFF',             label: '◈ Designer' },
+        customer: { bg:'rgba(0,212,255,0.10)',     color:'var(--cyan)',         label: 'Customer' },
+      };
+      const rbc = roleBadgeColors[u.role] || roleBadgeColors.customer;
+      const roleBadge = `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:${rbc.bg};color:${rbc.color};">${rbc.label}</span>`;
 
       const statusBadge = isSuspended
         ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(255,77,77,0.1);color:var(--danger);border:1px solid rgba(255,77,77,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--danger);"></span>Suspended</span>'
         : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>Active</span>';
 
-      const avatarBg = isSuspended ? 'rgba(255,77,77,0.12)' : (uIsAdmin ? 'rgba(0,102,255,0.15)' : 'rgba(0,229,160,0.12)');
-      const avatarBorder = isSuspended ? 'rgba(255,77,77,0.25)' : (uIsAdmin ? 'rgba(0,102,255,0.3)' : 'rgba(0,229,160,0.25)');
-      const avatarColor = isSuspended ? 'var(--danger)' : (uIsAdmin ? 'var(--primary-light)' : 'var(--accent)');
+      const avatarBg = isSuspended ? 'rgba(255,77,77,0.12)' : uIsAdmin ? 'rgba(0,102,255,0.15)' : uIsDesigner ? 'rgba(155,93,229,0.12)' : 'rgba(0,229,160,0.12)';
+      const avatarBorder = isSuspended ? 'rgba(255,77,77,0.25)' : uIsAdmin ? 'rgba(0,102,255,0.3)' : uIsDesigner ? 'rgba(155,93,229,0.3)' : 'rgba(0,229,160,0.25)';
+      const avatarColor = isSuspended ? 'var(--danger)' : uIsAdmin ? 'var(--primary-light)' : uIsDesigner ? '#C77DFF' : 'var(--accent)';
 
-      // Action buttons (don't show delete/suspend for admin accounts)
+      // Action buttons
+      let roleSelector = '';
+      if (isSA && !uIsSuperAdmin) {
+        // Super-admin can change anyone's role (except their own superAdmin account)
+        roleSelector = `
+          <select onchange="changeUserRole('${u.id}', this.value)" title="Change role"
+            style="background:var(--dark-700);border:1px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 8px;border-radius:var(--radius-sm);cursor:pointer;outline:none;margin-right:6px;text-transform:uppercase;letter-spacing:0.04em;">
+            <option value="customer"  ${u.role === 'customer'  ? 'selected' : ''}>Customer</option>
+            <option value="designer"  ${u.role === 'designer'  ? 'selected' : ''}>Designer</option>
+            <option value="admin"     ${u.role === 'admin'     ? 'selected' : ''}>Admin</option>
+          </select>`;
+      } else if (!isSA && !uIsSuperAdmin) {
+        // Regular admin sees role badge only, no selector
+        roleSelector = '';
+      }
+
       let actions = '';
-      if (!uIsAdmin) {
+      if (!uIsSuperAdmin) {
         const toggleLabel = isSuspended ? 'Activate' : 'Suspend';
         const toggleColor = isSuspended ? 'var(--accent)' : 'var(--warning)';
-        actions = `
-          <button onclick="toggleUserStatus('${u.id}')" title="${toggleLabel}" style="background:transparent;border:1px solid var(--border);color:${toggleColor};width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);margin-right:4px;outline:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'" onblur="this.style.background='transparent'" onfocus="this.style.background='transparent'">
+        const suspendBtn = !uIsAdmin ? `
+          <button onclick="toggleUserStatus('${u.id}')" title="${toggleLabel}" style="background:transparent;border:1px solid var(--border);color:${toggleColor};width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);margin-right:4px;outline:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
             ${isSuspended
               ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
               : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'
             }
-          </button>
-          <button onclick="deleteUser('${u.id}')" title="Delete" style="background:transparent;border:1px solid var(--border);color:var(--danger);width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);outline:none;" onmouseover="this.style.background='rgba(255,77,77,0.08)'" onmouseout="this.style.background='transparent'" onblur="this.style.background='transparent'" onfocus="this.style.background='transparent'">
+          </button>` : '';
+        const deleteBtn = !uIsAdmin ? `
+          <button onclick="deleteUser('${u.id}')" title="Delete" style="background:transparent;border:1px solid var(--border);color:var(--danger);width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--transition);outline:none;" onmouseover="this.style.background='rgba(255,77,77,0.08)'" onmouseout="this.style.background='transparent'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-          </button>`;
+          </button>` : '';
+        actions = roleSelector + suspendBtn + deleteBtn || '<span style="font-size:11px;color:var(--text-muted);">—</span>';
       } else {
-        actions = '<span style="font-size:11px;color:var(--text-muted);">—</span>';
+        actions = '<span style="font-size:11px;font-weight:600;color:var(--primary-light);">★ Super Admin</span>';
       }
 
       html += `
@@ -4122,7 +4186,7 @@ function renderUsers() {
               <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:36px;height:36px;border-radius:50%;background:${avatarBg};border:2px solid ${avatarBorder};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${avatarColor};flex-shrink:0;">${sanitizeInput(initials.toUpperCase())}</div>
                 <div>
-                  <div style="font-weight:500;color:var(--white);display:flex;align-items:center;gap:6px;">${sanitizeInput(u.firstName || '')} ${sanitizeInput(u.lastName || '')} ${roleBadge}</div>
+                  <div style="font-weight:500;color:var(--white);">${sanitizeInput(u.firstName || '')} ${sanitizeInput(u.lastName || '')}</div>
                   <div style="font-size:12px;color:var(--text-muted);">${sanitizeInput(u.company || '')}</div>
                 </div>
               </div>
@@ -4130,8 +4194,9 @@ function renderUsers() {
             <td style="padding:14px 1rem;color:var(--text-secondary);font-size:13px;">${sanitizeInput(u.email || '')}</td>
             <td style="padding:14px 1rem;color:var(--text-muted);font-size:13px;">${regDate}</td>
             <td style="padding:14px 1rem;text-align:center;font-family:var(--font-mono);font-size:13px;color:${quoteCount > 0 ? 'var(--cyan)' : 'var(--text-muted)'};">${quoteCount}</td>
+            <td style="padding:14px 1rem;">${roleBadge}</td>
             <td style="padding:14px 1rem;">${statusBadge}</td>
-            <td style="padding:14px 1.75rem;text-align:center;">${actions}</td>
+            <td style="padding:14px 1.75rem;text-align:center;white-space:nowrap;">${actions}</td>
           </tr>`;
     });
 
@@ -4143,6 +4208,29 @@ function renderUsers() {
 
   html += `</div>`;
   container.innerHTML = html;
+}
+
+function changeUserRole(userId, newRole) {
+  const state = getState();
+  const currentUser = state.users.find(u => u.id === state.currentUser);
+  if (!currentUser || !currentUser.superAdmin) {
+    showToast('Only the Super Admin can change roles.', 'warning');
+    renderUsers();
+    return;
+  }
+  const target = state.users.find(u => u.id === userId);
+  if (!target || target.superAdmin) return;
+
+  const validRoles = ['customer', 'designer', 'admin'];
+  if (!validRoles.includes(newRole)) return;
+
+  const oldRole = target.role;
+  target.role = newRole;
+  saveState(state);
+
+  const roleLabels = { customer: 'Customer', designer: 'Designer', admin: 'Admin' };
+  showToast(`${target.firstName} ${target.lastName} is now ${roleLabels[newRole]}.`, 'success');
+  renderUsers();
 }
 
 function toggleUserStatus(userId) {
