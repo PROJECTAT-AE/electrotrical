@@ -1337,12 +1337,27 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
 @media (max-width: 768px) {
   .nav-links { display: none; }
   .dashboard { padding: 5rem 1.25rem 3rem; }
-  .dash-header { flex-direction: column; align-items: flex-start; }
+  .dash-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .milestone-tracker { overflow-x: auto; padding-bottom: 8px; }
-  .milestone-step { min-width: 100px; }
+  .milestone-step { min-width: 90px; }
   .form-row { grid-template-columns: 1fr; }
   .milestone-actions { flex-direction: column; }
   .milestone-actions .btn { width: 100%; }
+  /* Tabs scroll horizontally on mobile */
+  .dash-tabs { overflow-x: auto; white-space: nowrap; padding-bottom: 4px; flex-wrap: nowrap; scrollbar-width: none; }
+  .dash-tabs::-webkit-scrollbar { display: none; }
+  .dash-tab { flex-shrink: 0; }
+  /* Detail cards full width */
+  .detail-card { padding: 1.25rem; }
+  /* Cancel modal */
+  .cancel-modal { padding: 20px 16px 18px; }
+  /* Summary mid-grid already collapses, KPI already 2-col */
+  /* Project card header */
+  .project-card-header { gap: 8px; }
+  /* Invoice modal */
+  .invoice-modal { padding: 0; }
+  /* Cancelled banner */
+  .cancelled-banner { flex-direction: column; gap: 10px; }
   .project-card-header { flex-direction: column; }
 }
 @media (max-width: 480px) {
@@ -1602,6 +1617,11 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
           <div class="form-group" style="margin-bottom:0;">
             <label class="form-label">Company <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
             <input class="form-input" type="text" id="co-company" placeholder="Acme Hardware Inc.">
+          </div>
+          <div class="form-group" style="margin-top:16px;margin-bottom:0;">
+            <label class="form-label">Project Name <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+            <input class="form-input" type="text" id="co-project-name" placeholder="e.g. Motor Controller Rev2, IoT Gateway...">
+            <div class="form-hint">Give your project a meaningful name. You can change it later.</div>
           </div>
         </div>
 
@@ -2279,6 +2299,11 @@ function openProject(projectId) {
   const project = state.projects.find(p => p.id === projectId);
   if (!project) return;
 
+  // Push a history state so browser back returns to projects list
+  if (!history.state || history.state.view !== 'project' || history.state.id !== projectId) {
+    history.pushState({ view: 'project', id: projectId }, '', '#project=' + projectId);
+  }
+
   document.getElementById('projectsList').style.display = 'none';
   const detail = document.getElementById('projectDetail');
   detail.style.display = 'block';
@@ -2288,7 +2313,7 @@ function openProject(projectId) {
 
   detail.innerHTML = `
     <div style="margin-bottom:1.5rem;">
-      <button class="btn btn-secondary btn-xs" onclick="renderDashboard()" style="margin-bottom:1rem;">
+      <button class="btn btn-secondary btn-xs" onclick="history.back()" style="margin-bottom:1rem;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         Back to Projects
       </button>
@@ -2297,7 +2322,7 @@ function openProject(projectId) {
           <h2 style="font-size:24px;font-weight:700;color:var(--white);margin-bottom:4px;">${project.name}</h2>
           <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);">${project.id}</span>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
           <div class="project-status ${project.status === 'completed' ? 'status-completed' : project.status === 'review' ? 'status-review' : project.status === 'cancelled' ? 'status-cancelled' : 'status-active'}">
             <span class="status-dot"></span>
             ${project.status === 'completed' ? 'Completed' : project.status === 'review' ? 'Awaiting Review' : project.status === 'cancelled' ? 'Cancelled' : 'In Progress'}
@@ -2724,6 +2749,13 @@ function adminUploadMilestone(event, projectId, msIndex) {
   ms.updatedAt = new Date().toISOString();
   project.activity.unshift({ text: `<strong>Admin</strong> uploaded ${files.length} file(s) to <strong>${ms.name}</strong>`, time: formatNow(), type: 'blue' });
   saveState(state);
+  addNotification(
+    `${ms.name} — Files Uploaded`,
+    `Admin uploaded ${files.length} file(s) to <strong>${ms.name}</strong> on <strong>${project.name}</strong>.`,
+    'blue',
+    null,
+    project.customerId
+  );
   openProject(projectId);
   showToast(`Files uploaded to ${ms.name}.`, 'success');
 }
@@ -2754,7 +2786,8 @@ function submitForReview(projectId, msIndex) {
     `${ms.name} — Ready for Review`,
     `<strong>${ms.name}</strong> is ready for your review on <strong>${project.name}</strong>`,
     'yellow',
-    emailMilestoneSubmitted(project.name, ms.name)
+    emailMilestoneSubmitted(project.name, ms.name),
+    project.customerId
   );
   openProject(projectId);
   showToast(`${ms.name} sent for customer review.`, 'success');
@@ -2796,6 +2829,7 @@ function approveMilestone(projectId, msIndex) {
     `<strong>${ms.name}</strong> has been approved on <strong>${project.name}</strong>`,
     'green',
     emailMilestoneApproved(project.name, ms.name, nextMs ? nextMs.name : null)
+    // no targetUserId → admin sees it
   );
   openProject(projectId);
   showToast(`${ms.name} approved!`, 'success');
@@ -2826,6 +2860,7 @@ function requestRevision(projectId, msIndex) {
     `Revision requested on <strong>${ms.name}</strong> for <strong>${project.name}</strong>`,
     'red',
     emailRevisionRequested(project.name, ms.name, comment)
+    // no targetUserId → admin sees it (customer initiated)
   );
   openProject(projectId);
   showToast('Revision requested. The team will be notified.', 'info');
@@ -2870,14 +2905,15 @@ function saveNotifications(notifs) {
   localStorage.setItem('electrotrical_notifications', JSON.stringify(notifs));
 }
 
-function addNotification(title, message, type, emailTemplate) {
+function addNotification(title, message, type, emailTemplate, targetUserId) {
   const notifs = getNotifications();
   notifs.unshift({
     id: 'n-' + Date.now(),
     title,
     message,
-    type, // blue, green, yellow, red
+    type,
     emailTemplate,
+    targetUserId: targetUserId || null, // null = admin-only
     read: false,
     time: formatNow()
   });
@@ -2886,9 +2922,15 @@ function addNotification(title, message, type, emailTemplate) {
 }
 
 function renderNotifications() {
-  const notifs = getNotifications();
+  const allNotifs = getNotifications();
   const user = getCurrentUser();
   if (!user) return;
+
+  const admin = user.role === 'admin';
+  // Admin sees everything; customer only sees notifs targeted to them
+  const notifs = admin
+    ? allNotifs
+    : allNotifs.filter(n => n.targetUserId === user.id);
 
   const count = notifs.filter(n => !n.read).length;
   const badge = document.getElementById('notifCount');
@@ -2928,9 +2970,13 @@ function toggleNotifications(e) {
 }
 
 function markAllRead() {
-  const notifs = getNotifications();
-  notifs.forEach(n => n.read = true);
-  saveNotifications(notifs);
+  const allNotifs = getNotifications();
+  const user = getCurrentUser();
+  const admin = user && user.role === 'admin';
+  allNotifs.forEach(n => {
+    if (admin || n.targetUserId === (user && user.id)) n.read = true;
+  });
+  saveNotifications(allNotifs);
   renderNotifications();
 }
 
@@ -3123,7 +3169,7 @@ function processPayment() {
     const projectId = 'PRJ-2026-' + String(state.projects.length + 1).padStart(3, '0');
     const project = {
       id: projectId,
-      name: pendingQuote.layersLabel + ' PCB — ' + pendingQuote.sizeLabel,
+      name: (() => { const n = document.getElementById('co-project-name'); return (n && n.value.trim()) ? n.value.trim() : pendingQuote.layersLabel + ' PCB — ' + pendingQuote.sizeLabel; })(),
       customerId: user.id,
       layers: parseInt(pendingQuote.layers),
       size: pendingQuote.sizeLabel,
@@ -3463,6 +3509,37 @@ function renderSummary() {
     .sort((a, b) => new Date(b.paidAt || b.createdAt) - new Date(a.paidAt || a.createdAt));
 
   const revenueTotal = revenueRows.reduce((s, q) => s + (q.adminPrice || q.estimatedTotal || 0), 0);
+
+  // Empty state: no customers yet
+  if (customers === 0 && projects.length === 0 && quotes.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:4rem 2rem;max-width:500px;margin:0 auto;">
+        <div style="width:72px;height:72px;margin:0 auto 1.5rem;background:rgba(0,102,255,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5" stroke-linecap="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <h2 style="font-size:22px;font-weight:700;color:var(--white);margin-bottom:10px;">Welcome to ElectroTrical Admin</h2>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;margin-bottom:2rem;">
+          Your business summary will appear here once customers start submitting quotes and projects are underway.
+          Share your website to get started.
+        </p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="switchMainTab('quotes')">View Quotes</button>
+          <a href="index.html" class="btn btn-secondary btn-sm">View Website</a>
+        </div>
+        <div style="margin-top:2.5rem;padding:1.25rem;background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:left;">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:12px;">Quick Setup Checklist</div>
+          <div style="font-size:13px;color:var(--text-secondary);display:flex;flex-direction:column;gap:8px;">
+            <div>☐ &nbsp;Share your website URL with potential clients</div>
+            <div>☐ &nbsp;Set up EmailJS for quote notifications</div>
+            <div>☐ &nbsp;Configure your payment gateway</div>
+            <div>☐ &nbsp;Review and adjust milestone templates</div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
 
   container.innerHTML = `
     <div style="margin-bottom:24px;">
@@ -4247,8 +4324,16 @@ function openQuoteReview(quoteId) {
     </div>
     <div class="form-group">
       <label class="form-label">Final Price (USD)</label>
-      <input class="form-input" type="number" id="review-price" value="${quote.estimatedTotal}" min="1" step="1" required style="font-size:20px;font-weight:600;">
-      <div class="form-hint">Adjust the price if needed. The customer estimated $${quote.estimatedTotal}.</div>
+      <div style="position:relative;">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:20px;font-weight:700;color:var(--text-secondary);pointer-events:none;">$</span>
+        <input class="form-input" type="number" id="review-price" value="${quote.estimatedTotal}" min="1" step="1" required
+          style="font-size:22px;font-weight:700;padding-left:28px;color:var(--white);background:var(--dark-700);border:2px solid var(--primary);border-radius:var(--radius);height:56px;"
+          oninput="document.getElementById('review-price-preview').textContent = '$'+(+this.value||0).toLocaleString()">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+        <div class="form-hint" style="margin:0;">Customer estimated: <strong style="color:var(--white);">$${quote.estimatedTotal}</strong>. Adjust if needed.</div>
+        <div id="review-price-preview" style="font-size:15px;font-weight:700;color:var(--accent);">$${quote.estimatedTotal}</div>
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label">Notes to Customer <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
@@ -4524,6 +4609,20 @@ if (regEmailEl) {
 // ══════════════════════════════════════════════════════════
 (function init() {
   state = getState();
+  // Handle browser back/forward from project detail
+  window.addEventListener('popstate', function(e) {
+    if (e.state && e.state.view === 'project') {
+      openProject(e.state.id);
+    } else {
+      // Back to projects list
+      const detail = document.getElementById('projectDetail');
+      if (detail && detail.style.display !== 'none') {
+        detail.style.display = 'none';
+        switchMainTab('projects');
+      }
+    }
+  });
+
   const params = new URLSearchParams(window.location.search);
   const isCheckout = params.get('checkout') === 'true';
   const submitQuote = params.get('submit_quote') === 'true';
