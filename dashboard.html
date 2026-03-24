@@ -4935,6 +4935,27 @@ function renderQuoteRequests() {
   // Auto-expire quotes + start expiry countdowns
   autoExpireQuotes();
   startExpiryCountdowns();
+
+  // #5 ── Inject PDF download buttons on approved / paid / expired quotes
+  setTimeout(() => {
+    (quotes).forEach(q => {
+      if (['approved','paid','expired'].includes(q.status)) {
+        const allDivs = document.querySelectorAll('[style*="font-family:var(--font-mono)"]');
+        allDivs.forEach(div => {
+          const card = div.closest('[style*="margin-bottom:16px"]');
+          if (card && card.textContent.includes(q.id) && !card.querySelector('.pdf-dl-btn')) {
+            const pdfBtn = document.createElement('button');
+            pdfBtn.className = 'btn btn-secondary btn-sm pdf-dl-btn';
+            pdfBtn.title = 'Download Quote as PDF';
+            pdfBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Download PDF`;
+            pdfBtn.onclick = () => downloadQuotePDF(q.id);
+            const btnRow = card.querySelector('[style*="display:flex;gap:8px"]');
+            if (btnRow && !btnRow.querySelector('.pdf-dl-btn')) btnRow.appendChild(pdfBtn);
+          }
+        });
+      }
+    });
+  }, 120);
 }
 
 function getQuoteStatusBadge(status) {
@@ -5846,34 +5867,6 @@ function injectQuotePDFButtons() {
   }, 400);
 })();
 
-// ── PDF button injection: also hook into quote rendering ─────────────────────
-// Add data-quote-id markers to quote action rows after render
-const _origRenderQuoteRequests = renderQuoteRequests;
-function renderQuoteRequests() {
-  _origRenderQuoteRequests();
-  // Inject PDF download links on approved/paid quotes
-  setTimeout(() => {
-    const state = getState();
-    (state.quoteRequests || []).forEach(q => {
-      if (['approved','paid','expired'].includes(q.status)) {
-        // Find amount display row for this quote
-        const allDivs = document.querySelectorAll('[style*="font-family:var(--font-mono)"]');
-        allDivs.forEach(div => {
-          const card = div.closest('[style*="margin-bottom:16px"]');
-          if (card && card.textContent.includes(q.id) && !card.querySelector('.pdf-dl-btn')) {
-            const pdfBtn = document.createElement('button');
-            pdfBtn.className = 'btn btn-secondary btn-sm pdf-dl-btn';
-            pdfBtn.title = 'Download Quote as PDF';
-            pdfBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Download PDF`;
-            pdfBtn.onclick = () => downloadQuotePDF(q.id);
-            const btnRow = card.querySelector('[style*="display:flex;gap:8px"]');
-            if (btnRow) btnRow.appendChild(pdfBtn);
-          }
-        });
-      }
-    });
-  }, 100);
-}
 
 </script>
 </body>
