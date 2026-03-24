@@ -2125,7 +2125,12 @@ function renderDashboard() {
   updateQuoteBadge();
 
   document.getElementById('projectDetail').style.display = 'none';
-  document.getElementById('projectsList').style.display = 'block';
+  // Only force projectsList visible if the Projects tab is actually active
+  const activeTab = document.querySelector('#mainDashTabs .dash-tab.active');
+  const activeTabText = activeTab ? activeTab.textContent.trim() : 'Projects';
+  if (!activeTab || activeTabText === 'Projects') {
+    document.getElementById('projectsList').style.display = 'block';
+  }
 
   const projects = admin
     ? state.projects
