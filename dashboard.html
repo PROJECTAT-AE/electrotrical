@@ -4670,7 +4670,7 @@ function proceedToPayment(quoteId) {
   const quote = (state.quoteRequests || []).find(q => q.id === quoteId);
   if (!quote || quote.status !== 'approved') return;
 
-  // Populate checkout with approved price
+  // Save checkout data to localStorage so loadCheckout() picks it up correctly
   const checkoutData = {
     ...quote.specs,
     total: quote.adminPrice,
@@ -4679,27 +4679,15 @@ function proceedToPayment(quoteId) {
   };
   localStorage.setItem('electrotrical_pending_quote', JSON.stringify(checkoutData));
 
-  // Update checkout view totals
-  document.getElementById('co-pay-amount').textContent = '$' + quote.adminPrice;
-  document.getElementById('co-s-layers').textContent = quote.specs.layersLabel;
-  document.getElementById('co-s-complexity').textContent = (quote.specs.complexityLabel || '').split('—')[0].trim();
-  document.getElementById('co-s-size').textContent = quote.specs.sizeLabel;
-  document.getElementById('co-s-turn').textContent = quote.specs.turnaroundLabel;
-  document.getElementById('co-s-special').textContent = quote.specs.specialLabel;
-  document.getElementById('co-s-base').textContent = '$' + (quote.specs.base || quote.adminPrice);
-  document.getElementById('co-s-total').textContent = '$' + quote.adminPrice;
-
-  // Pre-fill contact details from logged-in user
-  const currentUser = getCurrentUser();
-  if (currentUser) {
-    document.getElementById('co-fname').value = currentUser.firstName || '';
-    document.getElementById('co-lname').value = currentUser.lastName || '';
-    document.getElementById('co-email').value = currentUser.email || '';
-    document.getElementById('co-company').value = currentUser.company || '';
+  // Reset pay button in case it was left in a disabled/processing state
+  const payBtn = document.getElementById('payBtn');
+  if (payBtn) {
+    payBtn.disabled = false;
+    payBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Pay <span id="co-pay-amount">$' + quote.adminPrice + '</span> Securely';
   }
 
-  showView('checkout');
-  updateNav();
+  // Use loadCheckout() so pendingQuote global is properly set
+  loadCheckout();
 }
 
 function handleQuoteSubmission() {
