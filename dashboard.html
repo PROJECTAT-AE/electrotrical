@@ -2492,6 +2492,42 @@ function renderDashboard() {
     document.getElementById('projectsList').style.display = 'block';
   }
 
+  // ── Auto-repair: create missing projects for paid quotes ──────────────────
+  if (!admin && !designer) {
+    const paidQuotes = (state.quoteRequests || []).filter(q =>
+      q.customerId === user.id && q.status === 'paid'
+    );
+    let repaired = false;
+    paidQuotes.forEach(q => {
+      const exists = q.projectId && state.projects.find(p => p.id === q.projectId);
+      if (!exists) {
+        // Build a project from the quote data so it shows under Projects
+        const newPid = q.projectId || ('PRJ-' + new Date().getFullYear() + '-' + String(state.projects.length + 1).padStart(3,'0'));
+        state.projects.push({
+          id: newPid,
+          name: (q.specs?.serviceLabel || 'PCB Layout') + ' — ' + (q.specs?.layersLabel || '') + ' ' + (q.specs?.sizeLabel || ''),
+          customerId: user.id,
+          status: 'active',
+          createdAt: q.paidAt || q.createdAt,
+          quote: { total: q.adminPrice || q.estimatedTotal, paid: true, paidAt: q.paidAt },
+          files: [], assignedDesigner: null,
+          milestones: [
+            { id:'ms-1', name:'Component Placement', status:'pending', description:'Component placement per schematic.', files:[], comments:[], updatedAt:null },
+            { id:'ms-2', name:'Nets Routing',         status:'pending', description:'Trace routing with DRC compliance.',  files:[], comments:[], updatedAt:null },
+            { id:'ms-3', name:'Final Gerbers',         status:'pending', description:'Gerber files, drill files, 3D render.', files:[], comments:[], updatedAt:null }
+          ],
+          activity: [{ text: 'Project recovered from paid quote <strong>' + q.id + '</strong>', time: 'now', type: 'blue' }]
+        });
+        // Also link back to the quote
+        const qIdx = state.quoteRequests.findIndex(r => r.id === q.id);
+        if (qIdx !== -1) state.quoteRequests[qIdx].projectId = newPid;
+        repaired = true;
+      }
+    });
+    if (repaired) saveState(state);
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
   const projects = (admin || designer)
     ? state.projects
     : state.projects.filter(p => p.customerId === user.id);
@@ -4822,6 +4858,8 @@ function renderQuoteRequests() {
   let quotes = state.quoteRequests || [];
   if (!isAdmin) {
     quotes = quotes.filter(q => q.customerId === user.id);
+    // Paid quotes have become projects — remove from Quotes tab for customers
+    quotes = quotes.filter(q => q.status !== 'paid');
   }
 
   if (quotes.length === 0) {
@@ -4830,9 +4868,9 @@ function renderQuoteRequests() {
         <div style="width:72px;height:72px;margin:0 auto 1.5rem;background:rgba(0,102,255,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
-        <div style="font-size:20px;font-weight:600;color:var(--white);margin-bottom:8px;">No quote requests yet</div>
-        <p style="font-size:14px;color:var(--text-secondary);max-width:400px;margin:0 auto 1.25rem;">${user.role === 'customer' ? 'Submit a quote request to get a price estimate for your PCB project.' : 'Quote requests from customers will appear here for your review.'}</p>
-        ${user.role === 'customer' ? '<button class="btn btn-primary btn-sm" onclick="goToQuoteCalculator()">Submit a Quote Request</button>' : ''}
+        <div style="font-size:20px;font-weight:600;color:var(--white);margin-bottom:8px;">No active quotes</div>
+        <p style="font-size:14px;color:var(--text-secondary);max-width:400px;margin:0 auto 1.25rem;">${user.role === 'customer' ? 'Approved and paid quotes are converted to projects automatically. Check the <strong style="color:var(--primary-light);">Projects</strong> tab for your active work.' : 'Quote requests from customers will appear here for your review.'}</p>
+        ${user.role === 'customer' ? '<div style="display:flex;gap:10px;justify-content:center;"><button class="btn btn-primary btn-sm" onclick="switchMainTab(\'projects\')">View My Projects</button><button class="btn btn-secondary btn-sm" onclick="goToQuoteCalculator()">New Quote Request</button></div>' : ''}
       </div>`;
     return;
   }
