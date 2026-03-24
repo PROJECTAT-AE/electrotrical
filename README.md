@@ -256,17 +256,17 @@ Four demo accounts are pre-seeded. Use these to test all roles:
 | Feature | Customer | Designer | Admin | Super Admin |
 |---------|----------|----------|-------|-------------|
 | Submit quote request | ✅ | ❌ | ❌ | ❌ |
-| View own quotes | ✅ | ❌ | ✅ all | ✅ all |
+| View own quotes    | ✅ | ❌ | ✅ all | ✅ all |
 | Approve / price quotes | ❌ | ❌ | ✅ | ✅ |
-| View own projects | ✅ | ❌ | ✅ all | ✅ all |
-| View all projects | ❌ | ✅ | ✅ | ✅ |
+| View own projects  | ✅ | ❌ | ✅ all | ✅ all |
+| View all projects  | ❌ | ✅ | ✅ | ✅ |
 | Upload milestone files | ❌ | ✅ | ✅ | ✅ |
 | Approve milestones | ✅ | ❌ | ✅ | ✅ |
-| Cancel projects | ❌ | ❌ | ✅ | ✅ |
-| Delete projects | ❌ | ❌ | ❌ | ✅ |
-| View Summary/KPIs | ❌ | ❌ | ✅ | ✅ |
-| View Users tab | ❌ | ❌ | ✅ | ✅ |
-| Manage user roles | ❌ | ❌ | ❌ | ✅ |
+| Cancel projects    | ❌ | ❌ | ✅ | ✅ |
+| Delete projects    | ❌ | ❌ | ❌ | ✅ |
+| View Summary/KPIs  | ❌ | ❌ | ✅ | ✅ |
+| View Users tab     | ❌ | ❌ | ✅ | ✅ |
+| Manage user roles  | ❌ | ❌ | ❌ | ✅ |
 | Suspend/delete users | ❌ | ❌ | ✅ | ✅ |
 
 ---

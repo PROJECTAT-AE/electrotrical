@@ -1489,7 +1489,10 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
           <input class="form-input" type="email" id="login-email" placeholder="you@company.com" required>
         </div>
         <div class="form-group">
-          <label class="form-label">Password</label>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="form-label" style="margin-bottom:0;">Password</label>
+            <button type="button" onclick="showForgotPassword()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:0.78rem;padding:0;text-decoration:underline;text-underline-offset:2px;">Forgot password?</button>
+          </div>
           <input class="form-input" type="password" id="login-pass" placeholder="Enter your password" required>
         </div>
         <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
@@ -2142,6 +2145,107 @@ function switchAuthTab(tab) {
   });
   document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function showForgotPassword() {
+  // Build overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'forgotPasswordOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;';
+
+  overlay.innerHTML = `
+    <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:420px;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <h3 style="margin:0;color:var(--text-primary);font-size:1.1rem;">Reset Password</h3>
+        <button onclick="document.getElementById('forgotPasswordOverlay').remove()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.3rem;line-height:1;padding:4px;">&times;</button>
+      </div>
+      <p style="margin:0 0 20px;color:var(--text-muted);font-size:0.88rem;line-height:1.5;">Enter your registered email address and we'll look up your account.</p>
+
+      <div id="forgotFormArea">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" type="email" id="forgot-email" placeholder="you@company.com" style="margin-bottom:0;">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button type="button" onclick="processForgotPassword()" class="btn btn-primary" style="flex:1;">Send Reset Link</button>
+          <button type="button" onclick="document.getElementById('forgotPasswordOverlay').remove()" class="btn btn-secondary" style="flex:0 0 auto;">Cancel</button>
+        </div>
+      </div>
+      <div id="forgotResultArea" style="display:none;"></div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  setTimeout(() => document.getElementById('forgot-email')?.focus(), 50);
+}
+
+function processForgotPassword() {
+  const email = (document.getElementById('forgot-email')?.value || '').trim().toLowerCase();
+  if (!email) { showToast('Please enter your email address.', 'warning'); return; }
+
+  const state = getState();
+  const user = state.users.find(u => u.email.toLowerCase() === email);
+
+  const resultArea = document.getElementById('forgotResultArea');
+  const formArea   = document.getElementById('forgotFormArea');
+
+  if (!user) {
+    // Don't reveal whether email exists — just show generic message
+    formArea.style.display = 'none';
+    resultArea.style.display = 'block';
+    resultArea.innerHTML = `
+      <div style="text-align:center;padding:12px 0;">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(0,229,160,0.12);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5A0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <p style="color:var(--text-primary);font-weight:600;margin:0 0 8px;">Check Your Email</p>
+        <p style="color:var(--text-muted);font-size:0.86rem;margin:0 0 20px;line-height:1.5;">If <strong style="color:var(--text-secondary);">${email}</strong> is registered, a password reset link has been sent.</p>
+        <button onclick="document.getElementById('forgotPasswordOverlay').remove()" class="btn btn-secondary" style="width:100%;">Back to Sign In</button>
+      </div>
+    `;
+    return;
+  }
+
+  // User found — show demo-mode password hint
+  formArea.style.display = 'none';
+  resultArea.style.display = 'block';
+  resultArea.innerHTML = `
+    <div style="text-align:center;padding:12px 0;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(0,229,160,0.12);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5A0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <p style="color:var(--text-primary);font-weight:600;margin:0 0 6px;">Account Found</p>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin:0 0 16px;">Reset link sent to <strong style="color:var(--text-secondary);">${email}</strong></p>
+
+      <div style="background:rgba(0,102,255,0.08);border:1px solid rgba(0,102,255,0.25);border-radius:10px;padding:14px;text-align:left;margin-bottom:18px;">
+        <p style="margin:0 0 6px;font-size:0.75rem;color:var(--primary);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Demo Mode — Password Hint</p>
+        <p style="margin:0;font-size:0.85rem;color:var(--text-secondary);">Name: <strong style="color:var(--text-primary);">${user.name}</strong></p>
+        <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-secondary);">Role: <strong style="color:var(--accent);">${user.isSuperAdmin ? 'Super Admin' : user.isAdmin ? 'Admin' : user.isDesigner ? 'Designer' : 'Customer'}</strong></p>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+          <span style="font-size:0.85rem;color:var(--text-secondary);">Password:</span>
+          <code id="forgotRevealPass" style="background:var(--dark-900);padding:3px 10px;border-radius:6px;font-size:0.85rem;color:var(--text-primary);letter-spacing:0.05em;font-family:monospace;">••••••••</code>
+          <button onclick="toggleForgotReveal('${user.password}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.75rem;text-decoration:underline;padding:0;">Show</button>
+        </div>
+      </div>
+
+      <button onclick="document.getElementById('forgotPasswordOverlay').remove();document.getElementById('login-email').value='${email}';" class="btn btn-primary" style="width:100%;margin-bottom:8px;">Sign In Now</button>
+      <button onclick="document.getElementById('forgotPasswordOverlay').remove()" class="btn btn-secondary" style="width:100%;">Close</button>
+    </div>
+  `;
+}
+
+function toggleForgotReveal(password) {
+  const el = document.getElementById('forgotRevealPass');
+  const btn = el?.nextElementSibling;
+  if (!el || !btn) return;
+  if (btn.textContent === 'Show') {
+    el.textContent = password;
+    btn.textContent = 'Hide';
+  } else {
+    el.textContent = '••••••••';
+    btn.textContent = 'Show';
+  }
 }
 
 function handleLogin(e) {
