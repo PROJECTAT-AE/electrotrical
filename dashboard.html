@@ -4856,10 +4856,10 @@ function renderQuoteRequests() {
   const isAdmin = user.role === 'admin';
 
   let quotes = state.quoteRequests || [];
+  // Paid quotes have become projects — remove from Quotes tab for everyone
+  quotes = quotes.filter(q => q.status !== 'paid');
   if (!isAdmin) {
     quotes = quotes.filter(q => q.customerId === user.id);
-    // Paid quotes have become projects — remove from Quotes tab for customers
-    quotes = quotes.filter(q => q.status !== 'paid');
   }
 
   if (quotes.length === 0) {
