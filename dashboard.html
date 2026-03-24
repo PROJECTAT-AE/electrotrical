@@ -2341,10 +2341,14 @@ function openProject(projectId) {
               <div class="cancelled-banner-body">
                 ${project.cancelReason ? `<strong>Reason:</strong> ${project.cancelReason}<br>` : ''}
                 Cancelled on ${formatDate(project.cancelledAt || new Date().toISOString())}.
-                ${project.refundAmount > 0
+                ${project.refundType === 'none'
+                  ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);">No refund applicable — all milestones were completed before cancellation.</div>`
+                  : project.refundAmount > 0
                   ? `<div class="cancelled-banner-refund">&#10003; Refund: $${project.refundAmount.toLocaleString()}</div>`
-                  : project.refundAmount === 0
-                  ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);">No refund applicable — all milestones were completed.</div>`
+                  : project.refundType === 'partial'
+                  ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);">Partial refund — amount to be confirmed by the team.</div>`
+                  : project.refundType === 'full'
+                  ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);">Full refund — to be confirmed by the team.</div>`
                   : ''}
               </div>
             </div>
@@ -3354,9 +3358,15 @@ function confirmCancel(projectId) {
     return;
   }
 
+  // Determine refund type based on milestone state at time of cancellation
+  const _totalMs = project.milestones.length;
+  const _doneMs  = project.milestones.filter(m => m.status === 'approved').length;
+  const _refundType = _doneMs === 0 ? 'full' : _doneMs === _totalMs ? 'none' : 'partial';
+
   project.status        = 'cancelled';
   project.cancelReason  = reason;
   project.refundAmount  = refundAmount;
+  project.refundType    = _refundType;
   project.cancelledAt   = new Date().toISOString();
   project.activity.unshift({
     type: 'cancelled',
