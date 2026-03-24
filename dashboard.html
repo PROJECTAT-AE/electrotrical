@@ -2524,19 +2524,51 @@ function openProject(projectId) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Activity Log
           </div>
-          ${project.activity.map(a => `
-            <div class="activity-item">
-              <div class="activity-dot activity-dot-${a.type}"></div>
-              <div>
-                <div class="activity-text">${a.text}</div>
-                <div class="activity-time">${a.time}</div>
+          ${(() => {
+            const LIMIT = 5;
+            const acts = project.activity;
+            const visible = acts.slice(0, LIMIT);
+            const hidden  = acts.length - LIMIT;
+            const rows = visible.map(a => `
+              <div class="activity-item">
+                <div class="activity-dot activity-dot-${a.type}"></div>
+                <div>
+                  <div class="activity-text">${a.text}</div>
+                  <div class="activity-time">${a.time}</div>
+                </div>
+              </div>`).join('');
+            const more = hidden > 0 ? `
+              <div id="activityExtra-${project.id}" style="display:none;">
+                ${acts.slice(LIMIT).map(a => `
+                  <div class="activity-item">
+                    <div class="activity-dot activity-dot-${a.type}"></div>
+                    <div>
+                      <div class="activity-text">${a.text}</div>
+                      <div class="activity-time">${a.time}</div>
+                    </div>
+                  </div>`).join('')}
               </div>
-            </div>
-          `).join('')}
+              <button onclick="toggleActivityLog('${project.id}', ${hidden})" id="activityToggleBtn-${project.id}"
+                style="width:100%;margin-top:10px;background:transparent;border:1px solid var(--border);color:var(--text-secondary);font-size:12px;font-weight:600;padding:8px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);"
+                onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary-light)'"
+                onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
+                ↓ Show ${hidden} more
+              </button>` : '';
+            return rows + more;
+          })()}
         </div>
       </div>
     </div>
   `;
+}
+
+function toggleActivityLog(projectId, hiddenCount) {
+  const extra = document.getElementById('activityExtra-' + projectId);
+  const btn   = document.getElementById('activityToggleBtn-' + projectId);
+  if (!extra || !btn) return;
+  const isHidden = extra.style.display === 'none';
+  extra.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '↑ Show less' : '↓ Show ' + hiddenCount + ' more';
 }
 
 function renderMilestonePanel(project, milestone, index, admin) {
