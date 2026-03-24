@@ -1770,6 +1770,19 @@ function getDeliveryFormats() {
 }
 
 function submitQuoteRequest() {
+  // ── Role guard: only customers may submit RFQs ──────────
+  const raw = localStorage.getItem('electrotrical_state');
+  if (raw) {
+    try {
+      const st = JSON.parse(raw);
+      const user = st.users && st.currentUser ? st.users.find(u => u.id === st.currentUser) : null;
+      if (user && user.role !== 'customer') {
+        showQuoteError('Quote requests are for customers only. Admin and Designer accounts cannot submit RFQs.');
+        return;
+      }
+    } catch(e) {}
+  }
+
   const layers = document.getElementById('q-layers');
   const complexity = document.getElementById('q-complexity');
   const size = document.getElementById('q-size');
