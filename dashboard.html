@@ -3344,16 +3344,34 @@ function processPayment() {
         paid: true,
         paidAt: new Date().toISOString()
       },
-      files: [],
+      files: (() => {
+        // Carry over any files attached at RFQ stage
+        if (!pendingQuote.quoteId || !state.quoteRequests) return [];
+        const srcQ = state.quoteRequests.find(q => q.id === pendingQuote.quoteId);
+        if (!srcQ || !srcQ.attachedFiles || srcQ.attachedFiles.length === 0) return [];
+        return srcQ.attachedFiles.map(f => ({
+          name: f.name, size: f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : Math.round(f.size/1024)+' KB',
+          type: f.ext || 'other', uploadedAt: f.uploadedAt || new Date().toISOString(), source: 'rfq'
+        }));
+      })(),
       milestones: [
         { id:'ms-1', name:'Component Placement', status:'pending', description:'Component placement per schematic grouping, thermal and mechanical constraints.', files:[], comments:[], updatedAt:null },
         { id:'ms-2', name:'Nets Routing', status:'pending', description:'Complete trace routing with controlled impedance and DRC compliance.', files:[], comments:[], updatedAt:null },
         { id:'ms-3', name:'Final Gerbers', status:'pending', description:'DRC-clean Gerber files, fabrication notes, drill files, and 3D render.', files:[], comments:[], updatedAt:null }
       ],
-      activity: [
-        { text: '<strong>Payment confirmed</strong> — $' + pendingQuote.total + ' via Stripe', time: formatNow(), type: 'green' },
-        { text: 'Project <strong>' + pendingQuote.layersLabel + ' PCB</strong> created from quote', time: formatNow(), type: 'green' }
-      ]
+      activity: (() => {
+        const acts = [
+          { text: '<strong>Payment confirmed</strong> — $' + pendingQuote.total + ' via Stripe', time: formatNow(), type: 'green' },
+          { text: 'Project <strong>' + (pendingQuote.layersLabel || '') + ' PCB</strong> created from quote', time: formatNow(), type: 'green' }
+        ];
+        if (pendingQuote.quoteId && state.quoteRequests) {
+          const srcQ = state.quoteRequests.find(q => q.id === pendingQuote.quoteId);
+          if (srcQ && srcQ.attachedFiles && srcQ.attachedFiles.length > 0) {
+            acts.push({ text: `<strong>${srcQ.attachedFiles.length} design file${srcQ.attachedFiles.length > 1 ? 's' : ''}</strong> transferred from RFQ`, time: formatNow(), type: 'blue' });
+          }
+        }
+        return acts;
+      })()
     };
 
     state.projects.push(project);
@@ -4483,6 +4501,30 @@ function renderQuoteRequests() {
         </div>
       </div>` : ''}
 
+      ${q.attachedFiles && q.attachedFiles.length > 0 ? `
+      <div style="margin-bottom:1.25rem;padding:14px;background:rgba(0,102,255,0.05);border:1px solid rgba(0,102,255,0.15);border-radius:var(--radius-md);">
+        <div style="font-size:11px;color:var(--primary-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;font-weight:600;">
+          📎 Attached Design Files (${q.attachedFiles.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${q.attachedFiles.map(f => {
+            const extIcon = {sch:'📐',kicad_sch:'📐',brd:'🔲',kicad_pcb:'🔲',pdf:'📄',zip:'🗜',rar:'🗜',csv:'📊',xlsx:'📊',png:'🖼',jpg:'🖼',dxf:'📐',step:'🧱'};
+            const icon = extIcon[f.ext] || '📎';
+            const size = f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : Math.round(f.size/1024)+' KB';
+            return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);">
+              <span style="font-size:16px;">${icon}</span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sanitizeInput(f.name)}</div>
+                <div style="font-size:11px;color:var(--text-muted);">${size} · uploaded with RFQ</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : `
+      <div style="margin-bottom:1.25rem;padding:10px 14px;background:rgba(255,180,0,0.05);border:1px dashed rgba(255,180,0,0.2);border-radius:var(--radius-sm);">
+        <div style="font-size:12px;color:var(--warning);opacity:0.8;">⚠ No design files attached — price estimate may need adjustment after files are reviewed.</div>
+      </div>`}
+
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
           <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Customer Estimate</div>
@@ -4555,6 +4597,24 @@ function openQuoteReview(quoteId) {
         ${quote.specs.deliveryFormats && quote.specs.deliveryFormats.length > 0 ? '<div style="grid-column:span 2;"><span style="color:var(--text-secondary);font-size:13px;">Delivery:</span> <span style="color:var(--white);font-size:13px;">' + quote.specs.deliveryFormats.join(', ') + '</span></div>' : ''}
       </div>
     </div>
+    ${quote.attachedFiles && quote.attachedFiles.length > 0 ? `
+    <div style="background:rgba(0,102,255,0.06);border:1px solid rgba(0,102,255,0.2);border-radius:var(--radius-md);padding:1rem;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--primary-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">📎 Customer Attached Files (${quote.attachedFiles.length})</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${quote.attachedFiles.map(f => {
+          const extIcon = {sch:'📐',kicad_sch:'📐',brd:'🔲',kicad_pcb:'🔲',pdf:'📄',zip:'🗜',rar:'🗜',csv:'📊',xlsx:'📊',png:'🖼',jpg:'🖼',dxf:'📐',step:'🧱'};
+          const icon = extIcon[f.ext] || '📎';
+          const size = f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : Math.round(f.size/1024)+' KB';
+          return '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-sm);">'
+            + '<span style="font-size:15px;">' + icon + '</span>'
+            + '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + sanitizeInput(f.name) + '</div>'
+            + '<div style="font-size:11px;color:var(--text-muted);">' + size + '</div></div></div>';
+        }).join('')}
+      </div>
+    </div>` : `
+    <div style="padding:10px 14px;background:rgba(255,180,0,0.05);border:1px dashed rgba(255,180,0,0.25);border-radius:var(--radius-sm);margin-bottom:20px;">
+      <div style="font-size:12px;color:var(--warning);opacity:0.85;">⚠ No design files attached — consider requesting files before finalising price.</div>
+    </div>`}
     <div class="form-group">
       <label class="form-label">Final Price (USD)</label>
       <div style="position:relative;">
@@ -4735,7 +4795,8 @@ function handleQuoteSubmission() {
     adminNotes: '',
     status: 'pending',
     createdAt: new Date().toISOString(),
-    reviewedAt: null
+    reviewedAt: null,
+    attachedFiles: quoteData.attachedFiles || []
   });
 
   // Notify admin
