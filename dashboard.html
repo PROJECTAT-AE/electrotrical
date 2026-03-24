@@ -4421,6 +4421,119 @@ function deleteUser(userId) {
   renderUsers();
 }
 
+// ── Quote file section renderer ──────────────────────────────────
+function renderQuoteFileSection(q, isAdmin) {
+  const canEdit = !isAdmin && (q.status === 'pending' || q.status === 'approved');
+  const files = q.attachedFiles || [];
+  const extIcon = {sch:'📐',kicad_sch:'📐',brd:'🔲',kicad_pcb:'🔲',pdf:'📄',zip:'🗜',rar:'🗜',csv:'📊',xlsx:'📊',png:'🖼',jpg:'🖼',dxf:'📐',step:'🧱'};
+
+  let fileRows = files.map((f, i) => {
+    const icon = extIcon[f.ext] || '📎';
+    const size = f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : (Math.round(f.size/1024)||'<1')+' KB';
+    const label = f.addedAfter ? 'added after submission' : 'uploaded with RFQ';
+    const removeBtn = canEdit
+      ? `<button onclick="removeQuoteAttachedFile('${q.id}',${i})" title="Remove" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px 8px;font-size:18px;line-height:1;flex-shrink:0;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>`
+      : '';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);">
+      <span style="font-size:16px;">${icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sanitizeInput(f.name)}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${size} · ${label}</div>
+      </div>
+      ${removeBtn}
+    </div>`;
+  }).join('');
+
+  const addBtn = canEdit ? `
+    <div style="margin-top:${files.length > 0 ? '8px' : '0'};">
+      <label for="qfile-${q.id}" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--primary-light);background:rgba(0,102,255,0.08);border:1px dashed rgba(0,102,255,0.3);border-radius:var(--radius-sm);padding:7px 14px;cursor:pointer;transition:var(--transition);" onmouseover="this.style.background='rgba(0,102,255,0.14)'" onmouseout="this.style.background='rgba(0,102,255,0.08)'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Files
+      </label>
+      <input type="file" id="qfile-${q.id}" multiple accept=".sch,.kicad_sch,.brd,.kicad_pcb,.pdf,.zip,.rar,.csv,.xlsx,.png,.jpg,.dxf,.step" style="display:none;" onchange="handleQuoteFileAdd('${q.id}', this)">
+    </div>` : '';
+
+  if (files.length === 0 && !canEdit) {
+    // Admin view, no files
+    return `<div style="margin-bottom:1.25rem;padding:10px 14px;background:rgba(255,180,0,0.05);border:1px dashed rgba(255,180,0,0.2);border-radius:var(--radius-sm);">
+      <div style="font-size:12px;color:var(--warning);opacity:0.8;">⚠ No design files attached — price estimate may need adjustment after files are reviewed.</div>
+    </div>`;
+  }
+
+  return `<div style="margin-bottom:1.25rem;padding:14px;background:rgba(0,102,255,0.05);border:1px solid rgba(0,102,255,0.15);border-radius:var(--radius-md);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${files.length > 0 ? '10px' : '0'};">
+      <div style="font-size:11px;color:var(--primary-light);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">
+        📎 Design Files ${files.length > 0 ? '(' + files.length + ')' : ''}
+      </div>
+      ${files.length === 0 && canEdit ? '<div style="font-size:12px;color:var(--text-muted);">No files yet — attach your schematic, BOM, or netlist</div>' : ''}
+    </div>
+    ${files.length > 0 ? `<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:${canEdit ? '0' : '0'};">${fileRows}</div>` : ''}
+    ${addBtn}
+  </div>`;
+}
+
+function handleQuoteFileAdd(quoteId, input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  const s = getState();
+  const qIdx = (s.quoteRequests || []).findIndex(q => q.id === quoteId);
+  if (qIdx === -1) return;
+  if (!s.quoteRequests[qIdx].attachedFiles) s.quoteRequests[qIdx].attachedFiles = [];
+  const existing = s.quoteRequests[qIdx].attachedFiles;
+  files.forEach(f => {
+    if (existing.find(e => e.name === f.name && e.size === f.size)) return; // dedupe
+    existing.push({
+      name: f.name,
+      size: f.size,
+      type: f.type,
+      ext: f.name.split('.').pop().toLowerCase(),
+      uploadedAt: new Date().toISOString(),
+      addedAfter: true
+    });
+  });
+  saveState(s);
+  input.value = '';
+  // Notify admin that files were updated
+  const user = getCurrentUser();
+  if (user) {
+    const q = s.quoteRequests[qIdx];
+    addNotificationForUser(
+      s.users.find(u => u.role === 'admin' || u.superAdmin),
+      '📎 Files Updated on Quote ' + quoteId,
+      `<strong>${user.firstName} ${user.lastName}</strong> added ${files.length} file${files.length > 1 ? 's' : ''} to quote <strong>${quoteId}</strong>.`,
+      'blue'
+    );
+  }
+  renderQuoteRequests();
+  showToast(files.length + ' file' + (files.length > 1 ? 's' : '') + ' attached to quote', 'success');
+}
+
+function removeQuoteAttachedFile(quoteId, fileIndex) {
+  const s = getState();
+  const qIdx = (s.quoteRequests || []).findIndex(q => q.id === quoteId);
+  if (qIdx === -1) return;
+  const removed = s.quoteRequests[qIdx].attachedFiles.splice(fileIndex, 1);
+  saveState(s);
+  renderQuoteRequests();
+  showToast('File removed', 'success');
+}
+
+function addNotificationForUser(targetUser, title, message, type) {
+  if (!targetUser) return;
+  const s = getState();
+  if (!s.notifications) s.notifications = [];
+  s.notifications.push({
+    id: 'notif-' + Date.now(),
+    userId: targetUser.id,
+    type: type || 'info',
+    title,
+    message,
+    read: false,
+    createdAt: new Date().toISOString()
+  });
+  saveState(s);
+}
+
 function renderQuoteRequests() {
   state = getState(); // always refresh global from localStorage
   const user = state.users.find(u => u.id === state.currentUser);
@@ -4501,29 +4614,7 @@ function renderQuoteRequests() {
         </div>
       </div>` : ''}
 
-      ${q.attachedFiles && q.attachedFiles.length > 0 ? `
-      <div style="margin-bottom:1.25rem;padding:14px;background:rgba(0,102,255,0.05);border:1px solid rgba(0,102,255,0.15);border-radius:var(--radius-md);">
-        <div style="font-size:11px;color:var(--primary-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;font-weight:600;">
-          📎 Attached Design Files (${q.attachedFiles.length})
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          ${q.attachedFiles.map(f => {
-            const extIcon = {sch:'📐',kicad_sch:'📐',brd:'🔲',kicad_pcb:'🔲',pdf:'📄',zip:'🗜',rar:'🗜',csv:'📊',xlsx:'📊',png:'🖼',jpg:'🖼',dxf:'📐',step:'🧱'};
-            const icon = extIcon[f.ext] || '📎';
-            const size = f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : Math.round(f.size/1024)+' KB';
-            return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);">
-              <span style="font-size:16px;">${icon}</span>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sanitizeInput(f.name)}</div>
-                <div style="font-size:11px;color:var(--text-muted);">${size} · uploaded with RFQ</div>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>` : `
-      <div style="margin-bottom:1.25rem;padding:10px 14px;background:rgba(255,180,0,0.05);border:1px dashed rgba(255,180,0,0.2);border-radius:var(--radius-sm);">
-        <div style="font-size:12px;color:var(--warning);opacity:0.8;">⚠ No design files attached — price estimate may need adjustment after files are reviewed.</div>
-      </div>`}
+      ${renderQuoteFileSection(q, isAdmin)}
 
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
