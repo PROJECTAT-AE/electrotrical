@@ -3245,15 +3245,16 @@ function loadCheckout() {
   if (!raw) { showView('auth'); return; }
   pendingQuote = JSON.parse(raw);
 
-  // Fill the order summary
-  document.getElementById('co-s-layers').textContent = pendingQuote.layersLabel;
-  document.getElementById('co-s-complexity').textContent = pendingQuote.complexityLabel.split('—')[0].trim();
-  document.getElementById('co-s-size').textContent = pendingQuote.sizeLabel;
-  document.getElementById('co-s-turn').textContent = pendingQuote.turnaroundLabel;
-  document.getElementById('co-s-special').textContent = pendingQuote.specialLabel;
-  document.getElementById('co-s-base').textContent = '$' + pendingQuote.base;
-  document.getElementById('co-s-total').textContent = '$' + pendingQuote.total;
-  document.getElementById('co-pay-amount').textContent = '$' + pendingQuote.total;
+  // Fill the order summary (guard against undefined fields from quote request flow)
+  const _cx = pendingQuote.complexityLabel || '';
+  document.getElementById('co-s-layers').textContent     = pendingQuote.layersLabel     || '—';
+  document.getElementById('co-s-complexity').textContent = (_cx.includes('—') ? _cx.split('—')[0].trim() : _cx) || '—';
+  document.getElementById('co-s-size').textContent       = pendingQuote.sizeLabel       || '—';
+  document.getElementById('co-s-turn').textContent       = pendingQuote.turnaroundLabel || '—';
+  document.getElementById('co-s-special').textContent    = pendingQuote.specialLabel    || 'None';
+  document.getElementById('co-s-base').textContent       = '$' + (pendingQuote.base     || pendingQuote.total || 0);
+  document.getElementById('co-s-total').textContent      = '$' + (pendingQuote.total    || 0);
+  document.getElementById('co-pay-amount').textContent   = '$' + (pendingQuote.total    || 0);
 
   // Pre-fill user info if logged in
   const user = getCurrentUser();
