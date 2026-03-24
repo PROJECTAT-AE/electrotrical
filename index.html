@@ -1771,7 +1771,7 @@ function getDeliveryFormats() {
 
 function submitQuoteRequest() {
   // ── Role guard: only customers may submit RFQs ──────────
-  const raw = localStorage.getItem('electrotrical_state');
+  const raw = localStorage.getItem('electrotrical_data');
   if (raw) {
     try {
       const st = JSON.parse(raw);
