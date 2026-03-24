@@ -507,6 +507,99 @@ a { color: inherit; text-decoration: none; }
   background: rgba(0,102,255,0.08);
 }
 
+/* ── Project Cancellation ────────────────────────── */
+.cancel-modal-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+.cancel-modal {
+  background: var(--dark-800);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 480px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+.cancel-modal-title {
+  font-size: 17px; font-weight: 700; color: var(--white);
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.cancel-modal-subtitle {
+  font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;
+  line-height: 1.6;
+}
+.cancel-refund-box {
+  background: var(--dark-700);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.cancel-refund-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);
+}
+.cancel-refund-row:last-child { margin-bottom: 0; }
+.cancel-refund-amount {
+  font-size: 20px; font-weight: 800; color: #00E5A0; letter-spacing: -0.5px;
+}
+.cancel-refund-note {
+  font-size: 11px; color: var(--text-muted); margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+  line-height: 1.5;
+}
+.cancel-override-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+}
+.cancel-override-row label {
+  font-size: 12px; color: var(--text-secondary); white-space: nowrap;
+}
+.cancel-override-row input {
+  flex: 1; background: var(--dark-700); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--white); font-size:14px;
+  padding: 7px 10px;
+}
+.cancel-override-row input:focus { outline: none; border-color: var(--primary); }
+
+/* Cancelled banner in project detail */
+.cancelled-banner {
+  background: rgba(255,51,102,0.08);
+  border: 1px solid rgba(255,51,102,0.3);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.cancelled-banner-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,51,102,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: #FF3366;
+}
+.cancelled-banner-title {
+  font-size: 15px; font-weight: 700; color: #FF6680; margin-bottom: 4px;
+}
+.cancelled-banner-body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.cancelled-banner-refund {
+  display: inline-block; margin-top: 8px;
+  font-size: 12px; font-weight: 700;
+  background: rgba(0,229,160,0.12); color: #00E5A0;
+  border: 1px solid rgba(0,229,160,0.25); border-radius: 20px;
+  padding: 3px 12px;
+}
+
+/* Cancelled status in project card + detail header */
+.status-cancelled {
+  background: rgba(255,51,102,0.12);
+  border: 1px solid rgba(255,51,102,0.3);
+  color: #FF6680;
+}
+.status-cancelled .status-dot { background: #FF3366; }
+
 /* ── Admin Summary ───────────────────────────────── */
 .summary-kpi-grid {
   display: grid;
@@ -2084,8 +2177,8 @@ function renderDashboard() {
   }
 
   container.innerHTML = projects.map(p => {
-    const statusClass = p.status === 'completed' ? 'status-completed' : p.status === 'review' ? 'status-review' : 'status-active';
-    const statusText = p.status === 'completed' ? 'Completed' : p.status === 'review' ? 'Awaiting Review' : 'In Progress';
+    const statusClass = p.status === 'completed' ? 'status-completed' : p.status === 'review' ? 'status-review' : p.status === 'cancelled' ? 'status-cancelled' : 'status-active';
+    const statusText = p.status === 'completed' ? 'Completed' : p.status === 'review' ? 'Awaiting Review' : p.status === 'cancelled' ? 'Cancelled' : 'In Progress';
     const completedMs = p.milestones.filter(m => m.status === 'approved').length;
     const customer = admin ? state.users.find(u => u.id === p.customerId) : null;
 
@@ -2140,9 +2233,16 @@ function openProject(projectId) {
           <h2 style="font-size:24px;font-weight:700;color:var(--white);margin-bottom:4px;">${project.name}</h2>
           <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);">${project.id}</span>
         </div>
-        <div class="project-status ${project.status === 'completed' ? 'status-completed' : project.status === 'review' ? 'status-review' : 'status-active'}">
-          <span class="status-dot"></span>
-          ${project.status === 'completed' ? 'Completed' : project.status === 'review' ? 'Awaiting Review' : 'In Progress'}
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="project-status ${project.status === 'completed' ? 'status-completed' : project.status === 'review' ? 'status-review' : project.status === 'cancelled' ? 'status-cancelled' : 'status-active'}">
+            <span class="status-dot"></span>
+            ${project.status === 'completed' ? 'Completed' : project.status === 'review' ? 'Awaiting Review' : project.status === 'cancelled' ? 'Cancelled' : 'In Progress'}
+          </div>
+          ${admin && project.status !== 'cancelled' && project.status !== 'completed' ? `
+            <button class="btn btn-sm" onclick="openCancelModal('${project.id}')" style="background:rgba(255,51,102,0.1);border:1px solid rgba(255,51,102,0.3);color:#FF6680;font-size:12px;padding:5px 12px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:5px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              Cancel Project
+            </button>` : ''}
         </div>
       </div>
     </div>
@@ -2166,6 +2266,26 @@ function openProject(projectId) {
 
     <div class="project-detail-grid">
       <div>
+        <!-- Cancelled Banner -->
+        ${project.status === 'cancelled' ? `
+          <div class="cancelled-banner">
+            <div class="cancelled-banner-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <div>
+              <div class="cancelled-banner-title">Project Cancelled</div>
+              <div class="cancelled-banner-body">
+                ${project.cancelReason ? `<strong>Reason:</strong> ${project.cancelReason}<br>` : ''}
+                Cancelled on ${formatDate(project.cancelledAt || new Date().toISOString())}.
+                ${project.refundAmount > 0
+                  ? `<div class="cancelled-banner-refund">&#10003; Refund: $${project.refundAmount.toLocaleString()}</div>`
+                  : project.refundAmount === 0
+                  ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);">No refund applicable — all milestones were completed.</div>`
+                  : ''}
+              </div>
+            </div>
+          </div>` : ''}
+
         <!-- Milestone Panels -->
         ${project.milestones.map((m, i) => renderMilestonePanel(project, m, i, admin)).join('')}
 
@@ -2226,6 +2346,22 @@ function openProject(projectId) {
 }
 
 function renderMilestonePanel(project, milestone, index, admin) {
+  // If project is cancelled, show all panels as locked/read-only
+  if (project.status === 'cancelled') {
+    const statusIcon = milestone.status === 'approved'
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5A0" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    const statusLabel = milestone.status === 'approved' ? 'Approved' : milestone.status === 'awaiting' ? 'Awaiting Review' : 'Not completed';
+    const statusColor = milestone.status === 'approved' ? '#00E5A0' : 'var(--text-muted)';
+    return `
+      <div class="detail-card" style="opacity:0.6;pointer-events:none;">
+        <div class="detail-card-title" style="justify-content:space-between;">
+          <span>${milestone.name}</span>
+          <span style="font-size:12px;font-weight:600;color:${statusColor};display:flex;align-items:center;gap:5px;">${statusIcon} ${statusLabel}</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);">This milestone is locked — the project has been cancelled.</p>
+      </div>`;
+  }
   const projectId = project.id;
 
   // Check if all previous milestones are approved
@@ -3057,6 +3193,119 @@ function switchMainTab(tab) {
   }
 }
 
+
+
+// ══════════════════════════════════════════════════════════
+// PROJECT CANCELLATION
+// ══════════════════════════════════════════════════════════
+function openCancelModal(projectId) {
+  const state = getState();
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  const totalPaid = project.adminPrice || project.estimatedTotal || 0;
+  const totalMs   = project.milestones.length;
+  const doneMs    = project.milestones.filter(m => m.status === 'approved').length;
+  const remaining = totalMs - doneMs;
+
+  // Refund calculation
+  let refundAmount = 0;
+  let refundLabel  = '';
+  if (doneMs === 0) {
+    refundAmount = totalPaid;
+    refundLabel  = 'Full refund — no milestones were completed.';
+  } else if (doneMs === totalMs) {
+    refundAmount = 0;
+    refundLabel  = 'No refund — all milestones were completed.';
+  } else {
+    refundAmount = Math.round((remaining / totalMs) * totalPaid);
+    refundLabel  = `Partial refund — ${remaining} of ${totalMs} milestones remaining (${Math.round((remaining/totalMs)*100)}%).`;
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'cancel-modal-overlay';
+  modal.id = 'cancelModalOverlay';
+  modal.onclick = e => { if (e.target === modal) modal.remove(); };
+
+  modal.innerHTML = `
+    <div class="cancel-modal" onclick="event.stopPropagation()">
+      <div class="cancel-modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF3366" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        Cancel Project
+      </div>
+      <div class="cancel-modal-subtitle">
+        You are about to cancel <strong style="color:var(--white);">${project.name}</strong>.
+        This action cannot be undone. The customer will be notified of the reason and refund amount.
+      </div>
+
+      <label style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-secondary);display:block;margin-bottom:6px;">Reason for cancellation</label>
+      <textarea id="cancelReason" rows="3" placeholder="e.g. Client requested cancellation, project scope changed..." style="width:100%;background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--white);font-size:13px;padding:10px 12px;resize:vertical;margin-bottom:18px;box-sizing:border-box;font-family:inherit;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+
+      <div class="cancel-refund-box">
+        <div class="cancel-refund-row">
+          <span>Total paid</span>
+          <span style="color:var(--white);font-weight:600;">$${totalPaid.toLocaleString()}</span>
+        </div>
+        <div class="cancel-refund-row">
+          <span>Milestones completed</span>
+          <span style="color:var(--white);font-weight:600;">${doneMs} / ${totalMs}</span>
+        </div>
+        <div class="cancel-refund-row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+          <span style="font-weight:600;color:var(--white);">Suggested refund</span>
+          <span class="cancel-refund-amount">$${refundAmount.toLocaleString()}</span>
+        </div>
+        <div class="cancel-refund-note">${refundLabel} You can override the amount below if needed.</div>
+      </div>
+
+      <div class="cancel-override-row">
+        <label for="cancelRefundOverride">Override refund ($)</label>
+        <input type="number" id="cancelRefundOverride" value="${refundAmount}" min="0" max="${totalPaid}" step="1" placeholder="${refundAmount}">
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('cancelModalOverlay').remove()">Keep Project</button>
+        <button class="btn btn-sm" onclick="confirmCancel('${projectId}')" style="background:rgba(255,51,102,0.15);border:1px solid rgba(255,51,102,0.4);color:#FF6680;font-weight:700;">
+          Confirm Cancellation
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function confirmCancel(projectId) {
+  const state   = getState();
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  const reason = document.getElementById('cancelReason').value.trim();
+  const refundInput = document.getElementById('cancelRefundOverride');
+  const refundAmount = refundInput ? Math.max(0, parseFloat(refundInput.value) || 0) : 0;
+
+  if (!reason) {
+    showToast('Please enter a reason for cancellation.', 'warning');
+    document.getElementById('cancelReason').focus();
+    return;
+  }
+
+  project.status        = 'cancelled';
+  project.cancelReason  = reason;
+  project.refundAmount  = refundAmount;
+  project.cancelledAt   = new Date().toISOString();
+  project.activity.unshift({
+    type: 'cancelled',
+    text: `Project cancelled. Reason: ${reason}${refundAmount > 0 ? ` · Refund: $${refundAmount.toLocaleString()}` : ''}`,
+    time: new Date().toLocaleString()
+  });
+
+  saveState(state);
+
+  document.getElementById('cancelModalOverlay').remove();
+  showToast('Project has been cancelled.', 'success');
+
+  // Refresh the detail view
+  openProject(projectId);
+}
 
 // ══════════════════════════════════════════════════════════
 // ADMIN SUMMARY
