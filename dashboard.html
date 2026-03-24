@@ -1917,8 +1917,12 @@ function getState() {
   return parsed;
 }
 
-function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function saveState(updated) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  // Keep the global state in sync so renders always see fresh data
+  if (typeof state !== 'undefined') {
+    Object.assign(state, updated);
+  }
 }
 
 function initState() {
@@ -2269,6 +2273,7 @@ function updateNav() {
 // DASHBOARD RENDERING
 // ══════════════════════════════════════════════════════════
 function renderDashboard() {
+  state = getState(); // always refresh global from localStorage
   const user = getCurrentUser();
   if (!user) return;
 
@@ -4378,7 +4383,7 @@ function deleteUser(userId) {
 }
 
 function renderQuoteRequests() {
-  const state = getState();
+  state = getState(); // always refresh global from localStorage
   const user = state.users.find(u => u.id === state.currentUser);
   if (!user) return;
 
