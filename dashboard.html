@@ -1464,9 +1464,11 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
         </div>
         <button type="submit" class="btn btn-primary">Sign In</button>
         <div class="auth-divider"><div class="auth-divider-line"></div><span>Demo accounts</span><div class="auth-divider-line"></div></div>
-        <div style="display:flex;gap:8px;">
-          <button type="button" class="btn btn-secondary btn-sm" style="flex:1" onclick="demoLogin('customer')">Customer Demo</button>
-          <button type="button" class="btn btn-secondary btn-sm" style="flex:1" onclick="demoLogin('admin')">Admin Demo</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="demoLogin('superadmin')">⭐ Super Admin</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="demoLogin('admin')">⚙ Admin</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="demoLogin('designer')">◈ Designer</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="demoLogin('customer')">◎ Customer</button>
         </div>
       </form>
 
@@ -1867,12 +1869,51 @@ function getState() {
   if (!parsed.projects) parsed.projects = [];
   if (!parsed.quoteRequests) parsed.quoteRequests = [];
   if (!parsed.notifications) parsed.notifications = [];
-  // Migration: ensure the seed admin account always has superAdmin:true
+  // Migration: ensure seed accounts exist and have correct flags
+  let migrated = false;
+
+  // Super Admin
   const seedAdmin = parsed.users.find(u => u.email === 'admin@electrotrical.com');
   if (seedAdmin && !seedAdmin.superAdmin) {
-    seedAdmin.superAdmin = true;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    seedAdmin.superAdmin = true; migrated = true;
   }
+  if (seedAdmin && seedAdmin.firstName === 'Admin') {
+    seedAdmin.firstName = 'Super'; seedAdmin.lastName = 'Admin'; migrated = true;
+  }
+
+  // Demo Admin
+  if (!parsed.users.find(u => u.email === 'manager@electrotrical.com')) {
+    parsed.users.push({
+      id: 'admin-002', email: 'manager@electrotrical.com', password: 'manager123',
+      firstName: 'Project', lastName: 'Manager', company: 'ElectroTrical',
+      role: 'admin', superAdmin: false, status: 'active', registeredAt: '2026-01-20T09:00:00'
+    }); migrated = true;
+  }
+
+  // Demo Designer
+  if (!parsed.users.find(u => u.email === 'designer@electrotrical.com')) {
+    parsed.users.push({
+      id: 'designer-001', email: 'designer@electrotrical.com', password: 'designer123',
+      firstName: 'PCB', lastName: 'Designer', company: 'ElectroTrical',
+      role: 'designer', status: 'active', registeredAt: '2026-02-01T10:00:00'
+    }); migrated = true;
+  }
+
+  // Demo Customer — rename Ada Lovelace to Demo Customer
+  const demoCustomer = parsed.users.find(u => u.email === 'demo@customer.com');
+  if (demoCustomer && demoCustomer.firstName === 'Ada') {
+    demoCustomer.firstName = 'Demo'; demoCustomer.lastName = 'Customer';
+    demoCustomer.company = 'Demo Corp'; migrated = true;
+  }
+
+  // Remove any extra customers that aren't the demo account
+  const beforeCount = parsed.users.length;
+  parsed.users = parsed.users.filter(u =>
+    u.role !== 'customer' || u.email === 'demo@customer.com'
+  );
+  if (parsed.users.length !== beforeCount) migrated = true;
+
+  if (migrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
   return parsed;
 }
 
@@ -1887,8 +1928,8 @@ function initState() {
         id: 'admin-001',
         email: 'admin@electrotrical.com',
         password: 'admin123',
-        firstName: 'Admin',
-        lastName: 'ElectroTrical',
+        firstName: 'Super',
+        lastName: 'Admin',
         company: 'ElectroTrical',
         role: 'admin',
         superAdmin: true,
@@ -1896,12 +1937,35 @@ function initState() {
         registeredAt: '2026-01-15T08:00:00'
       },
       {
+        id: 'admin-002',
+        email: 'manager@electrotrical.com',
+        password: 'manager123',
+        firstName: 'Project',
+        lastName: 'Manager',
+        company: 'ElectroTrical',
+        role: 'admin',
+        superAdmin: false,
+        status: 'active',
+        registeredAt: '2026-01-20T09:00:00'
+      },
+      {
+        id: 'designer-001',
+        email: 'designer@electrotrical.com',
+        password: 'designer123',
+        firstName: 'PCB',
+        lastName: 'Designer',
+        company: 'ElectroTrical',
+        role: 'designer',
+        status: 'active',
+        registeredAt: '2026-02-01T10:00:00'
+      },
+      {
         id: 'cust-001',
         email: 'demo@customer.com',
         password: 'demo1234',
-        firstName: 'Ada',
-        lastName: 'Lovelace',
-        company: 'Nexon Robotics',
+        firstName: 'Demo',
+        lastName: 'Customer',
+        company: 'Demo Corp',
         role: 'customer',
         status: 'active',
         registeredAt: '2026-03-01T14:30:00'
@@ -1957,7 +2021,7 @@ function initState() {
           { text: '<strong>Admin</strong> uploaded placement review files', time: '2026-03-12 14:22', type: 'blue' },
           { text: 'Milestone <strong>Component Placement</strong> awaiting your review', time: '2026-03-12 14:20', type: 'yellow' },
           { text: '<strong>Admin</strong> started working on component placement', time: '2026-03-11 08:15', type: 'blue' },
-          { text: '<strong>Ada</strong> uploaded schematic files', time: '2026-03-10 09:32', type: 'green' },
+          { text: '<strong>Demo Customer</strong> uploaded schematic files', time: '2026-03-10 09:32', type: 'green' },
           { text: 'Project <strong>IoT Sensor Board v2</strong> created', time: '2026-03-10 09:30', type: 'green' }
         ]
       }
@@ -1966,7 +2030,7 @@ function initState() {
       {
         id: 'QR-2026-001',
         customerId: 'cust-001',
-        customerName: 'Ada Lovelace',
+        customerName: 'Demo Customer',
         customerEmail: 'demo@customer.com',
         specs: {
           layers: '4',
@@ -2121,8 +2185,12 @@ function handleRegister(e) {
 }
 
 function demoLogin(role) {
-  const user = role === 'admin'
-    ? state.users.find(u => u.role === 'admin')
+  const user = role === 'superadmin'
+    ? state.users.find(u => u.superAdmin === true)
+    : role === 'admin'
+    ? state.users.find(u => u.role === 'admin' && !u.superAdmin)
+    : role === 'designer'
+    ? state.users.find(u => u.role === 'designer')
     : state.users.find(u => u.role === 'customer');
   if (user) loginAs(user);
 }
