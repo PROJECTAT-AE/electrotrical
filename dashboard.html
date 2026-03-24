@@ -2492,40 +2492,68 @@ function renderDashboard() {
     document.getElementById('projectsList').style.display = 'block';
   }
 
-  // ── Auto-repair: create missing projects for paid quotes ──────────────────
-  if (!admin && !designer) {
-    const paidQuotes = (state.quoteRequests || []).filter(q =>
-      q.customerId === user.id && q.status === 'paid'
-    );
-    let repaired = false;
-    paidQuotes.forEach(q => {
-      const exists = q.projectId && state.projects.find(p => p.id === q.projectId);
+  // ── Data integrity: deduplicate + repair projects ─────────────────────────
+  (function repairProjectData() {
+    let dirty = false;
+
+    // 1. Deduplicate projects by ID — keep the one with more milestone progress
+    //    or the non-cancelled version when statuses differ
+    const seenIds = {};
+    const deduped = [];
+    (state.projects || []).forEach(p => {
+      if (!seenIds[p.id]) {
+        seenIds[p.id] = deduped.length;
+        deduped.push(p);
+      } else {
+        dirty = true;
+        const idx = seenIds[p.id];
+        const existing = deduped[idx];
+        const existingDone = existing.milestones.filter(m => m.status === 'approved').length;
+        const newDone = p.milestones.filter(m => m.status === 'approved').length;
+        if (newDone > existingDone || (existing.status === 'cancelled' && p.status !== 'cancelled')) {
+          deduped[idx] = p; // replace with the better one
+        }
+      }
+    });
+    if (dirty) state.projects = deduped;
+
+    // 2. For any paid quote with no valid linked project, create one with a
+    //    collision-free ID (loop until we find an unused ID)
+    (state.quoteRequests || []).filter(q => q.status === 'paid').forEach(q => {
+      const exists = state.projects.find(p =>
+        (q.projectId && p.id === q.projectId) ||
+        (p.customerId === q.customerId && p.quote && p.quote.paidAt === q.paidAt)
+      );
       if (!exists) {
-        // Build a project from the quote data so it shows under Projects
-        const newPid = q.projectId || ('PRJ-' + new Date().getFullYear() + '-' + String(state.projects.length + 1).padStart(3,'0'));
+        let num = state.projects.length + 1;
+        let newPid;
+        do {
+          newPid = 'PRJ-' + new Date().getFullYear() + '-' + String(num).padStart(3, '0');
+          num++;
+        } while (state.projects.find(p => p.id === newPid));
+
         state.projects.push({
           id: newPid,
-          name: (q.specs?.serviceLabel || 'PCB Layout') + ' — ' + (q.specs?.layersLabel || '') + ' ' + (q.specs?.sizeLabel || ''),
-          customerId: user.id,
-          status: 'active',
+          name: (q.specs?.serviceLabel || 'PCB Layout') + ' \u2014 ' + (q.specs?.layersLabel || '') + ' ' + (q.specs?.sizeLabel || ''),
+          customerId: q.customerId, status: 'active',
           createdAt: q.paidAt || q.createdAt,
           quote: { total: q.adminPrice || q.estimatedTotal, paid: true, paidAt: q.paidAt },
           files: [], assignedDesigner: null,
           milestones: [
-            { id:'ms-1', name:'Component Placement', status:'pending', description:'Component placement per schematic.', files:[], comments:[], updatedAt:null },
-            { id:'ms-2', name:'Nets Routing',         status:'pending', description:'Trace routing with DRC compliance.',  files:[], comments:[], updatedAt:null },
+            { id:'ms-1', name:'Component Placement', status:'pending', description:'Component placement per schematic.',       files:[], comments:[], updatedAt:null },
+            { id:'ms-2', name:'Nets Routing',         status:'pending', description:'Trace routing with DRC compliance.',      files:[], comments:[], updatedAt:null },
             { id:'ms-3', name:'Final Gerbers',         status:'pending', description:'Gerber files, drill files, 3D render.', files:[], comments:[], updatedAt:null }
           ],
-          activity: [{ text: 'Project recovered from paid quote <strong>' + q.id + '</strong>', time: 'now', type: 'blue' }]
+          activity: [{ text: 'Project created from paid quote <strong>' + q.id + '</strong>', time: 'now', type: 'blue' }]
         });
-        // Also link back to the quote
-        const qIdx = state.quoteRequests.findIndex(r => r.id === q.id);
+        const qIdx = (state.quoteRequests || []).findIndex(r => r.id === q.id);
         if (qIdx !== -1) state.quoteRequests[qIdx].projectId = newPid;
-        repaired = true;
+        dirty = true;
       }
     });
-    if (repaired) saveState(state);
-  }
+
+    if (dirty) saveState(state);
+  })();
   // ──────────────────────────────────────────────────────────────────────────
 
   const projects = (admin || designer)
@@ -3024,8 +3052,10 @@ function createProject(e) {
   e.preventDefault();
   if (!isAdmin()) { showToast('Please submit a quote request instead.', 'warning'); return; }
   const user = getCurrentUser();
+  let _npNum = state.projects.length + 1, _npId;
+  do { _npId = 'PRJ-2026-' + String(_npNum++).padStart(3,'0'); } while (state.projects.find(p => p.id === _npId));
   const project = {
-    id: 'PRJ-2026-' + String(state.projects.length + 1).padStart(3,'0'),
+    id: _npId,
     name: document.getElementById('np-name').value,
     customerId: user.id,
     layers: parseInt(document.getElementById('np-layers').value),
@@ -3544,7 +3574,8 @@ function processPayment() {
 
     // Create the project from the quote
     const sizeMap = { '1.0': 'Small', '1.4': 'Medium', '2.0': 'Large', '3.0': 'Extra Large' };
-    const projectId = 'PRJ-2026-' + String(state.projects.length + 1).padStart(3, '0');
+    let _pNum = state.projects.length + 1, projectId;
+    do { projectId = 'PRJ-2026-' + String(_pNum++).padStart(3, '0'); } while (state.projects.find(p => p.id === projectId));
     const project = {
       id: projectId,
       name: (() => { const n = document.getElementById('co-project-name'); return (n && n.value.trim()) ? n.value.trim() : pendingQuote.layersLabel + ' PCB — ' + pendingQuote.sizeLabel; })(),
