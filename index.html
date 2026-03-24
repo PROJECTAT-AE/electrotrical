@@ -836,6 +836,21 @@ a { color: inherit; text-decoration: none; }
   .process-grid { grid-template-columns: 1fr; }
 }
 </style>
+<!-- ═══════════════════════════════════════════════
+     GOOGLE ANALYTICS
+     TODO: Replace G-XXXXXXXXXX with your real Measurement ID
+     from https://analytics.google.com after going live.
+     Remove the comment tags below to activate.
+═══════════════════════════════════════════════ -->
+<!-- 
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+-->
 </head>
 <body>
 
@@ -1729,6 +1744,19 @@ function submitQuoteRequest() {
   const pcbType = document.getElementById('q-pcbtype');
   const sides = document.getElementById('q-sides');
 
+  // ── Validation ──────────────────────────────────────────
+  const errors = [];
+  if (!layers.value || layers.value === '') errors.push('Please select the number of layers.');
+  if (!size.value || size.value === '') errors.push('Please select a board size.');
+  if (!pcbType.value || pcbType.value === '') errors.push('Please select a PCB type.');
+  const deliveryFormats = getDeliveryFormats();
+  if (deliveryFormats.length === 0) errors.push('Please select at least one delivery format.');
+
+  if (errors.length > 0) {
+    showQuoteError(errors[0]);
+    return;
+  }
+
   const sizeLabels = { '1.0':'Small', '1.4':'Medium', '2.0':'Large', '3.0':'Extra Large' };
   const specialLabels = { '0':'None', '150':'Impedance control', '200':'RF / microwave', '180':'Flex / rigid-flex', '120':'High-current power', '250':'All requirements' };
   const turnLabels = { standard:'Standard (5-7 days)', express:'Express (2-3 days)', rush:'Rush (<24h)' };
@@ -1769,6 +1797,21 @@ function submitQuoteRequest() {
   };
   localStorage.setItem('electrotrical_quote_request', JSON.stringify(quoteData));
   window.location.href = 'dashboard.html?submit_quote=true';
+}
+
+// ── Quote Validation Error Toast ──
+function showQuoteError(msg) {
+  const existing = document.getElementById('quote-error-toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.id = 'quote-error-toast';
+  t.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${msg}`;
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;padding:14px 18px;border-radius:8px;font-size:14px;font-weight:500;color:#fff;background:#EF4444;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:flex;align-items:center;gap:10px;max-width:340px;transition:opacity 0.4s;';
+  document.body.appendChild(t);
+  // Also highlight the quote section
+  const quoteSection = document.getElementById('quote');
+  if (quoteSection) quoteSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 4000);
 }
 
 // ═══ SECURITY: Input Sanitization ═══
