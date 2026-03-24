@@ -1867,6 +1867,12 @@ function getState() {
   if (!parsed.projects) parsed.projects = [];
   if (!parsed.quoteRequests) parsed.quoteRequests = [];
   if (!parsed.notifications) parsed.notifications = [];
+  // Migration: ensure the seed admin account always has superAdmin:true
+  const seedAdmin = parsed.users.find(u => u.email === 'admin@electrotrical.com');
+  if (seedAdmin && !seedAdmin.superAdmin) {
+    seedAdmin.superAdmin = true;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+  }
   return parsed;
 }
 
