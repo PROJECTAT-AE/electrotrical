@@ -5529,11 +5529,20 @@ if (regEmailEl) {
     // Coming from quote calculator — show checkout
     loadCheckout();
   } else if (submitQuote) {
-    // Handle quote submission after login
+    // Handle quote submission after login — customers only
     if (state.currentUser) {
+      const currentUser = (state.users || []).find(u => u.id === state.currentUser);
       showView('dashboard');
       updateNav();
-      handleQuoteSubmission();
+      if (currentUser && currentUser.role === 'customer') {
+        handleQuoteSubmission();
+      } else {
+        // Admin / designer logged in through the quote flow — discard the pending quote
+        localStorage.removeItem('electrotrical_quote_request');
+        localStorage.removeItem('electrotrical_pending_quote');
+        renderDashboard();
+        setTimeout(() => showToast('Quote requests can only be submitted by customers. Your pending quote has been cleared.', 'warning'), 500);
+      }
     } else {
       // Not logged in yet — show auth view, quote will be processed after login via loginAs()
       showView('auth');
