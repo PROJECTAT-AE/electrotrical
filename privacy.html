@@ -961,10 +961,11 @@ footer {
       <a href="mailto:info@electrotrical.com">Contact</a>
     </div>
     <div style="color: var(--text-muted);">
-      &copy; 2026 ElectroTrical. All rights reserved.
+      &copy; <span class="js-year">2026</span> ElectroTrical. All rights reserved.
     </div>
   </div>
 </footer>
 
+<script>document.querySelectorAll(".js-year").forEach(el=>el.textContent=new Date().getFullYear());</script>
 </body>
 </html>

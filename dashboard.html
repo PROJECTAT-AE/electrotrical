@@ -1456,20 +1456,10 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
   .detail-card { padding: 1rem; }
 }
 </style>
-<!-- ═══════════════════════════════════════════════
-     GOOGLE ANALYTICS
-     TODO: Replace G-XXXXXXXXXX with your real Measurement ID
-     from https://analytics.google.com after going live.
-     Remove the comment tags below to activate.
-═══════════════════════════════════════════════ -->
-<!-- 
+<!-- Google Analytics — replace G-XXXXXXXXXX with your Measurement ID and uncomment to activate -->
+<!--
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-XXXXXXXXXX');
-</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
 -->
 </head>
 <body>
@@ -1848,7 +1838,7 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
     </div>
     <div class="email-body" id="emailBody"></div>
     <div class="email-footer-bar">
-      &copy; 2026 ElectroTrical &middot; Professional PCB Layout Services<br>
+      &copy; <span class="js-year">2026</span> ElectroTrical &middot; Professional PCB Layout Services<br>
       <a href="dashboard.html" rel="noopener noreferrer" style="color:#6B7280;">Manage Preferences</a> &middot; <a href="privacy.html" rel="noopener noreferrer" style="color:#6B7280;">Privacy Policy</a>
     </div>
   </div>
@@ -3511,7 +3501,7 @@ function emailOrderConfirmation(projectName, projectId, total) {
     </div>
     <p><strong>Next step:</strong> Upload your schematic files, BOM, and any design notes through your dashboard.</p>
     <a href="dashboard.html" class="email-btn">Upload Files &rarr;</a>
-    <p style="color:#9CA3AF;font-size:13px;margin-top:20px;">Need help? Reply to this email or reach out at hello@electrotrical.com</p>
+    <p style="color:#9CA3AF;font-size:13px;margin-top:20px;">Need help? Reply to this email or reach out at info@electrotrical.com</p>
   `;
 }
 
@@ -3714,9 +3704,9 @@ function demoSkipPayment() {
     const fnEl = document.getElementById('co-fname');
     const lnEl = document.getElementById('co-lname');
     const emEl = document.getElementById('co-email');
-    if (fnEl && !fnEl.value) fnEl.value = user.firstName || 'Demo';
-    if (lnEl && !lnEl.value) lnEl.value = user.lastName  || 'User';
-    if (emEl && !emEl.value) emEl.value = user.email     || 'demo@electrotrical.com';
+    if (fnEl && !fnEl.value) fnEl.value = user.firstName || '';
+    if (lnEl && !lnEl.value) lnEl.value = user.lastName  || '';
+    if (emEl && !emEl.value) emEl.value = user.email     || '';
   }
   processPayment();
 }
@@ -4503,7 +4493,7 @@ function openInvoice(quoteId) {
         <div>
           <div style="font-size:20px;font-weight:700;letter-spacing:-0.5px;">ElectroTrical</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">Professional PCB Layout & Design Services</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.5);">hello@electrotrical.com &middot; electrotrical.com</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);">info@electrotrical.com &middot; electrotrical.com</div>
         </div>
         <div style="text-align:right;">
           <div style="font-size:22px;font-weight:700;color:#00D4FF;">${invoiceNum}</div>
@@ -4555,7 +4545,7 @@ function openInvoice(quoteId) {
 
         <!-- Footer note -->
         <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center;line-height:1.7;">
-          Thank you for your business! For questions about this invoice, contact hello@electrotrical.com
+          Thank you for your business! For questions about this invoice, contact info@electrotrical.com
         </div>
 
         <!-- Actions -->
@@ -4619,7 +4609,7 @@ function printInvoicePopup(quoteId) {
     <div>
       <div class="inv-brand">ElectroTrical</div>
       <div class="inv-brand-sub">Professional PCB Layout &amp; Design Services</div>
-      <div class="inv-brand-sub">hello@electrotrical.com &middot; electrotrical.com</div>
+      <div class="inv-brand-sub">info@electrotrical.com &middot; electrotrical.com</div>
     </div>
     <div>
       <div class="inv-num">${invoiceNum}</div>
@@ -4660,7 +4650,7 @@ function printInvoicePopup(quoteId) {
       <span class="total-amount">$${amount.toLocaleString()} USD</span>
     </div>
     <div class="inv-footer">
-      Thank you for your business! For questions about this invoice, contact hello@electrotrical.com
+      Thank you for your business! For questions about this invoice, contact info@electrotrical.com
     </div>
   </div>
   <script>window.onload=()=>{ window.print(); }<\/script>
@@ -6098,6 +6088,8 @@ function injectQuotePDFButtons() {
   }, 400);
 })();
 
+// Dynamic copyright year
+document.querySelectorAll('.js-year').forEach(el => el.textContent = new Date().getFullYear());
 
 </script>
 </body>

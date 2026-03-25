@@ -10,14 +10,14 @@
 - [ ] **MUST** — Connect domain to GitHub Pages or Vercel deployment
 - [ ] **MUST** — Confirm HTTPS is active (green padlock in browser)
 - [ ] **MUST** — Confirm `www.electrotrical.com` redirects to `electrotrical.com` (or vice versa)
-- [ ] **SHOULD** — Set up a custom email address (e.g. `hello@electrotrical.com`) via Zoho Mail, Google Workspace, or Resend
+- [ ] **SHOULD** — Set up a custom email address (e.g. `info@electrotrical.com`) via Zoho Mail, Google Workspace, or Resend
 
 ---
 
 ## 2. Content — Replace Placeholders
 
-- [ ] **MUST** — Update `hello@electrotrical.com` in the contact section to your real email
-- [ ] **MUST** — Update `hello@electrotrical.com` in the footer email notification previews (dashboard.html)
+- [ ] **MUST** — Update `info@electrotrical.com` in the contact section to your real email
+- [ ] **MUST** — Update `info@electrotrical.com` in the footer email notification previews (dashboard.html)
 - [ ] **MUST** — Verify the stats bar numbers are accurate (Boards Delivered: 2,400+, Rush Turnaround: <24h, Max Layers: 16, DRC Pass Rate: 99%)
 - [ ] **MUST** — Update social media icons in footer with real profile URLs (LinkedIn, Twitter/X, GitHub, YouTube) — or remove icons you don't use
 - [ ] **SHOULD** — Replace portfolio SVG placeholders with real PCB screenshots/renders when available

@@ -603,7 +603,7 @@
                 <a href="mailto:info@electrotrical.com">Contact Support</a>
             </p>
             <p style="color: var(--muted); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;">
-                ElectroTrical © 2026 • Professional PCB Layout & Design Services
+                ElectroTrical © <span class="js-year">2026</span> • Professional PCB Layout &amp; Design Services
             </p>
         </div>
     </main>
@@ -625,9 +625,10 @@
             </div>
         </div>
         <div class="footer-bottom">
-            ElectroTrical © 2026 • Professional PCB Layout & Design Services<br>
+            ElectroTrical © <span class="js-year">2026</span> • Professional PCB Layout &amp; Design Services<br>
             Terms of Service • Last Updated March 2026
         </div>
     </footer>
+<script>document.querySelectorAll(".js-year").forEach(el=>el.textContent=new Date().getFullYear());</script>
 </body>
 </html>

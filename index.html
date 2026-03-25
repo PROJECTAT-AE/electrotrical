@@ -51,7 +51,7 @@
   "url": "https://electrotrical.com",
   "logo": "https://electrotrical.com/Logo/ElectroTrical_Logo.png",
   "image": "https://electrotrical.com/Logo/ElectroTrical_Logo.png",
-  "email": "hello@electrotrical.com",
+  "email": "info@electrotrical.com",
   "priceRange": "$$",
   "currenciesAccepted": "USD",
   "paymentAccepted": "Credit Card, Bank Transfer",
@@ -861,20 +861,10 @@ a { color: inherit; text-decoration: none; }
   .process-grid { grid-template-columns: 1fr; }
 }
 </style>
-<!-- ═══════════════════════════════════════════════
-     GOOGLE ANALYTICS
-     TODO: Replace G-XXXXXXXXXX with your real Measurement ID
-     from https://analytics.google.com after going live.
-     Remove the comment tags below to activate.
-═══════════════════════════════════════════════ -->
-<!-- 
+<!-- Google Analytics — replace G-XXXXXXXXXX with your Measurement ID and uncomment to activate -->
+<!--
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-XXXXXXXXXX');
-</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
 -->
 </head>
 <body>
@@ -1556,7 +1546,7 @@ a { color: inherit; text-decoration: none; }
           </div>
           <div>
             <div class="contact-detail-label">Email</div>
-            <div class="contact-detail-value">hello@electrotrical.com</div>
+            <div class="contact-detail-value">info@electrotrical.com</div>
           </div>
         </div>
         <div class="contact-detail">
@@ -1674,7 +1664,7 @@ a { color: inherit; text-decoration: none; }
       </div>
     </div>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2026 ElectroTrical. All rights reserved.</div>
+      <div class="footer-copy">&copy; <span class="js-year">2026</span> ElectroTrical. All rights reserved.</div>
       <div class="footer-legal">
         <a href="privacy.html">Privacy Policy</a>
         <a href="terms.html">Terms of Service</a>
@@ -2012,17 +2002,12 @@ function handleContact(e) {
   submissions.push({ fname, lname, email, company, message, submittedAt: new Date().toISOString() });
   localStorage.setItem('electrotrical_contact', JSON.stringify(submissions));
 
-  // TODO: Wire EmailJS here when ready
-  // emailjs.send('YOUR_SERVICE_ID', 'YOUR_CONTACT_TEMPLATE_ID', { fname, lname, email, company, message })
-  //   .then(() => console.log('Email sent'))
-  //   .catch(err => console.error('EmailJS error:', err));
-
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
-  btn.innerHTML = '&#10003; Message Sent!';
+  btn.innerHTML = '&#10003; Message Received!';
   btn.style.background = '#00E5A0';
   btn.style.color = '#0A0E1A';
-  showContactToast('Thanks! We will get back to you within a few hours.');
+  showContactToast('Thanks! Your message has been received — we\'ll be in touch at ' + email + ' soon.');
   setTimeout(() => {
     btn.innerHTML = 'Send Message <span aria-hidden="true">&rarr;</span>';
     btn.style.background = '';
@@ -2072,5 +2057,6 @@ if (!localStorage.getItem('cookie_consent')) {
 // Init
 calcQuote();
 </script>
+<script>document.querySelectorAll(".js-year").forEach(el=>el.textContent=new Date().getFullYear());</script>
 </body>
 </html>
