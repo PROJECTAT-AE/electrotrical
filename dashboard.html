@@ -2498,24 +2498,21 @@ function renderDashboard() {
 
     // 1. Deduplicate projects by ID — keep the one with more milestone progress
     //    or the non-cancelled version when statuses differ
-    const seenIds = {};
-    const deduped = [];
+    const bestById = {};
     (state.projects || []).forEach(p => {
-      if (!seenIds[p.id]) {
-        seenIds[p.id] = deduped.length;
-        deduped.push(p);
+      const existing = bestById[p.id];
+      if (!existing) {
+        bestById[p.id] = p;
       } else {
         dirty = true;
-        const idx = seenIds[p.id];
-        const existing = deduped[idx];
-        const existingDone = existing.milestones.filter(m => m.status === 'approved').length;
-        const newDone = p.milestones.filter(m => m.status === 'approved').length;
+        const existingDone = (existing.milestones || []).filter(m => m.status === 'approved').length;
+        const newDone     = (p.milestones || []).filter(m => m.status === 'approved').length;
         if (newDone > existingDone || (existing.status === 'cancelled' && p.status !== 'cancelled')) {
-          deduped[idx] = p; // replace with the better one
+          bestById[p.id] = p; // keep the better one
         }
       }
     });
-    if (dirty) state.projects = deduped;
+    if (dirty) state.projects = Object.values(bestById);
 
     // 2. For any paid quote with no valid linked project, create one with a
     //    collision-free ID (loop until we find an unused ID)
