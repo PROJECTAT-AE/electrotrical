@@ -2603,9 +2603,9 @@ function renderDashboard() {
   }
 
   // Sort: latest project first
-  projects = [...projects].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const sortedProjects = [...projects].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  container.innerHTML = projects.map(p => {
+  container.innerHTML = sortedProjects.map(p => {
     const statusClass = p.status === 'completed' ? 'status-completed' : p.status === 'review' ? 'status-review' : p.status === 'cancelled' ? 'status-cancelled' : 'status-active';
     const statusText = p.status === 'completed' ? 'Completed' : p.status === 'review' ? 'Awaiting Review' : p.status === 'cancelled' ? 'Cancelled' : 'In Progress';
     const completedMs = p.milestones.filter(m => m.status === 'approved').length;
