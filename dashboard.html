@@ -2280,7 +2280,7 @@ function processForgotPassword() {
 
       <div style="background:rgba(0,102,255,0.08);border:1px solid rgba(0,102,255,0.25);border-radius:10px;padding:14px;text-align:left;margin-bottom:18px;">
         <p style="margin:0 0 6px;font-size:0.75rem;color:var(--primary);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Demo Mode — Password Hint</p>
-        <p style="margin:0;font-size:0.85rem;color:var(--text-secondary);">Name: <strong style="color:var(--text-primary);">${user.name}</strong></p>
+        <p style="margin:0;font-size:0.85rem;color:var(--text-secondary);">Name: <strong style="color:var(--text-primary);">${user.firstName} ${user.lastName}</strong></p>
         <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-secondary);">Role: <strong style="color:var(--accent);">${user.isSuperAdmin ? 'Super Admin' : user.isAdmin ? 'Admin' : user.isDesigner ? 'Designer' : 'Customer'}</strong></p>
         <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
           <span style="font-size:0.85rem;color:var(--text-secondary);">Password:</span>
@@ -5776,10 +5776,11 @@ function sendProjectMessage(projectId) {
   if (!state.projectMessages) state.projectMessages = {};
   if (!state.projectMessages[projectId]) state.projectMessages[projectId] = [];
 
+  const senderName = (user.firstName + ' ' + user.lastName).trim() || user.email;
   const msg = {
     id: 'msg-' + Date.now(),
     senderId: user.id,
-    senderName: user.name,
+    senderName,
     senderRole: user.isSuperAdmin ? 'Super Admin' : user.isAdmin ? 'Admin' : user.isDesigner ? 'Designer' : 'Customer',
     text,
     timestamp: new Date().toISOString(),
@@ -5791,7 +5792,7 @@ function sendProjectMessage(projectId) {
   if (project) {
     const recipientId = user.id === project.customerId ? project.assignedDesigner : project.customerId;
     if (recipientId) {
-      addNotificationForUser(recipientId, 'New Message', `${user.name} sent a message on "${project.title}"`, 'message', state);
+      addNotificationForUser(recipientId, 'New Message', `${senderName} sent a message on "${project.title}"`, 'message', state);
     }
   }
 
@@ -5826,7 +5827,7 @@ function renderMessagesPanel(projectId) {
         return `
         <div style="display:flex;flex-direction:${isOwn ? 'row-reverse' : 'row'};gap:8px;margin-bottom:14px;align-items:flex-end;">
           <div style="width:30px;height:30px;border-radius:50%;background:${isOwn ? 'rgba(0,102,255,0.3)' : 'rgba(0,212,255,0.15)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${color};flex-shrink:0;">
-            ${m.senderName.charAt(0).toUpperCase()}
+            ${(m.senderName || '?').charAt(0).toUpperCase()}
           </div>
           <div style="max-width:75%;">
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;${isOwn ? 'text-align:right;' : ''}">
