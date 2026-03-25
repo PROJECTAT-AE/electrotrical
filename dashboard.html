@@ -5990,12 +5990,14 @@ function injectMessagingPanel(projectId) {
     renderMessagesPanel(projectId);
     return;
   }
-  // Find the milestone section or project detail grid to append after
+  // Insert inside the left column of the detail grid, below "Uploaded Schematic Files"
   const grid = document.querySelector('.project-detail-grid');
   if (!grid) return;
+  const leftCol = grid.children[0];
+  if (!leftCol) return;
 
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'margin-top:24px;';
+  wrap.style.cssText = 'margin-top:20px;';
   wrap.innerHTML = `
     <div style="background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
       <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
@@ -6004,7 +6006,7 @@ function injectMessagingPanel(projectId) {
       </div>
       <div id="msg-panel-${projectId}"></div>
     </div>`;
-  grid.parentNode.insertBefore(wrap, grid.nextSibling);
+  leftCol.appendChild(wrap);
   renderMessagesPanel(projectId);
 }
 
