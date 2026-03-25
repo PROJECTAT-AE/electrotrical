@@ -5787,20 +5787,33 @@ function sendProjectMessage(projectId) {
   };
   state.projectMessages[projectId].push(msg);
 
-  // Notify other parties
+  // Add notification inline on the same state object to avoid a double-save race condition.
+  // (Calling addNotificationForUser here would trigger its own getState/saveState internally,
+  //  potentially overwriting localStorage before our message is saved.)
   const project = (state.projects || []).find(p => p.id === projectId);
   if (project) {
-    const recipientId = user.id === project.customerId ? project.assignedDesigner : project.customerId;
+    const recipientId = user.id === project.customerId
+      ? project.assignedDesigner
+      : project.customerId;
     if (recipientId) {
-      addNotificationForUser(recipientId, 'New Message', `${senderName} sent a message on "${project.title}"`, 'message', state);
+      if (!state.notifications) state.notifications = [];
+      state.notifications.push({
+        id: 'notif-' + Date.now(),
+        userId: recipientId,
+        type: 'message',
+        title: 'New Message',
+        message: `${senderName} sent a message on "${project.title || projectId}"`,
+        read: false,
+        createdAt: new Date().toISOString()
+      });
     }
   }
 
+  // Single save — message + notification together, no race condition
   saveState(state);
   input.value = '';
   renderMessagesPanel(projectId);
 
-  // Scroll to bottom
   setTimeout(() => {
     const feed = document.getElementById('msg-feed-' + projectId);
     if (feed) feed.scrollTop = feed.scrollHeight;
