@@ -2847,6 +2847,11 @@ function openProject(projectId) {
       </div>
     </div>
   `;
+
+  // Directly inject messaging & timeline panels after the detail renders.
+  // Don't rely solely on the polling interval — call it here so the panel
+  // always appears immediately whenever a project is opened.
+  setTimeout(() => injectProjectExtras(projectId), 120);
 }
 
 function toggleActivityLog(projectId, hiddenCount) {
@@ -6079,9 +6084,16 @@ function injectQuotePDFButtons() {
     const state = getState();
     const activeProject = state?.activeProjectId;
     const currentPid = pid || activeProject;
-    if (currentPid && currentPid !== lastProjectId) {
-      lastProjectId = currentPid;
-      injectProjectExtras(currentPid);
+    if (currentPid) {
+      // Reset lastProjectId if the panel has been removed (project detail re-rendered)
+      // so the interval re-injects it even for the same project
+      if (!document.getElementById('msg-panel-' + currentPid)) {
+        lastProjectId = null;
+      }
+      if (currentPid !== lastProjectId) {
+        lastProjectId = currentPid;
+        injectProjectExtras(currentPid);
+      }
     }
   }, 400);
 })();
