@@ -2281,7 +2281,7 @@ function processForgotPassword() {
       <div style="background:rgba(0,102,255,0.08);border:1px solid rgba(0,102,255,0.25);border-radius:10px;padding:14px;text-align:left;margin-bottom:18px;">
         <p style="margin:0 0 6px;font-size:0.75rem;color:var(--primary);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Demo Mode — Password Hint</p>
         <p style="margin:0;font-size:0.85rem;color:var(--text-secondary);">Name: <strong style="color:var(--text-primary);">${user.firstName} ${user.lastName}</strong></p>
-        <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-secondary);">Role: <strong style="color:var(--accent);">${user.isSuperAdmin ? 'Super Admin' : user.isAdmin ? 'Admin' : user.isDesigner ? 'Designer' : 'Customer'}</strong></p>
+        <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-secondary);">Role: <strong style="color:var(--accent);">${user.superAdmin ? 'Super Admin' : user.role === 'admin' ? 'Admin' : user.role === 'designer' ? 'Designer' : 'Customer'}</strong></p>
         <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
           <span style="font-size:0.85rem;color:var(--text-secondary);">Password:</span>
           <code id="forgotRevealPass" style="background:var(--dark-900);padding:3px 10px;border-radius:6px;font-size:0.85rem;color:var(--text-primary);letter-spacing:0.05em;font-family:monospace;">••••••••</code>
@@ -5781,7 +5781,7 @@ function sendProjectMessage(projectId) {
     id: 'msg-' + Date.now(),
     senderId: user.id,
     senderName,
-    senderRole: user.isSuperAdmin ? 'Super Admin' : user.isAdmin ? 'Admin' : user.isDesigner ? 'Designer' : 'Customer',
+    senderRole: user.superAdmin ? 'Super Admin' : user.role === 'admin' ? 'Admin' : user.role === 'designer' ? 'Designer' : 'Customer',
     text,
     timestamp: new Date().toISOString(),
   };
