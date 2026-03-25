@@ -2398,9 +2398,18 @@ function loginAs(user) {
   showView('dashboard');
   updateNav();
 
-  // Check for pending quote request after login/registration
+  // Check for pending quote request after login/registration.
+  // Only customers can submit quotes — if an admin or designer logs in
+  // through the quote flow, discard the pending quote and warn them.
   if (localStorage.getItem('electrotrical_quote_request')) {
-    handleQuoteSubmission();
+    if (user.role === 'customer') {
+      handleQuoteSubmission();
+    } else {
+      localStorage.removeItem('electrotrical_quote_request');
+      localStorage.removeItem('electrotrical_pending_quote');
+      renderDashboard();
+      showToast('Quote requests can only be submitted by customers. Your pending quote has been cleared.', 'warning');
+    }
   } else {
     renderDashboard();
   }
