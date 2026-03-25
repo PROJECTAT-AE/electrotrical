@@ -246,8 +246,38 @@ Four demo accounts are pre-seeded. Use these to test all roles:
 - Toast notifications for all actions (success / warning / error)
 - Email preview modal — shows what notification emails look like (admin milestone approvals, customer updates)
 - Browser back button support in project detail view
-- Mobile-responsive layout
+- Fully mobile-responsive layout (see Mobile section below)
 - Input sanitization on all user-generated content
+- **Invoice PDF export** — "Print / Save PDF" opens a clean standalone popup window with only the invoice (no dashboard chrome). Fallback `@media print` CSS also hides everything except the invoice if printing directly from the dashboard.
+
+---
+
+#### Notification Preferences (Account Tab)
+- Toggle switches per notification category: Quote Updates, Project Status Changes, New Messages, File Uploads, Deadline Reminders, Browser Notifications
+- Preferences saved per user in localStorage
+- Browser Notifications category triggers native `Notification.requestPermission()` when enabled
+
+---
+
+#### Mobile Layout
+Both `index.html` and `dashboard.html` are fully optimised for mobile:
+
+**Homepage (`index.html`):**
+- Fixed navbar uses `overflow-x: clip` (not `overflow: hidden`) so the mobile dropdown menu (position: fixed) is never clipped
+- Mobile menu dropdown starts at exactly `top: 60px` to match the navbar height
+- Hamburger toggle uses `flex-shrink: 0` to prevent it being pushed off-screen
+- "Get a Quote" CTA hidden on mobile (accessible via hamburger menu)
+- Process section stacks to single column at 768px
+- Hero subtitle reduces to 16px on mobile
+- Stats bar padding reduces at 768px and further at 480px
+- Role guard overlay prevents admin/designer from submitting quotes
+
+**Dashboard (`dashboard.html`):**
+- Username text hidden on mobile to prevent navbar overflow
+- Tighter nav padding and smaller logo on mobile
+- Dashboard tabs scroll horizontally with a fade-right indicator
+- Detail card padding properly scales down on smaller screens
+- Milestone tracker, form rows, and action buttons all stack to single column
 
 ---
 
@@ -351,6 +381,7 @@ Four demo accounts are pre-seeded. Use these to test all roles:
 | **No real payment** | Stripe integration is simulated. Use the "Skip Payment" demo button. |
 | **No real email** | Email previews are UI-only. No emails are actually sent. |
 | **No real auth** | Passwords are stored in plaintext in localStorage. Not suitable for production as-is. |
+| **Popup blocker** | Invoice PDF export opens a new window. If the browser blocks popups, the `@media print` fallback still produces a clean invoice. |
 
 ---
 
@@ -424,6 +455,23 @@ git push
 | `3814cd4` | Fix RFQ role guard (wrong localStorage key) |
 | `ddba5a4` | Super Admin can permanently delete projects |
 | `e90da69` | Fix delete modal (dynamic overlay, not static element) |
+| — | Replace projectat.ae@gmail.com with info@electrotrical.com across all files |
+| — | Fix blank Quotes tab (duplicate function declaration causing infinite loop) |
+| — | Filter paid quotes out of Quotes tab for all user roles |
+| — | Auto-repair duplicate projects on dashboard load (bestById dedup + collision-safe IDs) |
+| — | Projects sort newest-first |
+| — | Role guard on homepage: admin/designer cannot submit quote requests |
+| — | Fix hamburger menu clipped off-screen (overflow-x: clip on navbar) |
+| — | Fix mobile menu not opening (top adjusted to 60px, matching navbar height) |
+| — | Dashboard mobile: hide username, tighten navbar spacing |
+| — | Notification preference toggles with per-user localStorage persistence |
+| — | Toggle switch CSS for notification preferences |
+| — | Expired badge added to quote status badge map |
+| — | Fix addNotificationForUser signature (resolve string ID to user object) |
+| — | Invoice PDF: popup window export (clean, no dashboard chrome) |
+| — | Invoice PDF: @media print fallback hides dashboard, shows only invoice |
+| — | Mobile audit: process grid single-column at 768px, hero subtitle smaller, stat padding at 768px |
+| — | Dashboard mobile: detail card padding fixed (was backwards at 480px), tab scroll fade indicator |
 
 ---
 
@@ -454,4 +502,4 @@ Everything you need to transfer:
 
 ---
 
-*Built with Claude — Anthropic AI · March 2026*
+*Built with Claude — Anthropic AI · March 2026 · Last updated: March 24, 2026*
