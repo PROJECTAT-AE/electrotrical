@@ -915,8 +915,27 @@ input[type=number].price-input::-webkit-inner-spin-button {
   margin-top: 8px; font-size: 16px; font-weight: 700;
 }
 @media print {
-  .invoice-modal-overlay { background: none; }
-  .invoice-modal { box-shadow: none; border-radius: 0; max-height: none; }
+  /* Hide absolutely everything on the page */
+  body * { visibility: hidden; }
+  /* Then make only the invoice modal visible */
+  #invoiceModalOverlay,
+  #invoiceModalOverlay * { visibility: visible; }
+  /* Reposition so it starts at top-left of the printed page */
+  #invoiceModalOverlay {
+    position: absolute !important;
+    left: 0 !important; top: 0 !important;
+    width: 100% !important;
+    background: none !important;
+    padding: 0 !important;
+  }
+  .invoice-modal {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-height: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
   .invoice-print-actions { display: none !important; }
 }
 
@@ -1411,6 +1430,14 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
   .dash-tabs { overflow-x: auto; white-space: nowrap; padding-bottom: 4px; flex-wrap: nowrap; scrollbar-width: none; }
   .dash-tabs::-webkit-scrollbar { display: none; }
   .dash-tab { flex-shrink: 0; }
+  /* Fade-right hint that tabs are scrollable */
+  .dash-tabs-wrap { position: relative; }
+  .dash-tabs-wrap::after {
+    content: ''; pointer-events: none;
+    position: absolute; top: 0; right: 0; bottom: 4px; width: 40px;
+    background: linear-gradient(to right, transparent, var(--dark-900));
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
   /* Detail cards full width */
   .detail-card { padding: 1.25rem; }
   /* Cancel modal */
@@ -1426,7 +1453,7 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
 }
 @media (max-width: 480px) {
   .auth-card { padding: 1.75rem; }
-  .detail-card { padding: 1.5rem; }
+  .detail-card { padding: 1rem; }
 }
 </style>
 <!-- ═══════════════════════════════════════════════
@@ -1610,12 +1637,14 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
     </div>
 
     <!-- Dashboard Tabs -->
+    <div class="dash-tabs-wrap">
     <div class="dash-tabs" id="mainDashTabs">
       <button class="dash-tab" onclick="switchMainTab('summary')" id="summaryTab" style="display:none;">Summary</button>
       <button class="dash-tab" onclick="switchMainTab('quotes')" id="quotesTab">Quotes <span id="quoteBadge" style="display:none;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;"></span></button>
       <button class="dash-tab" onclick="switchMainTab('projects')" id="projectsTab">Projects</button>
       <button class="dash-tab" onclick="switchMainTab('users')" id="usersTab" style="display:none;">Users</button>
       <button class="dash-tab" onclick="switchMainTab('account')" id="accountTab">Account</button>
+    </div>
     </div>
 
     <!-- Projects List -->
@@ -4527,7 +4556,7 @@ function openInvoice(quoteId) {
         <!-- Actions -->
         <div class="invoice-print-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.5rem;">
           <button class="btn btn-secondary btn-sm" onclick="document.getElementById('invoiceModalOverlay').remove()">Close</button>
-          <button class="btn btn-primary btn-sm" onclick="window.print()">
+          <button class="btn btn-primary btn-sm" onclick="printInvoicePopup('${q.id}')">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             Print / Save PDF
           </button>
@@ -4536,6 +4565,104 @@ function openInvoice(quoteId) {
     </div>`;
 
   document.body.appendChild(modal);
+}
+
+function printInvoicePopup(quoteId) {
+  const state = getState();
+  const q = (state.quoteRequests || []).find(r => r.id === quoteId);
+  const user = state.users.find(u => u.id === state.currentUser);
+  if (!q || !user) return;
+
+  const amount = q.adminPrice || q.estimatedTotal || 0;
+  const paidDate = formatDate(q.paidAt || q.createdAt);
+  const invoiceNum = 'INV-' + q.id.replace('QR-', '');
+
+  const specsLine1 = [q.specs?.serviceLabel || 'PCB Layout Design', q.specs?.pcbTypeLabel || 'Rigid', q.specs?.layersLabel || ''].filter(Boolean).join(' · ');
+  const specsLine2 = [q.specs?.complexityLabel || '', q.specs?.sizeLabel ? q.specs.sizeLabel + ' board' : '', q.specs?.turnaroundLabel || ''].filter(Boolean).join(' · ');
+  const specialLine = (q.specs?.specialLabel && q.specs.specialLabel !== 'None') ? `<div style="font-size:12px;color:#666;">Special: ${q.specs.specialLabel}</div>` : '';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${invoiceNum} — ElectroTrical</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Arial, sans-serif; color: #111; background: #fff; }
+    .inv-header { background: #0A0F1E; color: #fff; padding: 28px 36px; display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; }
+    .inv-brand { font-size:20px; font-weight:700; letter-spacing:-0.5px; }
+    .inv-brand-sub { font-size:11px; color:rgba(255,255,255,0.5); margin-top:3px; }
+    .inv-num { font-size:22px; font-weight:700; color:#00D4FF; text-align:right; }
+    .inv-date { font-size:12px; color:rgba(255,255,255,0.5); margin-top:3px; text-align:right; }
+    .paid-badge { display:inline-block; margin-top:6px; font-size:11px; font-weight:700; background:#00E5A0; color:#0A0F1E; padding:3px 10px; border-radius:20px; }
+    .accent-bar { height:4px; background:linear-gradient(90deg,#0066FF,#00E5A0); }
+    .inv-body { padding:32px 36px; }
+    .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:28px; }
+    .meta-label { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#999; margin-bottom:8px; }
+    .meta-name { font-size:14px; font-weight:600; color:#111; }
+    .meta-line { font-size:13px; color:#555; margin-top:2px; }
+    .svc-label { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#999; margin-bottom:10px; }
+    .svc-table { border:1px solid #eee; border-radius:8px; overflow:hidden; margin-bottom:24px; }
+    .svc-head { background:#f8f9fa; padding:8px 14px; display:grid; grid-template-columns:1fr auto; font-size:11px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:#666; }
+    .svc-row { padding:14px; display:grid; grid-template-columns:1fr auto; gap:4px; }
+    .svc-title { font-size:14px; font-weight:600; color:#111; margin-bottom:4px; }
+    .svc-spec { font-size:12px; color:#666; }
+    .svc-amount { font-size:15px; font-weight:600; color:#111; white-space:nowrap; }
+    .total-row { display:flex; justify-content:space-between; align-items:baseline; padding:14px 0; border-top:2px solid #0A0F1E; font-size:16px; font-weight:700; }
+    .total-amount { font-size:22px; font-weight:700; color:#0066FF; }
+    .inv-footer { margin-top:28px; padding-top:16px; border-top:1px solid #eee; font-size:12px; color:#999; text-align:center; line-height:1.7; }
+    @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+  </style></head><body>
+  <div class="inv-header">
+    <div>
+      <div class="inv-brand">ElectroTrical</div>
+      <div class="inv-brand-sub">Professional PCB Layout &amp; Design Services</div>
+      <div class="inv-brand-sub">hello@electrotrical.com &middot; electrotrical.com</div>
+    </div>
+    <div>
+      <div class="inv-num">${invoiceNum}</div>
+      <div class="inv-date">Date: ${paidDate}</div>
+      <div><span class="paid-badge">PAID</span></div>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+  <div class="inv-body">
+    <div class="meta-grid">
+      <div>
+        <div class="meta-label">Bill To</div>
+        <div class="meta-name">${sanitizeInput(user.firstName)} ${sanitizeInput(user.lastName)}</div>
+        ${user.company ? `<div class="meta-line">${sanitizeInput(user.company)}</div>` : ''}
+        <div class="meta-line">${sanitizeInput(user.email)}</div>
+      </div>
+      <div>
+        <div class="meta-label">Reference</div>
+        <div class="meta-line">Quote: <strong style="color:#111;">${q.id}</strong></div>
+        <div class="meta-line">Paid: <strong style="color:#111;">${paidDate}</strong></div>
+      </div>
+    </div>
+    <div class="svc-label">Service Details</div>
+    <div class="svc-table">
+      <div class="svc-head"><span>Description</span><span>Amount</span></div>
+      <div class="svc-row">
+        <div>
+          <div class="svc-title">PCB Layout &amp; Design Service</div>
+          <div class="svc-spec">${specsLine1}</div>
+          <div class="svc-spec">${specsLine2}</div>
+          ${specialLine}
+        </div>
+        <div class="svc-amount">$${amount.toLocaleString()}</div>
+      </div>
+    </div>
+    <div class="total-row">
+      <span>Total Paid</span>
+      <span class="total-amount">$${amount.toLocaleString()} USD</span>
+    </div>
+    <div class="inv-footer">
+      Thank you for your business! For questions about this invoice, contact hello@electrotrical.com
+    </div>
+  </div>
+  <script>window.onload=()=>{ window.print(); }<\/script>
+  </body></html>`;
+
+  const win = window.open('', '_blank', 'width=820,height=700');
+  if (win) { win.document.write(html); win.document.close(); }
 }
 
 // ══════════════════════════════════════════════════════════
