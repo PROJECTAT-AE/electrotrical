@@ -1393,6 +1393,13 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
 }
 @media (max-width: 768px) {
   .nav-links { display: none; }
+  /* Navbar: tighten so all elements fit on small screens */
+  .nav-inner { padding: 0 12px; height: 60px; }
+  .nav-brand img { height: 38px; max-width: 130px; }
+  .nav-brand { flex-shrink: 0; }
+  .nav-user { gap: 8px; }
+  .nav-user-name { display: none; }          /* hide "Super" / username text */
+  .btn-logout { font-size: 11px; padding: 5px 10px; }
   .dashboard { padding: 5rem 1.25rem 3rem; }
   .dash-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .milestone-tracker { overflow-x: auto; padding-bottom: 8px; }
