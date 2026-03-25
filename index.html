@@ -815,6 +815,9 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 768px) {
   .nav-links { display: none; }
+  .nav-cta-btn { display: none; }          /* hidden — mobile menu has it */
+  .nav-inner { padding: 0 1rem; }          /* tighter side padding */
+  .nav-brand img { height: 44px; }         /* slightly smaller logo */
   .mobile-toggle { display: block; }
   .hero { padding: 8rem 1.5rem 4rem; }
   .hero-title { letter-spacing: -1px; }
@@ -1345,7 +1348,16 @@ a { color: inherit; text-decoration: none; }
       <h2 class="section-title">Configure Your Board</h2>
       <p class="section-desc">Adjust your specifications below and see the price update in real time. No sign-up needed.</p>
     </div>
-    <div class="quote-layout">
+    <!-- Admin/designer overlay — shown via JS when non-customer is logged in -->
+    <div id="quoteAdminOverlay" style="display:none;background:var(--dark-800);border:1px solid var(--border);border-radius:16px;padding:3rem 2rem;text-align:center;margin-bottom:2rem;">
+      <div style="width:64px;height:64px;margin:0 auto 1.25rem;background:rgba(0,102,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </div>
+      <div style="font-size:20px;font-weight:700;color:var(--white);margin-bottom:8px;">Staff Account Detected</div>
+      <p style="color:var(--text-secondary);font-size:14px;max-width:420px;margin:0 auto 1.5rem;">Quote requests are for customers only. You are logged in as an admin or designer. Please use the dashboard to manage projects and quotes.</p>
+      <a href="dashboard.html" class="nav-cta-btn" style="display:inline-block;text-decoration:none;">Go to Dashboard &rarr;</a>
+    </div>
+    <div id="quoteFormWrapper" class="quote-layout">
       <div class="reveal">
         <!-- Service Type -->
         <div class="form-group" style="margin-bottom: 20px;">
@@ -1664,6 +1676,30 @@ a { color: inherit; text-decoration: none; }
 
 <!-- ══════════════════════ JAVASCRIPT ══════════════════════ -->
 <script>
+// ── Role guard: hide quote form for admin/designer accounts ──────────────
+(function applyRoleGuard() {
+  try {
+    const raw = localStorage.getItem('electrotrical_data');
+    if (!raw) return;
+    const st = JSON.parse(raw);
+    const user = st.users && st.currentUser ? st.users.find(u => u.id === st.currentUser) : null;
+    if (!user || user.role === 'customer') return; // customers and guests see the form normally
+    // Non-customer logged in — show overlay, hide form
+    document.addEventListener('DOMContentLoaded', function() {
+      const overlay = document.getElementById('quoteAdminOverlay');
+      const form    = document.getElementById('quoteFormWrapper');
+      if (overlay) overlay.style.display = 'block';
+      if (form)    form.style.display    = 'none';
+      // Also replace hero CTA buttons so they go to dashboard instead
+      document.querySelectorAll('a[href="#quote"], button[onclick*="quote"]').forEach(el => {
+        el.setAttribute('href', 'dashboard.html');
+        el.removeAttribute('onclick');
+        el.textContent = 'Go to Dashboard \u2192';
+      });
+    });
+  } catch(e) {}
+})();
+
 // ── Mobile Menu ──
 function toggleMobile() {
   const menu = document.getElementById('mobileMenu');
