@@ -2969,7 +2969,7 @@ void main(){
   // ── Build face texture canvas ──
   function vMakeFaceTex(face) {
     const b  = vs.bbox;
-    const maxPx = 2048;
+    const maxPx = 4096;
     const TW = b.w >= b.h ? maxPx : Math.round(maxPx * b.w / b.h);
     const TH = b.h >= b.w ? maxPx : Math.round(maxPx * b.h / b.w);
     const tc = document.createElement('canvas');
@@ -3042,7 +3042,7 @@ void main(){
     );
     if (silkLayer) {
       tctx.globalAlpha = 1.0;
-      silkLayer.layer.render(tctx, T, silkLayer.color, true, 1.5);
+      silkLayer.layer.render(tctx, T, silkLayer.color, true, 3.0);
       tctx.globalAlpha = 1;
     }
 
@@ -3073,36 +3073,58 @@ void main(){
   }
   function _earcut(pts) {
     // pts: [{x,y}, ...] → returns flat index array [i0,i1,i2, ...]
-    const n = pts.length;
-    if (n < 3) return [];
+    // First, remove duplicate consecutive points
+    const clean = [pts[0]];
+    for (let i = 1; i < pts.length; i++) {
+      const p = pts[i], prev = clean[clean.length - 1];
+      if (Math.abs(p.x - prev.x) > 1e-6 || Math.abs(p.y - prev.y) > 1e-6) clean.push(p);
+    }
+    // Also check last vs first
+    if (clean.length > 1) {
+      const f = clean[0], l = clean[clean.length - 1];
+      if (Math.abs(f.x - l.x) < 1e-6 && Math.abs(f.y - l.y) < 1e-6) clean.pop();
+    }
+    const n = clean.length;
+    if (n < 3) return { tris: [], clean };
     const idx = []; for (let i=0;i<n;i++) idx.push(i);
     // Ensure CCW winding
     let area = 0;
-    for (let i=0, j=n-1; i<n; j=i++) area += (pts[j].x - pts[i].x) * (pts[j].y + pts[i].y);
+    for (let i=0, j=n-1; i<n; j=i++) area += (clean[j].x - clean[i].x) * (clean[j].y + clean[i].y);
     if (area > 0) idx.reverse();
     const tris = [];
-    let rem = [...idx], guard = rem.length * 3;
+    let rem = [...idx], guard = rem.length * 4;
     while (rem.length > 2 && guard-- > 0) {
       const rn = rem.length;
       let found = false;
       for (let i = 0; i < rn; i++) {
         const a=rem[(i-1+rn)%rn], b=rem[i], c=rem[(i+1)%rn];
-        const cross = (pts[b].x-pts[a].x)*(pts[c].y-pts[a].y) - (pts[b].y-pts[a].y)*(pts[c].x-pts[a].x);
-        if (cross <= 0) continue;
+        const cross = (clean[b].x-clean[a].x)*(clean[c].y-clean[a].y) - (clean[b].y-clean[a].y)*(clean[c].x-clean[a].x);
+        if (cross < -1e-10) continue; // allow collinear (>=0) ears
         let ok = true;
         for (let j=0; j<rn; j++) {
           const k = rem[j];
           if (k===a||k===b||k===c) continue;
-          if (_ptInTri(pts[k].x,pts[k].y, pts[a].x,pts[a].y, pts[b].x,pts[b].y, pts[c].x,pts[c].y)) { ok=false; break; }
+          if (_ptInTri(clean[k].x,clean[k].y, clean[a].x,clean[a].y, clean[b].x,clean[b].y, clean[c].x,clean[c].y)) { ok=false; break; }
         }
         if (!ok) continue;
+        // Skip zero-area triangles
+        if (Math.abs(cross) < 1e-10) { rem.splice(i,1); found=true; break; }
         tris.push(a,b,c);
         rem.splice(i,1);
         found = true; break;
       }
       if (!found) break;
     }
-    return tris;
+    // Fallback: if earcut produced too few triangles, use fan from centroid
+    if (tris.length < (n - 2) * 3 * 0.5) {
+      // Fan triangulation — works well for convex/near-convex board outlines
+      tris.length = 0;
+      for (let i = 1; i < n - 1; i++) tris.push(idx[0], idx[i], idx[i+1]);
+    }
+    // Map back to original pts indices via clean→pts mapping
+    // (clean is subset of pts, but indices match since we rebuilt)
+    // We need to return indices into the 'clean' array, and use 'clean' as the shape
+    return { tris, clean };
   }
 
   // ── Build 3D board geometry + textures ──
@@ -3122,8 +3144,11 @@ void main(){
     }
 
     const P = [], N = [], UV = [];
-    // Triangulate the polygon
-    const triIdx = _earcut(shape);
+    // Triangulate the polygon (earcut returns cleaned points + triangle indices)
+    const ec = _earcut(shape);
+    const triIdx = ec.tris;
+    shape = ec.clean;  // use deduplicated shape for geometry
+    const hw2 = b.w / 2, hh2 = b.h / 2;  // recalc for UV mapping
 
     // Top face (z = thick, normal +Z)
     for (const i of triIdx) {
@@ -3133,12 +3158,12 @@ void main(){
     }
     const topCount = triIdx.length;
 
-    // Bottom face (z = 0, normal -Z) — reverse winding
+    // Bottom face (z = 0, normal -Z) — reverse winding + mirror U for correct designators
     for (let t = 0; t < triIdx.length; t += 3) {
       for (const j of [triIdx[t+2], triIdx[t+1], triIdx[t]]) {
         P.push(shape[j].x, shape[j].y, 0);
         N.push(0, 0, -1);
-        UV.push((shape[j].x + hw) / b.w, (shape[j].y + hh) / b.h);
+        UV.push(1.0 - (shape[j].x + hw) / b.w, (shape[j].y + hh) / b.h);
       }
     }
     const botCount = triIdx.length;
