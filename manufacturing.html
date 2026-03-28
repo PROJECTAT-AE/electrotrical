@@ -3064,37 +3064,98 @@ void main(){
   }
 
   // ── Build 3D board geometry + textures ──
+  // ── Ear-clipping polygon triangulation ──
+  function _ptInTri(px,py, ax,ay, bx,by, cx,cy) {
+    const d1=(px-bx)*(ay-by)-(ax-bx)*(py-by);
+    const d2=(px-cx)*(by-cy)-(bx-cx)*(py-cy);
+    const d3=(px-ax)*(cy-ay)-(cx-ax)*(py-ay);
+    return !((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));
+  }
+  function _earcut(pts) {
+    // pts: [{x,y}, ...] → returns flat index array [i0,i1,i2, ...]
+    const n = pts.length;
+    if (n < 3) return [];
+    const idx = []; for (let i=0;i<n;i++) idx.push(i);
+    // Ensure CCW winding
+    let area = 0;
+    for (let i=0, j=n-1; i<n; j=i++) area += (pts[j].x - pts[i].x) * (pts[j].y + pts[i].y);
+    if (area > 0) idx.reverse();
+    const tris = [];
+    let rem = [...idx], guard = rem.length * 3;
+    while (rem.length > 2 && guard-- > 0) {
+      const rn = rem.length;
+      let found = false;
+      for (let i = 0; i < rn; i++) {
+        const a=rem[(i-1+rn)%rn], b=rem[i], c=rem[(i+1)%rn];
+        const cross = (pts[b].x-pts[a].x)*(pts[c].y-pts[a].y) - (pts[b].y-pts[a].y)*(pts[c].x-pts[a].x);
+        if (cross <= 0) continue;
+        let ok = true;
+        for (let j=0; j<rn; j++) {
+          const k = rem[j];
+          if (k===a||k===b||k===c) continue;
+          if (_ptInTri(pts[k].x,pts[k].y, pts[a].x,pts[a].y, pts[b].x,pts[b].y, pts[c].x,pts[c].y)) { ok=false; break; }
+        }
+        if (!ok) continue;
+        tris.push(a,b,c);
+        rem.splice(i,1);
+        found = true; break;
+      }
+      if (!found) break;
+    }
+    return tris;
+  }
+
+  // ── Build 3D board geometry + textures ──
   function vBuildBoard3D(resetCamera = false) {
     if (!vs.bbox || !_gl.ctx) return;
     const gl = _gl.ctx;
     const b = vs.bbox;
     const hw = b.w / 2, hh = b.h / 2, thick = 1.6;
+    const cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2;
 
-    const P = [], N = [], UV = [];
-    function quad(p0,p1,p2,p3, n, u0,u1,u2,u3) {
-      P.push(...p0,...p1,...p2, ...p0,...p2,...p3);
-      N.push(...n,...n,...n, ...n,...n,...n);
-      UV.push(...u0,...u1,...u2, ...u0,...u2,...u3);
+    // Board outline: use polygon if available, else rectangle
+    let shape;
+    if (vs.polygon && vs.polygon.length >= 3) {
+      shape = vs.polygon.map(p => ({ x: p.x - cx, y: p.y - cy }));
+    } else {
+      shape = [{x:-hw,y:-hh},{x:hw,y:-hh},{x:hw,y:hh},{x:-hw,y:hh}];
     }
 
-    // Top face (z=thick, +Z normal) — textured
-    quad([-hw,-hh,thick],[hw,-hh,thick],[hw,hh,thick],[-hw,hh,thick],
-      [0,0,1], [0,0],[1,0],[1,1],[0,1]);
-    // Bottom face (z=0, -Z normal) — textured
-    quad([-hw,hh,0],[hw,hh,0],[hw,-hh,0],[-hw,-hh,0],
-      [0,0,-1], [0,1],[1,1],[1,0],[0,0]);
-    // Front side (y=-hh)
-    quad([-hw,-hh,0],[hw,-hh,0],[hw,-hh,thick],[-hw,-hh,thick],
-      [0,-1,0], [0,0],[1,0],[1,1],[0,1]);
-    // Back side (y=hh)
-    quad([hw,hh,0],[-hw,hh,0],[-hw,hh,thick],[hw,hh,thick],
-      [0,1,0], [0,0],[1,0],[1,1],[0,1]);
-    // Left side (x=-hw)
-    quad([-hw,hh,0],[-hw,-hh,0],[-hw,-hh,thick],[-hw,hh,thick],
-      [-1,0,0], [0,0],[1,0],[1,1],[0,1]);
-    // Right side (x=hw)
-    quad([hw,-hh,0],[hw,hh,0],[hw,hh,thick],[hw,-hh,thick],
-      [1,0,0], [0,0],[1,0],[1,1],[0,1]);
+    const P = [], N = [], UV = [];
+    // Triangulate the polygon
+    const triIdx = _earcut(shape);
+
+    // Top face (z = thick, normal +Z)
+    for (const i of triIdx) {
+      P.push(shape[i].x, shape[i].y, thick);
+      N.push(0, 0, 1);
+      UV.push((shape[i].x + hw) / b.w, (shape[i].y + hh) / b.h);
+    }
+    const topCount = triIdx.length;
+
+    // Bottom face (z = 0, normal -Z) — reverse winding
+    for (let t = 0; t < triIdx.length; t += 3) {
+      for (const j of [triIdx[t+2], triIdx[t+1], triIdx[t]]) {
+        P.push(shape[j].x, shape[j].y, 0);
+        N.push(0, 0, -1);
+        UV.push((shape[j].x + hw) / b.w, (shape[j].y + hh) / b.h);
+      }
+    }
+    const botCount = triIdx.length;
+
+    // Side walls — one quad per polygon edge
+    const sn = shape.length;
+    for (let i = 0; i < sn; i++) {
+      const a = shape[i], c = shape[(i + 1) % sn];
+      const dx = c.x - a.x, dy = c.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len, ny = dx / len; // outward normal
+      // Quad: a@0, c@0, c@thick, a@thick
+      P.push(a.x,a.y,0, c.x,c.y,0, c.x,c.y,thick);
+      P.push(a.x,a.y,0, c.x,c.y,thick, a.x,a.y,thick);
+      for (let k = 0; k < 6; k++) N.push(nx, ny, 0);
+      UV.push(0,0, 1,0, 1,1, 0,0, 1,1, 0,1);
+    }
 
     if (_gl.posBuf)  gl.deleteBuffer(_gl.posBuf);
     if (_gl.normBuf) gl.deleteBuffer(_gl.normBuf);
@@ -3103,6 +3164,9 @@ void main(){
     _gl.normBuf = _buf(gl, N);
     _gl.uvBuf   = _buf(gl, UV);
     _gl.vCnt    = P.length / 3;
+    _gl.topCnt  = topCount;
+    _gl.botCnt  = botCount;
+    _gl.sideCnt = sn * 6;
 
     if (_gl.topTex) gl.deleteTexture(_gl.topTex);
     if (_gl.botTex) gl.deleteTexture(_gl.botTex);
@@ -3164,21 +3228,21 @@ void main(){
     gl.activeTexture(gl.TEXTURE0);
     gl.uniform1i(_gl.uTex, 0);
 
-    // Top face (vertices 0-5) — textured, cull back
+    // Top face — textured
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
     gl.bindTexture(gl.TEXTURE_2D, _gl.topTex);
     gl.uniform1i(_gl.uUseTex, 1);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    gl.drawArrays(gl.TRIANGLES, 0, _gl.topCnt);
 
-    // Bottom face (vertices 6-11) — textured, cull back (winding is correct for -Z view)
+    // Bottom face — textured (reversed winding)
     gl.bindTexture(gl.TEXTURE_2D, _gl.botTex);
-    gl.drawArrays(gl.TRIANGLES, 6, 6);
+    gl.drawArrays(gl.TRIANGLES, _gl.topCnt, _gl.botCnt);
 
-    // Side faces (vertices 12+) — solid FR-4 green
+    // Side walls — solid FR-4 green
     gl.uniform1i(_gl.uUseTex, 0);
     gl.uniform3f(_gl.uCol, 0.176, 0.416, 0.267);
-    gl.drawArrays(gl.TRIANGLES, 12, _gl.vCnt - 12);
+    gl.drawArrays(gl.TRIANGLES, _gl.topCnt + _gl.botCnt, _gl.sideCnt);
 
     gl.disable(gl.CULL_FACE);
     gl.disableVertexAttribArray(_gl.aP);
