@@ -28,31 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <!-- THREE.js r128 — multi-CDN fallback loader -->
-  <script>
-  (function(){
-    var cdns = [
-      'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
-      'https://unpkg.com/three@0.128.0/build/three.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
-      'https://threejs.org/build/three.min.js'
-    ];
-    var idx = 0;
-    window.__threeLoaded = false;
-    function tryNext(){
-      if(idx >= cdns.length){
-        console.error('[ElectroTrical] All THREE.js CDNs failed. 3D viewer will not work.');
-        return;
-      }
-      var s = document.createElement('script');
-      s.src = cdns[idx];
-      s.onload = function(){ window.__threeLoaded = true; console.log('[ElectroTrical] THREE.js loaded from: ' + cdns[idx]); };
-      s.onerror = function(){ idx++; document.head.removeChild(s); tryNext(); };
-      document.head.appendChild(s);
-    }
-    tryNext();
-  })();
-  </script>
+  <!-- 3D rendering uses raw WebGL (no external library needed) -->
   <script>/* JSZip v3.10.1 - inlined */
 /*!
 
@@ -2647,7 +2623,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     maskColor:  '#1a6b3a',
     zoom:       1, panX:0, panY:0,
     // 3D
-    scene:null, camera:null, renderer3d:null, boardGrp:null,
+    
     rotX:0.5, rotY:0.4, camDist:100,
     drag:false, dragX:0, dragY:0,
     gerberFile: null,
@@ -2837,65 +2813,111 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     document.getElementById('vStZoom').textContent = 'Zoom: ' + Math.round(vs.zoom * 100) + '%';
   }
 
-  // ─── 8. 3D RENDERING ─────────────────────────────────────────────────
+  // ─── 8. 3D RENDERING (Raw WebGL — no external library needed) ────────
 
-  // Wrapper: waits for THREE.js CDN to load, then runs vInit3D + vBuildBoard3D + vStart3DLoop
-  function vLaunch3D(resetCamera) {
-    let attempts = 0;
-    function poll() {
-      if (typeof THREE !== 'undefined') {
-        setTimeout(() => { vInit3D(); if (vs.loaded) vBuildBoard3D(resetCamera); vStart3DLoop(); }, 30);
-        return;
-      }
-      if (++attempts > 40) { // ~8 seconds
-        const errEl = document.getElementById('vErr');
-        errEl.textContent = '⚠ 3D library (THREE.js) failed to load from all CDNs. Try refreshing the page.';
-        errEl.style.display = 'block';
-        return;
-      }
-      setTimeout(poll, 200);
-    }
-    poll();
+  const _gl = {};
+
+  // ── Matrix4 helpers (column-major) ──
+  function _m4(){ return new Float32Array(16); }
+  function m4Id(){ const m=_m4(); m[0]=m[5]=m[10]=m[15]=1; return m; }
+  function m4Persp(fov,asp,n,f){
+    const t=1/Math.tan(fov/2), nf=1/(n-f), m=_m4();
+    m[0]=t/asp; m[5]=t; m[10]=(f+n)*nf; m[11]=-1; m[14]=2*f*n*nf; return m;
   }
+  function m4LookAt(e,c,u){
+    let zx=e[0]-c[0], zy=e[1]-c[1], zz=e[2]-c[2];
+    let l=Math.hypot(zx,zy,zz)||1; zx/=l; zy/=l; zz/=l;
+    let sx=u[1]*zz-u[2]*zy, sy=u[2]*zx-u[0]*zz, sz=u[0]*zy-u[1]*zx;
+    l=Math.hypot(sx,sy,sz)||1; sx/=l; sy/=l; sz/=l;
+    const ux=zy*sz-zz*sy, uy=zz*sx-zx*sz, uz=zx*sy-zy*sx;
+    const m=_m4();
+    m[0]=sx; m[1]=ux; m[2]=zx;
+    m[4]=sy; m[5]=uy; m[6]=zy;
+    m[8]=sz; m[9]=uz; m[10]=zz;
+    m[12]=-(sx*e[0]+sy*e[1]+sz*e[2]);
+    m[13]=-(ux*e[0]+uy*e[1]+uz*e[2]);
+    m[14]=-(zx*e[0]+zy*e[1]+zz*e[2]);
+    m[15]=1; return m;
+  }
+  function m4RotX(a){ const m=m4Id(),c=Math.cos(a),s=Math.sin(a); m[5]=c; m[6]=s; m[9]=-s; m[10]=c; return m; }
+  function m4Mul(a,b){
+    const o=_m4();
+    for(let j=0;j<4;j++) for(let i=0;i<4;i++){
+      let v=0; for(let k=0;k<4;k++) v+=a[k*4+i]*b[j*4+k]; o[j*4+i]=v;
+    } return o;
+  }
+  function m4Normal3(m){ return new Float32Array([m[0],m[1],m[2], m[4],m[5],m[6], m[8],m[9],m[10]]); }
 
+  // ── Shaders ──
+  const _VS = `attribute vec3 aP,aN; attribute vec2 aUV;
+uniform mat4 uMVP,uM; uniform mat3 uN;
+varying vec3 vN,vW; varying vec2 vUV;
+void main(){ gl_Position=uMVP*vec4(aP,1); vN=normalize(uN*aN); vW=(uM*vec4(aP,1)).xyz; vUV=aUV; }`;
+  const _FS = `precision mediump float;
+varying vec3 vN,vW; varying vec2 vUV;
+uniform sampler2D uTex; uniform bool uUseTex; uniform vec3 uCol;
+void main(){
+  vec3 N=normalize(vN);
+  vec3 b=uUseTex?texture2D(uTex,vUV).rgb:uCol;
+  vec3 c=b*0.45;
+  c+=b*max(dot(N,normalize(vec3(60,100,80))),0.0)*1.1;
+  c+=b*max(dot(N,normalize(vec3(-40,-30,-60))),0.0)*0.3;
+  gl_FragColor=vec4(clamp(c,0.0,1.0),1);
+}`;
+  const _GV = `attribute vec3 aP; uniform mat4 uMVP; void main(){ gl_Position=uMVP*vec4(aP,1); }`;
+  const _GF = `precision mediump float; uniform vec3 uCol; void main(){ gl_FragColor=vec4(uCol,1); }`;
+
+  function _sh(gl,t,s){ const o=gl.createShader(t); gl.shaderSource(o,s); gl.compileShader(o);
+    if(!gl.getShaderParameter(o,gl.COMPILE_STATUS)){ console.error('Shader:',gl.getShaderInfoLog(o)); return null; } return o; }
+  function _pg(gl,vs,fs){ const p=gl.createProgram(); gl.attachShader(p,_sh(gl,gl.VERTEX_SHADER,vs));
+    gl.attachShader(p,_sh(gl,gl.FRAGMENT_SHADER,fs)); gl.linkProgram(p);
+    if(!gl.getProgramParameter(p,gl.LINK_STATUS)){ console.error('Program:',gl.getProgramInfoLog(p)); return null; } return p; }
+  function _buf(gl,d){ const b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(d),gl.STATIC_DRAW); return b; }
+  function _tex(gl,cv){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cv);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    gl.generateMipmap(gl.TEXTURE_2D); return t; }
+
+  // ── Init ──
   function vInit3D() {
-    if (typeof THREE === 'undefined') return; // safety guard
     const vp = document.getElementById('vViewport');
-    const W  = vp.clientWidth,  H = Math.max(vp.clientHeight - 25, 100);
-
-    // If viewport not yet painted, defer until it has dimensions
-    if (W <= 0) {
-      setTimeout(vInit3D, 60);
-      return;
-    }
-
-    // If renderer was previously created with 0×0 dimensions, destroy and recreate
-    if (vs.renderer3d && ($3d.width <= 1 || $3d.height <= 1)) {
-      vs.renderer3d.dispose();
-      vs.renderer3d = null;
-    }
-
+    const W = vp.clientWidth, H = Math.max(vp.clientHeight - 25, 100);
+    if (W <= 0) { setTimeout(vInit3D, 60); return; }
     $3d.width = W;  $3d.height = H;
 
-    if (!vs.renderer3d) {
-      try {
-        vs.renderer3d = new THREE.WebGLRenderer({ canvas:$3d, antialias:true });
-      } catch(glErr) {
-        const errEl = document.getElementById('vErr');
-        errEl.textContent = '⚠ WebGL not supported by your browser: ' + glErr.message;
-        errEl.style.display = 'block';
-        return;
+    if (!_gl.ctx) {
+      const gl = $3d.getContext('webgl', { antialias:true, alpha:false });
+      if (!gl) {
+        const e = document.getElementById('vErr');
+        e.textContent = '\u26a0 WebGL not supported by this browser.';
+        e.style.display = 'block'; return;
       }
-      vs.renderer3d.setSize(W, H, false);
-      vs.renderer3d.setPixelRatio(Math.min(devicePixelRatio, 2));
-      vs.scene      = new THREE.Scene();
-      vs.scene.background = new THREE.Color(0x060e16);
-      vs.camera     = new THREE.PerspectiveCamera(45, W/H, 0.1, 5000);
+      _gl.ctx = gl;
+      _gl.prog = _pg(gl, _VS, _FS);
+      _gl.aP  = gl.getAttribLocation(_gl.prog, 'aP');
+      _gl.aN  = gl.getAttribLocation(_gl.prog, 'aN');
+      _gl.aUV = gl.getAttribLocation(_gl.prog, 'aUV');
+      _gl.uMVP = gl.getUniformLocation(_gl.prog, 'uMVP');
+      _gl.uM   = gl.getUniformLocation(_gl.prog, 'uM');
+      _gl.uN   = gl.getUniformLocation(_gl.prog, 'uN');
+      _gl.uTex    = gl.getUniformLocation(_gl.prog, 'uTex');
+      _gl.uUseTex = gl.getUniformLocation(_gl.prog, 'uUseTex');
+      _gl.uCol    = gl.getUniformLocation(_gl.prog, 'uCol');
 
-      vs.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
-      const dl1 = new THREE.DirectionalLight(0xffffff, 1.1); dl1.position.set(60, 100, 80); vs.scene.add(dl1);
-      const dl2 = new THREE.DirectionalLight(0x4466cc, 0.30); dl2.position.set(-40,-30,-60); vs.scene.add(dl2);
-      const grid = new THREE.GridHelper(400, 40, 0x0d2018, 0x091610); grid.position.y = -3; vs.scene.add(grid);
+      // Grid shader
+      _gl.gProg = _pg(gl, _GV, _GF);
+      _gl.gAP  = gl.getAttribLocation(_gl.gProg, 'aP');
+      _gl.gMVP = gl.getUniformLocation(_gl.gProg, 'uMVP');
+      _gl.gCol = gl.getUniformLocation(_gl.gProg, 'uCol');
+      const gv = [];
+      for (let i = -200; i <= 200; i += 10) {
+        gv.push(i,-3,-200, i,-3,200, -200,-3,i, 200,-3,i);
+      }
+      _gl.gBuf = _buf(gl, gv);
+      _gl.gCnt = gv.length / 3;
 
       // Mouse orbit
       $3d.addEventListener('mousedown', e => { vs.drag=true; vs.dragX=e.clientX; vs.dragY=e.clientY; });
@@ -2914,9 +2936,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         vs.camDist = Math.max(5, Math.min(2000, vs.camDist));
         vRender3D();
       }, { passive:false });
-      // Touch orbit
-      let t0 = null, t1 = null;
-      $3d.addEventListener('touchstart', e => { t0 = e.touches[0]; t1 = e.touches.length > 1 ? e.touches[1] : null; });
+      let t0 = null;
+      $3d.addEventListener('touchstart', e => { t0 = e.touches[0]; });
       $3d.addEventListener('touchmove', e => {
         e.preventDefault();
         if (e.touches.length === 1 && t0) {
@@ -2927,29 +2948,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
       }, { passive:false });
     } else {
-      vs.renderer3d.setSize(W, H, false);
-      vs.camera.aspect = W/H;
-      vs.camera.updateProjectionMatrix();
+      _gl.ctx.viewport(0, 0, W, H);
     }
+    _gl.W = W;  _gl.H = H;
   }
 
+  // ── Render loop ──
   let _v3dRafId = null;
-  function vRender3D() {
-    if (!vs.renderer3d || !vs.scene || !vs.camera) return;
-    const r  = vs.camDist;
-    const rx = vs.rotX, ry = vs.rotY;
-    vs.camera.position.set(r * Math.sin(ry) * Math.cos(rx), r * Math.sin(rx), r * Math.cos(ry) * Math.cos(rx));
-    vs.camera.lookAt(0, 0, 0);
-    vs.renderer3d.render(vs.scene, vs.camera);
-    document.getElementById('vStZoom').textContent = 'Dist: ' + Math.round(vs.camDist) + 'mm';
-  }
-
-  function vStop3DLoop() {
-    if (_v3dRafId) { cancelAnimationFrame(_v3dRafId); _v3dRafId = null; }
-  }
-
+  function vStop3DLoop() { if (_v3dRafId) { cancelAnimationFrame(_v3dRafId); _v3dRafId = null; } }
   function vStart3DLoop() {
-    vStop3DLoop(); // cancel any existing loop first
+    vStop3DLoop();
     function loop() {
       if (vs.mode !== '3d') { _v3dRafId = null; return; }
       _v3dRafId = requestAnimationFrame(loop);
@@ -2958,10 +2966,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     _v3dRafId = requestAnimationFrame(loop);
   }
 
-  // Build a face texture by compositing all relevant layers onto a canvas.
+  // ── Build face texture canvas ──
   function vMakeFaceTex(face) {
     const b  = vs.bbox;
-    // 2048px on the longest dimension — safe across all GPUs
     const maxPx = 2048;
     const TW = b.w >= b.h ? maxPx : Math.round(maxPx * b.w / b.h);
     const TH = b.h >= b.w ? maxPx : Math.round(maxPx * b.h / b.w);
@@ -2972,18 +2979,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     tctx.imageSmoothingQuality = 'high';
     const T = { scale: TW / b.w, offX:0, offY:0, minX:b.minX, minY:b.minY, H:TH, W:TW };
 
-    // Correct PCB layer stack (bottom → top of texture):
-    //   1. FR-4 substrate / soldermask base colour
-    //   2. Copper layers (all, at appropriate alpha per face distance)
-    //   3. Soldermask cover — re-fills the whole face with mask colour, covering copper traces
-    //      THEN punches out pad openings (GTS/GBS negative-polarity features)
-    //   4. Silkscreen on top of soldermask
-
-    // ── Pass 1: Soldermask base fill ──────────────────────────────
+    // Pass 1: Soldermask base fill
     tctx.fillStyle = vs.maskColor;
     tctx.fillRect(0, 0, TW, TH);
 
-    // ── Pass 2: Copper layers ─────────────────────────────────────
+    // Pass 2: Copper layers
     const copperRank = l => {
       if (l.side === 'bot')   return 10;
       if (l.side === 'inner') return 20 + (l.layerNum >= 100 ? l.layerNum - 80 : l.layerNum);
@@ -3010,24 +3010,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       tctx.globalAlpha = 1;
     }
 
-    // ── Pass 3: Soldermask cover — re-fill with mask colour to hide copper traces,
-    //            then punch out pad openings so copper shows through at pads only ──
+    // Pass 3: Soldermask cover + pad openings
     const maskLayer = vs.layers.find(l =>
       l.vis && l.layer && !l.layer.empty && l.role === 'mask' && l.side === face
     );
     if (maskLayer) {
-      // Re-cover the entire face with soldermask (hides copper traces beneath it)
       tctx.globalAlpha = 0.92;
       tctx.fillStyle = vs.maskColor;
       tctx.fillRect(0, 0, TW, TH);
       tctx.globalAlpha = 1;
-      // Now punch out the pad openings to reveal copper beneath
-      // Use destination-out to erase mask at pad locations, then draw bright copper
       tctx.save();
       tctx.globalCompositeOperation = 'destination-out';
       maskLayer.layer.render(tctx, T, 'rgba(0,0,0,1)', true);
       tctx.restore();
-      // Fill erased areas with bright copper colour
       tctx.save();
       tctx.globalCompositeOperation = 'destination-over';
       tctx.globalAlpha = 0.95;
@@ -3035,24 +3030,23 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       tctx.globalAlpha = 1;
       tctx.restore();
     } else {
-      // No mask layer — do a lighter re-cover pass so copper still peeks through
       tctx.globalAlpha = 0.55;
       tctx.fillStyle = vs.maskColor;
       tctx.fillRect(0, 0, TW, TH);
       tctx.globalAlpha = 1;
     }
 
-    // ── Pass 4: Silkscreen on top of soldermask ───────────────────
+    // Pass 4: Silkscreen
     const silkLayer = vs.layers.find(l =>
       l.vis && l.layer && !l.layer.empty && l.role === 'silk' && l.side === face
     );
     if (silkLayer) {
-      tctx.globalAlpha = 1.0;   // silk always full opacity — never dim it
+      tctx.globalAlpha = 1.0;
       silkLayer.layer.render(tctx, T, silkLayer.color, true, 1.5);
       tctx.globalAlpha = 1;
     }
 
-    // ── Pass 5: Paste (very faint) ────────────────────────────────
+    // Pass 5: Paste
     const pasteLayer = vs.layers.find(l =>
       l.vis && l.layer && !l.layer.empty && l.role === 'paste' && l.side === face
     );
@@ -3062,66 +3056,58 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       tctx.globalAlpha = 1;
     }
 
-    // ── Pass 6: Drills ────────────────────────────────────────────
+    // Pass 6: Drills
     const drillEntry = vs.layers.find(l => l.id === 'drills');
     if (drillEntry?.vis && vs.drills.length) vRenderDrills(tctx, T, true);
 
-    const tex = new THREE.CanvasTexture(tc);
-    tex.flipY = true;
-    tex.needsUpdate = true;
-    return tex;
+    return tc;  // return raw canvas (WebGL creates texture from it)
   }
 
+  // ── Build 3D board geometry + textures ──
   function vBuildBoard3D(resetCamera = false) {
-    if (!vs.bbox || !vs.scene) return;
+    if (!vs.bbox || !_gl.ctx) return;
+    const gl = _gl.ctx;
     const b = vs.bbox;
-    const hw = b.w / 2,  hh = b.h / 2,  thick = 1.6;
-    const cx = (b.minX + b.maxX) / 2,  cy = (b.minY + b.maxY) / 2;
+    const hw = b.w / 2, hh = b.h / 2, thick = 1.6;
 
-    if (vs.boardGrp) { vs.scene.remove(vs.boardGrp); vs.boardGrp = null; }
-
-    // Board shape (THREE.Shape centered at origin)
-    let shape;
-    if (vs.polygon && vs.polygon.length >= 3) {
-      shape = new THREE.Shape(vs.polygon.map(p => new THREE.Vector2(p.x - cx, p.y - cy)));
-    } else {
-      shape = new THREE.Shape([
-        new THREE.Vector2(-hw,-hh), new THREE.Vector2(hw,-hh),
-        new THREE.Vector2( hw, hh), new THREE.Vector2(-hw, hh)
-      ]);
+    const P = [], N = [], UV = [];
+    function quad(p0,p1,p2,p3, n, u0,u1,u2,u3) {
+      P.push(...p0,...p1,...p2, ...p0,...p2,...p3);
+      N.push(...n,...n,...n, ...n,...n,...n);
+      UV.push(...u0,...u1,...u2, ...u0,...u2,...u3);
     }
 
-    // Fix UVs for ShapeGeometry (r128 writes raw XY, not 0-1)
-    function fixUVs(geo) {
-      const uv = geo.attributes.uv;
-      for (let i = 0; i < uv.count; i++)
-        uv.setXY(i, (uv.getX(i) + hw) / b.w, (uv.getY(i) + hh) / b.h);
-      uv.needsUpdate = true;
-    }
+    // Top face (z=thick, +Z normal) — textured
+    quad([-hw,-hh,thick],[hw,-hh,thick],[hw,hh,thick],[-hw,hh,thick],
+      [0,0,1], [0,0],[1,0],[1,1],[0,1]);
+    // Bottom face (z=0, -Z normal) — textured
+    quad([-hw,hh,0],[hw,hh,0],[hw,-hh,0],[-hw,-hh,0],
+      [0,0,-1], [0,1],[1,1],[1,0],[0,0]);
+    // Front side (y=-hh)
+    quad([-hw,-hh,0],[hw,-hh,0],[hw,-hh,thick],[-hw,-hh,thick],
+      [0,-1,0], [0,0],[1,0],[1,1],[0,1]);
+    // Back side (y=hh)
+    quad([hw,hh,0],[-hw,hh,0],[-hw,hh,thick],[hw,hh,thick],
+      [0,1,0], [0,0],[1,0],[1,1],[0,1]);
+    // Left side (x=-hw)
+    quad([-hw,hh,0],[-hw,-hh,0],[-hw,-hh,thick],[-hw,hh,thick],
+      [-1,0,0], [0,0],[1,0],[1,1],[0,1]);
+    // Right side (x=hw)
+    quad([hw,-hh,0],[hw,hh,0],[hw,hh,thick],[hw,-hh,thick],
+      [1,0,0], [0,0],[1,0],[1,1],[0,1]);
 
-    const grp = new THREE.Group();
+    if (_gl.posBuf)  gl.deleteBuffer(_gl.posBuf);
+    if (_gl.normBuf) gl.deleteBuffer(_gl.normBuf);
+    if (_gl.uvBuf)   gl.deleteBuffer(_gl.uvBuf);
+    _gl.posBuf  = _buf(gl, P);
+    _gl.normBuf = _buf(gl, N);
+    _gl.uvBuf   = _buf(gl, UV);
+    _gl.vCnt    = P.length / 3;
 
-    // FR-4 body sides
-    const extGeo = new THREE.ExtrudeGeometry(shape, { depth:thick, bevelEnabled:false });
-    grp.add(new THREE.Mesh(extGeo, new THREE.MeshPhongMaterial({ color:0x2d6a44, shininess:15 })));
-
-    // Top face
-    const topGeo = new THREE.ShapeGeometry(shape);
-    fixUVs(topGeo);
-    const topMesh = new THREE.Mesh(topGeo, new THREE.MeshPhongMaterial({ map:vMakeFaceTex('top'), shininess:80 }));
-    topMesh.position.z = thick + 0.02;
-    grp.add(topMesh);
-
-    // Bottom face (rendered from below → mirror UV in X)
-    const botGeo = new THREE.ShapeGeometry(shape);
-    fixUVs(botGeo);
-    const botMesh = new THREE.Mesh(botGeo, new THREE.MeshPhongMaterial({ map:vMakeFaceTex('bot'), shininess:55, side:THREE.BackSide }));
-    botMesh.position.z = -0.02;
-    grp.add(botMesh);
-
-    grp.rotation.x = -Math.PI / 2;
-    vs.scene.add(grp);
-    vs.boardGrp = grp;
+    if (_gl.topTex) gl.deleteTexture(_gl.topTex);
+    if (_gl.botTex) gl.deleteTexture(_gl.botTex);
+    _gl.topTex = _tex(gl, vMakeFaceTex('top'));
+    _gl.botTex = _tex(gl, vMakeFaceTex('bot'));
 
     if (resetCamera) {
       vs.camDist = Math.max(b.w, b.h) * 2.8;
@@ -3129,6 +3115,79 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     vRender3D();
   }
+
+  // ── Render frame ──
+  function vRender3D() {
+    if (!_gl.ctx || !_gl.posBuf) return;
+    const gl = _gl.ctx;
+
+    gl.viewport(0, 0, _gl.W, _gl.H);
+    gl.clearColor(0.024, 0.055, 0.086, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+
+    // Camera matrices
+    const r = vs.camDist, rx = vs.rotX, ry = vs.rotY;
+    const eye = [r*Math.sin(ry)*Math.cos(rx), r*Math.sin(rx), r*Math.cos(ry)*Math.cos(rx)];
+    const proj = m4Persp(45*Math.PI/180, (_gl.W/_gl.H)||1, 0.1, 5000);
+    const view = m4LookAt(eye, [0,0,0], [0,1,0]);
+    const model = m4RotX(-Math.PI / 2);
+    const vp = m4Mul(proj, view);
+    const mvp = m4Mul(vp, model);
+
+    // ── Grid (world space) ──
+    gl.useProgram(_gl.gProg);
+    gl.uniformMatrix4fv(_gl.gMVP, false, vp);
+    gl.uniform3f(_gl.gCol, 0.05, 0.12, 0.09);
+    gl.bindBuffer(gl.ARRAY_BUFFER, _gl.gBuf);
+    gl.enableVertexAttribArray(_gl.gAP);
+    gl.vertexAttribPointer(_gl.gAP, 3, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.LINES, 0, _gl.gCnt);
+    gl.disableVertexAttribArray(_gl.gAP);
+
+    // ── Board ──
+    gl.useProgram(_gl.prog);
+    gl.uniformMatrix4fv(_gl.uMVP, false, mvp);
+    gl.uniformMatrix4fv(_gl.uM, false, model);
+    gl.uniformMatrix3fv(_gl.uN, false, m4Normal3(model));
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, _gl.posBuf);
+    gl.enableVertexAttribArray(_gl.aP);
+    gl.vertexAttribPointer(_gl.aP, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, _gl.normBuf);
+    gl.enableVertexAttribArray(_gl.aN);
+    gl.vertexAttribPointer(_gl.aN, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, _gl.uvBuf);
+    gl.enableVertexAttribArray(_gl.aUV);
+    gl.vertexAttribPointer(_gl.aUV, 2, gl.FLOAT, false, 0, 0);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.uniform1i(_gl.uTex, 0);
+
+    // Top face (vertices 0-5) — textured, cull back
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+    gl.bindTexture(gl.TEXTURE_2D, _gl.topTex);
+    gl.uniform1i(_gl.uUseTex, 1);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    // Bottom face (vertices 6-11) — textured, cull back (winding is correct for -Z view)
+    gl.bindTexture(gl.TEXTURE_2D, _gl.botTex);
+    gl.drawArrays(gl.TRIANGLES, 6, 6);
+
+    // Side faces (vertices 12+) — solid FR-4 green
+    gl.uniform1i(_gl.uUseTex, 0);
+    gl.uniform3f(_gl.uCol, 0.176, 0.416, 0.267);
+    gl.drawArrays(gl.TRIANGLES, 12, _gl.vCnt - 12);
+
+    gl.disable(gl.CULL_FACE);
+    gl.disableVertexAttribArray(_gl.aP);
+    gl.disableVertexAttribArray(_gl.aN);
+    gl.disableVertexAttribArray(_gl.aUV);
+
+    document.getElementById('vStZoom').textContent = 'Dist: ' + Math.round(vs.camDist) + 'mm';
+  }
+
 
   // ─── 9. ZIP LOADER ───────────────────────────────────────────────────
   function vSetProg(p) { document.getElementById('vProgress').style.width = p + '%'; }
@@ -3272,7 +3331,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       emptyEl.style.display = 'none';
 
       if (vs.mode === '2d') vRender2D();
-      else vLaunch3D(true);
+      else { setTimeout(() => { vInit3D(); vBuildBoard3D(true); vStart3DLoop(); }, 80); }
 
     } catch (e) {
       errEl.textContent = '⚠ ' + e.message;
@@ -3330,7 +3389,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       vStop3DLoop(); // cancel RAF, stop 3D loop
       if (vs.loaded) vRender2D();
     } else {
-      vLaunch3D(true);
+      setTimeout(() => { vInit3D(); if (vs.loaded) vBuildBoard3D(true); vStart3DLoop(); }, 30);
     }
   }
 
@@ -3407,12 +3466,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!document.getElementById('pcbViewerOverlay').classList.contains('open')) return;
     if (vs.mode === '2d' && vs.loaded) {
       vRender2D();
-    } else if (vs.mode === '3d' && vs.renderer3d) {
+    } else if (vs.mode === '3d' && _gl.ctx) {
       const vp = document.getElementById('vViewport');
-      const W = vp.clientWidth, H = vp.clientHeight - 25;
-      vs.renderer3d.setSize(W, H, false);
-      vs.camera.aspect = W / H;
-      vs.camera.updateProjectionMatrix();
+      const W = vp.clientWidth, H = Math.max(vp.clientHeight - 25, 100);
+      $3d.width = W;  $3d.height = H;
+      _gl.ctx.viewport(0, 0, W, H);
+      _gl.W = W;  _gl.H = H;
       vRender3D();
     }
   }).observe(document.getElementById('vViewport'));
@@ -3428,7 +3487,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         vLoadZip(window._etGerberFile);
       } else if (vs.loaded) {
         if (vs.mode === '2d') vRender2D();
-        else vLaunch3D(true);
+        else { setTimeout(() => { vInit3D(); vBuildBoard3D(true); vStart3DLoop(); }, 80); }
       }
     }));
   }
