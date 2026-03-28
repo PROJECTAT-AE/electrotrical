@@ -1232,19 +1232,19 @@
         <button class="config-tab" data-tab="stencil" onclick="switchTab(this, 'stencil')">Stencil</button>
       </div>
 
-      <!-- Upload Zone -->
-      <div id="uploadZone" class="upload-zone">
+      <!-- Upload Zone — wrapped in label for reliable file picker -->
+      <label for="fileInput" id="uploadZone" class="upload-zone" style="cursor:pointer; display:block;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="17 8 12 3 7 8"/>
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
-        <div class="upload-zone-text">
+        <div class="upload-zone-text" id="uploadTitle">
           <strong>Click to upload</strong> or drag Gerber files here<br>
           <span style="font-size:12px; opacity:0.7;">ZIP archives or .gbr files</span>
         </div>
-      </div>
-      <input id="fileInput" type="file" accept=".zip,.gbr,.ger">
+      </label>
+      <input id="fileInput" type="file" accept=".zip,.gbr,.ger" style="display:none;">
 
       <!-- Parse Result -->
       <div id="parseResult">
@@ -2131,34 +2131,39 @@
 
   // File upload handling
   const uploadZone = document.getElementById('uploadZone');
-  const fileInput = document.getElementById('fileInput');
+  const fileInput  = document.getElementById('fileInput');
 
-  uploadZone.addEventListener('click', () => fileInput.click());
+  // Drag and drop support
   uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--primary)'; });
   uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
   uploadZone.addEventListener('drop', e => {
     e.preventDefault();
     uploadZone.style.borderColor = '';
-    if (e.dataTransfer.files.length) {
-      fileInput.files = e.dataTransfer.files;
-      fileInput.dispatchEvent(new Event('change'));
-    }
+    const f = e.dataTransfer.files[0];
+    if (f) handleGerberFile(f);
   });
 
-  fileInput.addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) handleGerberFile(f);
+  });
+
+  async function handleGerberFile(file) {
+    const titleEl = document.getElementById('uploadTitle');
+    if (titleEl) titleEl.innerHTML = `<strong>⏳ Reading ${file.name}…</strong>`;
     try {
-      if (file.name.endsWith('.zip')) {
+      if (file.name.toLowerCase().endsWith('.zip')) {
         await processGerberZip(file);
       } else {
         const text = await file.text();
         await processSingleGerber(file.name, text);
       }
+      if (titleEl) titleEl.innerHTML = `<strong>✓ ${file.name}</strong>`;
     } catch (err) {
       console.error('Upload error:', err);
+      if (titleEl) titleEl.innerHTML = `<strong style="color:#ff6b6b;">⚠ Error: ${err.message}</strong>`;
     }
-  });
+  }
 
   // ════════════════════════════════════════════════════════════════════════════
   // PCB VIEWER v4.0 — Production quality (integrated from ElectroTrical viewer)
@@ -3045,7 +3050,7 @@
     vSetProg(5);
 
     try {
-      const zip = await JSZip.loadAsync(file);
+      const zip = await new JSZip().loadAsync(file);
       vSetProg(12);
       const allFiles = Object.keys(zip.files).filter(fn => !zip.files[fn].dir);
 
