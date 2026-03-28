@@ -365,8 +365,11 @@
       padding: 12px 16px;
       font-size: 13px;
       font-weight: 600;
+      font-family: var(--font-sans);
       color: var(--text-muted);
       cursor: pointer;
+      background: transparent;
+      border: none;
       border-bottom: 2px solid transparent;
       transition: var(--transition);
       text-align: center;
@@ -375,10 +378,12 @@
     }
     .config-tab:hover {
       color: var(--text);
+      background: rgba(255,255,255,0.04);
     }
     .config-tab.active {
       color: var(--primary);
       border-bottom-color: var(--primary);
+      background: rgba(0,102,255,0.06);
     }
 
     .upload-zone {
@@ -514,6 +519,15 @@
       font-family: var(--font-sans);
       font-size: 14px;
       transition: var(--transition);
+      -webkit-appearance: none;
+      appearance: none;
+      box-sizing: border-box;
+    }
+    .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23667085' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
     }
     .form-input:focus, .form-select:focus {
       outline: none;
