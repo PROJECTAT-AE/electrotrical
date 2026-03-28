@@ -2816,12 +2816,39 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // ─── 8. 3D RENDERING ─────────────────────────────────────────────────
 
   function vInit3D() {
+    // Check THREE.js is available
+    if (typeof THREE === 'undefined') {
+      const errEl = document.getElementById('vErr');
+      errEl.textContent = '⚠ 3D library (THREE.js) failed to load. Check your internet connection.';
+      errEl.style.display = 'block';
+      return;
+    }
     const vp = document.getElementById('vViewport');
     const W  = vp.clientWidth,  H = Math.max(vp.clientHeight - 25, 100);
+
+    // If viewport not yet painted, defer until it has dimensions
+    if (W <= 0) {
+      setTimeout(vInit3D, 60);
+      return;
+    }
+
+    // If renderer was previously created with 0×0 dimensions, destroy and recreate
+    if (vs.renderer3d && ($3d.width <= 1 || $3d.height <= 1)) {
+      vs.renderer3d.dispose();
+      vs.renderer3d = null;
+    }
+
     $3d.width = W;  $3d.height = H;
 
     if (!vs.renderer3d) {
-      vs.renderer3d = new THREE.WebGLRenderer({ canvas:$3d, antialias:true });
+      try {
+        vs.renderer3d = new THREE.WebGLRenderer({ canvas:$3d, antialias:true });
+      } catch(glErr) {
+        const errEl = document.getElementById('vErr');
+        errEl.textContent = '⚠ WebGL not supported by your browser: ' + glErr.message;
+        errEl.style.display = 'block';
+        return;
+      }
       vs.renderer3d.setSize(W, H, false);
       vs.renderer3d.setPixelRatio(Math.min(devicePixelRatio, 2));
       vs.scene      = new THREE.Scene();
@@ -2880,8 +2907,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     document.getElementById('vStZoom').textContent = 'Dist: ' + Math.round(vs.camDist) + 'mm';
   }
 
+  function vStop3DLoop() {
+    if (_v3dRafId) { cancelAnimationFrame(_v3dRafId); _v3dRafId = null; }
+  }
+
   function vStart3DLoop() {
-    if (_v3dRafId) return; // already running
+    vStop3DLoop(); // cancel any existing loop first
     function loop() {
       if (vs.mode !== '3d') { _v3dRafId = null; return; }
       _v3dRafId = requestAnimationFrame(loop);
@@ -3204,7 +3235,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       emptyEl.style.display = 'none';
 
       if (vs.mode === '2d') vRender2D();
-      else { vInit3D(); vBuildBoard3D(true); }
+      else {
+        // Small delay ensures overlay has rendered and vViewport has non-zero dimensions
+        setTimeout(() => { vInit3D(); vBuildBoard3D(true); vStart3DLoop(); }, 80);
+      }
 
     } catch (e) {
       errEl.textContent = '⚠ ' + e.message;
@@ -3259,12 +3293,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     $3d.style.display = m === '3d' ? 'block' : 'none';
     document.getElementById('vStMode').textContent = m.toUpperCase();
     if (m === '2d') {
-      _v3dRafId = null; // stop 3D loop
+      vStop3DLoop(); // cancel RAF, stop 3D loop
       if (vs.loaded) vRender2D();
     } else {
-      vInit3D();
-      if (vs.loaded) { vBuildBoard3D(true); }
-      vStart3DLoop();
+      // Defer by one frame so the canvas display:block has taken effect
+      setTimeout(() => {
+        vInit3D();
+        if (vs.loaded) { vBuildBoard3D(true); }
+        vStart3DLoop();
+      }, 30);
     }
   }
 
@@ -3356,12 +3393,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const ov = document.getElementById('pcbViewerOverlay');
     ov.classList.add('open');
     document.body.style.overflow = 'hidden';
-    if (window._etGerberFile && window._etGerberFile !== vs.gerberFile) {
-      vLoadZip(window._etGerberFile);
-    } else if (vs.loaded) {
-      if (vs.mode === '2d') vRender2D();
-      else { vInit3D(); vBuildBoard3D(); }
-    }
+    // Wait for overlay to paint so vViewport has real dimensions
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (window._etGerberFile && window._etGerberFile !== vs.gerberFile) {
+        vLoadZip(window._etGerberFile);
+      } else if (vs.loaded) {
+        if (vs.mode === '2d') vRender2D();
+        else { vInit3D(); vBuildBoard3D(true); vStart3DLoop(); }
+      }
+    }));
   }
 
   function closeViewer() {
