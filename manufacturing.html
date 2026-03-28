@@ -2301,6 +2301,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       const ty = flipY
         ? y => H - ((y - minY) * scale + offY)
         : y =>      (y - minY) * scale + offY;
+      const minR = minLineW > 2 ? minLineW / 2 : 0.5;  // bigger flash min for silk
 
       ctx.save();
       ctx.fillStyle = ctx.strokeStyle = color;
@@ -2328,16 +2329,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         const pw = ap.p?.[0] ?? 0.1,  ph = ap.p?.[1] ?? pw;
         ctx.beginPath();
         if (ap.t === 'C') {
-          ctx.arc(fx, fy, Math.max(pw * scale / 2, 0.5), 0, Math.PI * 2);
+          ctx.arc(fx, fy, Math.max(pw * scale / 2, minR), 0, Math.PI * 2);
         } else if (ap.t === 'R') {
-          const w = pw * scale, h = ph * scale;
+          const w = Math.max(pw * scale, minLineW), h = Math.max(ph * scale, minLineW);
           ctx.rect(fx - w / 2, fy - h / 2, w, h);
         } else if (ap.t === 'O') {  // obround
-          const w = pw * scale, h = ph * scale, r = Math.min(w, h) / 2;
+          const w = Math.max(pw * scale, minLineW), h = Math.max(ph * scale, minLineW);
+          const r = Math.min(w, h) / 2;
           if (ctx.roundRect) ctx.roundRect(fx - w / 2, fy - h / 2, w, h, r);
-          else ctx.arc(fx, fy, Math.max(pw * scale / 2, 0.5), 0, Math.PI * 2);
+          else ctx.arc(fx, fy, Math.max(pw * scale / 2, minR), 0, Math.PI * 2);
         } else {
-          ctx.arc(fx, fy, Math.max(pw * scale / 2, 0.5), 0, Math.PI * 2);
+          ctx.arc(fx, fy, Math.max(pw * scale / 2, minR), 0, Math.PI * 2);
         }
         ctx.fill();
       }
@@ -3036,13 +3038,17 @@ void main(){
       tctx.globalAlpha = 1;
     }
 
-    // Pass 4: Silkscreen
+    // Pass 4: Silkscreen — render twice for bold effect
     const silkLayer = vs.layers.find(l =>
       l.vis && l.layer && !l.layer.empty && l.role === 'silk' && l.side === face
     );
     if (silkLayer) {
+      const silkCol = silkLayer.color || '#FFFFFF';
       tctx.globalAlpha = 1.0;
-      silkLayer.layer.render(tctx, T, silkLayer.color, true, 3.0);
+      // First pass: thick outlines for bold text
+      silkLayer.layer.render(tctx, T, silkCol, true, 5.0);
+      // Second pass: sharper detail on top
+      silkLayer.layer.render(tctx, T, silkCol, true, 3.0);
       tctx.globalAlpha = 1;
     }
 
@@ -3158,12 +3164,13 @@ void main(){
     }
     const topCount = triIdx.length;
 
-    // Bottom face (z = 0, normal -Z) — reverse winding + mirror U for correct designators
+    // Bottom face (z = 0, normal -Z) — reverse winding, normal UVs
+    // (bottom texture is pre-flipped in vMakeFaceTex, natural below-view mirrors X)
     for (let t = 0; t < triIdx.length; t += 3) {
       for (const j of [triIdx[t+2], triIdx[t+1], triIdx[t]]) {
         P.push(shape[j].x, shape[j].y, 0);
         N.push(0, 0, -1);
-        UV.push(1.0 - (shape[j].x + hw) / b.w, (shape[j].y + hh) / b.h);
+        UV.push((shape[j].x + hw) / b.w, (shape[j].y + hh) / b.h);
       }
     }
     const botCount = triIdx.length;
