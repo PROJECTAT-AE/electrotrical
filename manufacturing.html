@@ -28,7 +28,31 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- THREE.js r128 — multi-CDN fallback loader -->
+  <script>
+  (function(){
+    var cdns = [
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+      'https://unpkg.com/three@0.128.0/build/three.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+      'https://threejs.org/build/three.min.js'
+    ];
+    var idx = 0;
+    window.__threeLoaded = false;
+    function tryNext(){
+      if(idx >= cdns.length){
+        console.error('[ElectroTrical] All THREE.js CDNs failed. 3D viewer will not work.');
+        return;
+      }
+      var s = document.createElement('script');
+      s.src = cdns[idx];
+      s.onload = function(){ window.__threeLoaded = true; console.log('[ElectroTrical] THREE.js loaded from: ' + cdns[idx]); };
+      s.onerror = function(){ idx++; document.head.removeChild(s); tryNext(); };
+      document.head.appendChild(s);
+    }
+    tryNext();
+  })();
+  </script>
   <script>/* JSZip v3.10.1 - inlined */
 /*!
 
@@ -2815,14 +2839,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   // ─── 8. 3D RENDERING ─────────────────────────────────────────────────
 
-  function vInit3D() {
-    // Check THREE.js is available
-    if (typeof THREE === 'undefined') {
-      const errEl = document.getElementById('vErr');
-      errEl.textContent = '⚠ 3D library (THREE.js) failed to load. Check your internet connection.';
-      errEl.style.display = 'block';
-      return;
+  // Wrapper: waits for THREE.js CDN to load, then runs vInit3D + vBuildBoard3D + vStart3DLoop
+  function vLaunch3D(resetCamera) {
+    let attempts = 0;
+    function poll() {
+      if (typeof THREE !== 'undefined') {
+        setTimeout(() => { vInit3D(); if (vs.loaded) vBuildBoard3D(resetCamera); vStart3DLoop(); }, 30);
+        return;
+      }
+      if (++attempts > 40) { // ~8 seconds
+        const errEl = document.getElementById('vErr');
+        errEl.textContent = '⚠ 3D library (THREE.js) failed to load from all CDNs. Try refreshing the page.';
+        errEl.style.display = 'block';
+        return;
+      }
+      setTimeout(poll, 200);
     }
+    poll();
+  }
+
+  function vInit3D() {
+    if (typeof THREE === 'undefined') return; // safety guard
     const vp = document.getElementById('vViewport');
     const W  = vp.clientWidth,  H = Math.max(vp.clientHeight - 25, 100);
 
@@ -3235,10 +3272,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       emptyEl.style.display = 'none';
 
       if (vs.mode === '2d') vRender2D();
-      else {
-        // Small delay ensures overlay has rendered and vViewport has non-zero dimensions
-        setTimeout(() => { vInit3D(); vBuildBoard3D(true); vStart3DLoop(); }, 80);
-      }
+      else vLaunch3D(true);
 
     } catch (e) {
       errEl.textContent = '⚠ ' + e.message;
@@ -3296,12 +3330,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       vStop3DLoop(); // cancel RAF, stop 3D loop
       if (vs.loaded) vRender2D();
     } else {
-      // Defer by one frame so the canvas display:block has taken effect
-      setTimeout(() => {
-        vInit3D();
-        if (vs.loaded) { vBuildBoard3D(true); }
-        vStart3DLoop();
-      }, 30);
+      vLaunch3D(true);
     }
   }
 
@@ -3399,7 +3428,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         vLoadZip(window._etGerberFile);
       } else if (vs.loaded) {
         if (vs.mode === '2d') vRender2D();
-        else { vInit3D(); vBuildBoard3D(true); vStart3DLoop(); }
+        else vLaunch3D(true);
       }
     }));
   }
