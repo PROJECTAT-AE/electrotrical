@@ -1266,6 +1266,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <div id="parseWarn" style="font-size:12px; color:#FFB84D;"></div>
       </div>
 
+      <!-- View in 2D/3D (shown after Gerber is parsed) -->
+      <div id="viewerBtn" onclick="openViewer()">📐 &nbsp;VIEW IN 2D / 3D</div>
+
       <!-- PCB Preview -->
       <div class="pcb-preview">
         <div id="pcbBoard" style="width:80px; height:60px; border-radius:4px; border:1px solid rgba(255,255,255,0.1);"></div>
@@ -1353,9 +1356,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <option value="rush">Rush (2-3 days)</option>
         </select>
       </div>
-
-      <!-- View in 2D/3D (shown after Gerber is parsed) -->
-      <div id="viewerBtn" onclick="openViewer()">📐 &nbsp;VIEW IN 2D / 3D</div>
 
       <!-- Price Display -->
       <div class="price-box">
@@ -2869,6 +2869,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
   }
 
+  let _v3dRafId = null;
   function vRender3D() {
     if (!vs.renderer3d || !vs.scene || !vs.camera) return;
     const r  = vs.camDist;
@@ -2879,11 +2880,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     document.getElementById('vStZoom').textContent = 'Dist: ' + Math.round(vs.camDist) + 'mm';
   }
 
+  function vStart3DLoop() {
+    if (_v3dRafId) return; // already running
+    function loop() {
+      if (vs.mode !== '3d') { _v3dRafId = null; return; }
+      _v3dRafId = requestAnimationFrame(loop);
+      vRender3D();
+    }
+    _v3dRafId = requestAnimationFrame(loop);
+  }
+
   // Build a face texture by compositing all relevant layers onto a canvas.
   function vMakeFaceTex(face) {
     const b  = vs.bbox;
-    // 4096px on the longest dimension — crisp silkscreen at up to 80px/mm
-    const maxPx = 4096;
+    // 2048px on the longest dimension — safe across all GPUs
+    const maxPx = 2048;
     const TW = b.w >= b.h ? maxPx : Math.round(maxPx * b.w / b.h);
     const TH = b.h >= b.w ? maxPx : Math.round(maxPx * b.h / b.w);
     const tc = document.createElement('canvas');
@@ -3247,8 +3258,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     $2d.style.display = m === '2d' ? 'block' : 'none';
     $3d.style.display = m === '3d' ? 'block' : 'none';
     document.getElementById('vStMode').textContent = m.toUpperCase();
-    if (m === '2d') { if (vs.loaded) vRender2D(); }
-    else            { vInit3D(); if (vs.loaded) vBuildBoard3D(true); else vRender3D(); }
+    if (m === '2d') {
+      _v3dRafId = null; // stop 3D loop
+      if (vs.loaded) vRender2D();
+    } else {
+      vInit3D();
+      if (vs.loaded) { vBuildBoard3D(true); }
+      vStart3DLoop();
+    }
   }
 
   function vToggleLayer(id) {
