@@ -2622,11 +2622,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     drills:     [],    // [{x,y,d}…]
     loaded:     false,
     mode:       '2d',
-    maskColor:  '#1a6b3a',
+    maskColor:  '#0d5e2f',
     zoom:       1, panX:0, panY:0,
     // 3D
     
-    rotX:0.5, rotY:0.4, camDist:100,
+    rotX:0.6, rotY:0.35, camDist:100,
     drag:false, dragX:0, dragY:0,
     gerberFile: null,
   };
@@ -2858,13 +2858,33 @@ void main(){ gl_Position=uMVP*vec4(aP,1); vN=normalize(uN*aN); vW=(uM*vec4(aP,1)
   const _FS = `precision mediump float;
 varying vec3 vN,vW; varying vec2 vUV;
 uniform sampler2D uTex; uniform bool uUseTex; uniform vec3 uCol;
+uniform vec3 uEye;
 void main(){
   vec3 N=normalize(vN);
-  vec3 b=uUseTex?texture2D(uTex,vUV).rgb:uCol;
-  vec3 c=b*0.45;
-  c+=b*max(dot(N,normalize(vec3(60,100,80))),0.0)*1.1;
-  c+=b*max(dot(N,normalize(vec3(-40,-30,-60))),0.0)*0.3;
-  gl_FragColor=vec4(clamp(c,0.0,1.0),1);
+  vec3 base=uUseTex?texture2D(uTex,vUV).rgb:uCol;
+  vec3 V=normalize(uEye-vW);
+
+  // Ambient
+  vec3 c=base*0.32;
+
+  // Key light (warm white from upper-right-front)
+  vec3 L1=normalize(vec3(0.5,0.85,0.6));
+  float d1=max(dot(N,L1),0.0);
+  vec3 H1=normalize(L1+V);
+  float s1=pow(max(dot(N,H1),0.0),48.0)*0.35;
+  c+=base*d1*0.85+vec3(1.0,0.98,0.95)*s1;
+
+  // Fill light (cool from left-below)
+  vec3 L2=normalize(vec3(-0.6,-0.2,-0.5));
+  float d2=max(dot(N,L2),0.0);
+  c+=base*d2*0.25;
+
+  // Rim light (subtle edge highlight)
+  float rim=1.0-max(dot(N,V),0.0);
+  rim=smoothstep(0.55,1.0,rim)*0.12;
+  c+=vec3(0.7,0.85,1.0)*rim;
+
+  gl_FragColor=vec4(clamp(c,0.0,1.0),1.0);
 }`;
   const _GV = `attribute vec3 aP; uniform mat4 uMVP; void main(){ gl_Position=uMVP*vec4(aP,1); }`;
   const _GF = `precision mediump float; uniform vec3 uCol; void main(){ gl_FragColor=vec4(uCol,1); }`;
@@ -2908,6 +2928,7 @@ void main(){
       _gl.uTex    = gl.getUniformLocation(_gl.prog, 'uTex');
       _gl.uUseTex = gl.getUniformLocation(_gl.prog, 'uUseTex');
       _gl.uCol    = gl.getUniformLocation(_gl.prog, 'uCol');
+      _gl.uEye    = gl.getUniformLocation(_gl.prog, 'uEye');
 
       // Grid shader
       _gl.gProg = _pg(gl, _GV, _GF);
@@ -3207,7 +3228,7 @@ void main(){
 
     if (resetCamera) {
       vs.camDist = Math.max(b.w, b.h) * 2.8;
-      vs.rotX = 0.5;  vs.rotY = 0.4;
+      vs.rotX = 0.6;  vs.rotY = 0.35;
     }
     vRender3D();
   }
@@ -3218,7 +3239,7 @@ void main(){
     const gl = _gl.ctx;
 
     gl.viewport(0, 0, _gl.W, _gl.H);
-    gl.clearColor(0.024, 0.055, 0.086, 1);
+    gl.clearColor(0.11, 0.12, 0.14, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
 
@@ -3234,7 +3255,7 @@ void main(){
     // ── Grid (world space) ──
     gl.useProgram(_gl.gProg);
     gl.uniformMatrix4fv(_gl.gMVP, false, vp);
-    gl.uniform3f(_gl.gCol, 0.05, 0.12, 0.09);
+    gl.uniform3f(_gl.gCol, 0.16, 0.17, 0.19);
     gl.bindBuffer(gl.ARRAY_BUFFER, _gl.gBuf);
     gl.enableVertexAttribArray(_gl.gAP);
     gl.vertexAttribPointer(_gl.gAP, 3, gl.FLOAT, false, 0, 0);
@@ -3246,6 +3267,7 @@ void main(){
     gl.uniformMatrix4fv(_gl.uMVP, false, mvp);
     gl.uniformMatrix4fv(_gl.uM, false, model);
     gl.uniformMatrix3fv(_gl.uN, false, m4Normal3(model));
+    gl.uniform3f(_gl.uEye, eye[0], eye[1], eye[2]);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, _gl.posBuf);
     gl.enableVertexAttribArray(_gl.aP);
@@ -3273,7 +3295,7 @@ void main(){
 
     // Side walls — solid FR-4 green
     gl.uniform1i(_gl.uUseTex, 0);
-    gl.uniform3f(_gl.uCol, 0.176, 0.416, 0.267);
+    gl.uniform3f(_gl.uCol, 0.28, 0.42, 0.22);
     gl.drawArrays(gl.TRIANGLES, _gl.topCnt + _gl.botCnt, _gl.sideCnt);
 
     gl.disable(gl.CULL_FACE);
@@ -3508,7 +3530,7 @@ void main(){
 
   function vFitView() {
     if (vs.mode === '2d') { vs.zoom = 1; vs.panX = 0; vs.panY = 0; vRender2D(); }
-    else if (vs.bbox) { vs.rotX = 0.5; vs.rotY = 0.4; vs.camDist = Math.max(vs.bbox.w, vs.bbox.h) * 2.8; vRender3D(); }
+    else if (vs.bbox) { vs.rotX = 0.6; vs.rotY = 0.35; vs.camDist = Math.max(vs.bbox.w, vs.bbox.h) * 2.8; vRender3D(); }
   }
 
   function vZoomBy(f) {
