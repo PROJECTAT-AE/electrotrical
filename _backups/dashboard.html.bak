@@ -72,38 +72,8 @@ a { color: inherit; text-decoration: none; }
 /* ══════════════════════════════════════════
    NAVBAR
    ══════════════════════════════════════════ */
-/* ── Service top nav ─────────────────────────────── */
-.service-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 1100;
-  height: 38px; background: rgba(4, 6, 16, 0.98);
-  border-bottom: 1px solid rgba(0,102,255,0.18);
-  display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(12px);
-}
-.service-nav-inner { display: flex; align-items: stretch; height: 100%; }
-.service-nav-tab {
-  display: flex; align-items: center; gap: 7px;
-  padding: 0 22px; height: 100%;
-  font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
-  text-transform: uppercase; text-decoration: none;
-  color: rgba(255,255,255,0.38);
-  border-right: 1px solid rgba(255,255,255,0.06);
-  transition: color 0.2s, background 0.2s;
-  white-space: nowrap;
-}
-.service-nav-tab:first-child { border-left: 1px solid rgba(255,255,255,0.06); }
-.service-nav-tab:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.04); }
-.service-nav-tab.active { color: #4d8eff; background: rgba(0,102,255,0.1); }
-.service-nav-tab svg { flex-shrink: 0; opacity: 0.7; }
-.service-nav-tab.active svg { opacity: 1; }
-@media (max-width: 480px) {
-  .service-nav-tab { padding: 0 13px; font-size: 10px; gap: 5px; }
-  .service-nav-tab span { display: none; }
-  .service-nav-tab svg { opacity: 1; }
-}
-
 .navbar {
-  position: fixed; top: 38px; left: 0; right: 0; z-index: 1000;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   background: rgba(10, 14, 26, 0.92);
   backdrop-filter: blur(20px) saturate(1.5);
   border-bottom: 1px solid var(--border);
@@ -162,7 +132,7 @@ a { color: inherit; text-decoration: none; }
 
 .auth-container {
   max-width: 440px; margin: 0 auto;
-  padding: 9.5rem 2rem 4rem; /* extra for service-nav */
+  padding: 8rem 2rem 4rem;
 }
 .auth-card {
   background: var(--dark-800);
@@ -314,7 +284,7 @@ input[type=number].price-input::-webkit-inner-spin-button {
    DASHBOARD LAYOUT
    ══════════════════════════════════════════ */
 .dashboard {
-  padding: 7.5rem 2rem 4rem; /* extra for service-nav */
+  padding: 6rem 2rem 4rem;
   max-width: 1200px; margin: 0 auto;
 }
 .dash-header {
@@ -1277,7 +1247,7 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
    ══════════════════════════════════════════ */
 .checkout-container {
   max-width: 960px; margin: 0 auto;
-  padding: 7.5rem 2rem 4rem;
+  padding: 6rem 2rem 4rem;
 }
 .checkout-progress {
   display: flex; align-items: center; justify-content: center;
@@ -1359,7 +1329,7 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
 /* Success View */
 .success-container {
   max-width: 540px; margin: 0 auto;
-  padding: 7.5rem 2rem 4rem; text-align: center;
+  padding: 6rem 2rem 4rem; text-align: center;
 }
 .success-icon-wrap {
   width: 80px; height: 80px; margin: 0 auto 2rem;
@@ -1449,7 +1419,7 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
   .nav-user { gap: 8px; }
   .nav-user-name { display: none; }          /* hide "Super" / username text */
   .btn-logout { font-size: 11px; padding: 5px 10px; }
-  .dashboard { padding: 6.5rem 1.25rem 3rem; }
+  .dashboard { padding: 5rem 1.25rem 3rem; }
   .dash-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .milestone-tracker { overflow-x: auto; padding-bottom: 8px; }
   .milestone-step { min-width: 90px; }
@@ -1507,24 +1477,6 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
 
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
-
-<!-- ══════════════════════ SERVICE NAV ══════════════════════ -->
-<div class="service-nav" role="navigation" aria-label="Service navigation">
-  <div class="service-nav-inner">
-    <a href="index.html" class="service-nav-tab">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      <span>PCB Design</span>
-    </a>
-    <a href="manufacturing.html" class="service-nav-tab">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 00-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-      <span>PCB Manufacturing</span>
-    </a>
-    <a href="store.html" class="service-nav-tab">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      <span>Store</span>
-    </a>
-  </div>
-</div>
 
 <!-- ══════════════════════ NAVBAR ══════════════════════ -->
 <nav class="navbar">
@@ -1680,14 +1632,6 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
       <button class="dash-tab" onclick="switchMainTab('summary')" id="summaryTab" style="display:none;">Summary</button>
       <button class="dash-tab" onclick="switchMainTab('quotes')" id="quotesTab">Quotes <span id="quoteBadge" style="display:none;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;"></span></button>
       <button class="dash-tab" onclick="switchMainTab('projects')" id="projectsTab">Projects</button>
-      <button class="dash-tab" onclick="switchMainTab('mfgOrders')" id="mfgOrdersTab">
-        Manufacturing
-        <span id="mfgBadge" style="display:none;background:var(--cyan);color:#000;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;"></span>
-      </button>
-      <button class="dash-tab" onclick="switchMainTab('storeOrders')" id="storeOrdersTab">
-        Store Orders
-        <span id="storeBadge" style="display:none;background:var(--primary);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;"></span>
-      </button>
       <button class="dash-tab" onclick="switchMainTab('users')" id="usersTab" style="display:none;">Users</button>
       <button class="dash-tab" onclick="switchMainTab('account')" id="accountTab">Account</button>
     </div>
@@ -1698,12 +1642,6 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
 
     <!-- Quote Requests (Admin) / My Quotes (Customer) -->
     <div id="quoteRequestsSection" style="display:none;"></div>
-
-    <!-- Manufacturing RFQ Orders -->
-    <div id="mfgOrdersSection" style="display:none;"></div>
-
-    <!-- Store Orders -->
-    <div id="storeOrdersSection" style="display:none;"></div>
 
     <!-- Registered Users (Admin only) -->
     <div id="usersSection" style="display:none;"></div>
@@ -3831,26 +3769,6 @@ function updateQuoteBadge() {
   } else {
     badge.style.display = 'none';
   }
-
-  // Update mfg badge
-  const mfgBadge = document.getElementById('mfgBadge');
-  if (mfgBadge) {
-    const rfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
-    const mfgCount = rfqs.filter(r => r.status === 'pending' && (user.superAdmin || user.role === 'admin' || r.userId === user.id)).length;
-    mfgBadge.textContent = mfgCount;
-    mfgBadge.style.display = mfgCount > 0 ? 'inline' : 'none';
-  }
-
-  // Update store orders badge
-  const storeBadge = document.getElementById('storeBadge');
-  if (storeBadge) {
-    const orders = JSON.parse(localStorage.getItem('electrotrical_store_orders') || '[]');
-    const storeCount = (user.superAdmin || user.role === 'admin')
-      ? orders.filter(o => o.status === 'processing').length
-      : orders.filter(o => o.userId === user.id && o.status === 'processing').length;
-    storeBadge.textContent = storeCount;
-    storeBadge.style.display = storeCount > 0 ? 'inline' : 'none';
-  }
 }
 
 function switchMainTab(tab) {
@@ -3864,10 +3782,6 @@ function switchMainTab(tab) {
   document.getElementById('accountSection').style.display = 'none';
   document.getElementById('summarySection').style.display = 'none';
   document.getElementById('projectDetail').style.display = 'none';
-  const mfgEl = document.getElementById('mfgOrdersSection');
-  if (mfgEl) mfgEl.style.display = 'none';
-  const storeEl = document.getElementById('storeOrdersSection');
-  if (storeEl) storeEl.style.display = 'none';
 
   if (tab === 'projects') {
     const projectsTab = document.getElementById('projectsTab');
@@ -3880,14 +3794,6 @@ function switchMainTab(tab) {
     document.getElementById('quoteRequestsSection').style.display = 'block';
     renderQuoteRequests();
     updateQuoteBadge();
-  } else if (tab === 'mfgOrders') {
-    const mfgTab = document.getElementById('mfgOrdersTab');
-    if (mfgTab) mfgTab.classList.add('active');
-    if (mfgEl) { mfgEl.style.display = 'block'; renderMfgOrders(); }
-  } else if (tab === 'storeOrders') {
-    const storeTab = document.getElementById('storeOrdersTab');
-    if (storeTab) storeTab.classList.add('active');
-    if (storeEl) { storeEl.style.display = 'block'; renderStoreOrders(); }
   } else if (tab === 'users') {
     const usersTab = document.getElementById('usersTab');
     if (usersTab) usersTab.classList.add('active');
@@ -6212,195 +6118,6 @@ function injectQuotePDFButtons() {
       }
     }
   }, 400);
-})();
-
-// ══════════════════════════════════════════════════════════
-// MANUFACTURING RFQ ORDERS
-// ══════════════════════════════════════════════════════════
-function renderMfgOrders() {
-  const user = getCurrentUser();
-  if (!user) return;
-  const isAdmin = user.superAdmin || user.role === 'admin';
-  const allRfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
-  const rfqs = isAdmin ? allRfqs : allRfqs.filter(r => r.userId === user.id || !r.userId);
-  const el = document.getElementById('mfgOrdersSection');
-  if (!el) return;
-
-  const statusColor = { pending:'var(--cyan)', reviewing:'var(--primary)', quoted:'var(--warning)', approved:'var(--success)', rejected:'var(--danger)' };
-  const statusLabel = { pending:'Pending Review', reviewing:'Under Review', quoted:'Quote Ready', approved:'Approved', rejected:'Rejected' };
-
-  if (!rfqs.length) {
-    el.innerHTML = `<div style="text-align:center;padding:4rem 2rem;">
-      <div style="font-size:48px;margin-bottom:1rem;">🏭</div>
-      <h3 style="color:var(--white);margin-bottom:0.5rem;">No Manufacturing Requests</h3>
-      <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Submit a PCB manufacturing request to get started.</p>
-      <a href="manufacturing.html" class="btn btn-primary">Go to PCB Manufacturing →</a>
-    </div>`;
-    return;
-  }
-
-  let html = `<div style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-    <h2 style="font-size:20px;font-weight:700;color:var(--white);">Manufacturing RFQ Orders</h2>
-    <a href="manufacturing.html" class="btn btn-primary btn-sm">+ New RFQ</a>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:12px;">`;
-
-  rfqs.slice().reverse().forEach(r => {
-    const specs = r.specs || {};
-    const sc = statusColor[r.status] || 'var(--text-muted)';
-    const sl = statusLabel[r.status] || r.status;
-    html += `<div class="detail-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-          <span style="font-size:13px;font-weight:700;color:var(--white);font-family:var(--font-mono);">${r.id}</span>
-          <span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:${sc}22;color:${sc};border:1px solid ${sc}44;">${sl}</span>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);">
-          ${specs.layers ? `${specs.layers}-layer` : ''} ${specs.boardType || 'FR-4'} · ${specs.width || '?'}×${specs.height || '?'}mm · Qty ${specs.quantity || '?'}
-          ${specs.surface ? ` · ${specs.surface.toUpperCase()}` : ''}
-        </div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${formatDate(r.createdAt)}</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:22px;font-weight:700;color:var(--cyan);">$${(r.estimatedPrice || 0).toFixed(2)}</div>
-        <div style="font-size:11px;color:var(--text-muted);">Estimated</div>
-        ${isAdmin ? `<button onclick="updateMfgStatus('${r.id}')" class="btn btn-secondary btn-sm" style="margin-top:8px;">Update Status</button>` : ''}
-      </div>
-    </div>`;
-  });
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-function updateMfgStatus(rfqId) {
-  const allRfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
-  const rfq = allRfqs.find(r => r.id === rfqId);
-  if (!rfq) return;
-  const statuses = ['pending','reviewing','quoted','approved','rejected'];
-  const curr = statuses.indexOf(rfq.status);
-  const next = statuses[(curr + 1) % statuses.length];
-  rfq.status = next;
-  localStorage.setItem('electrotrical_mfg_requests', JSON.stringify(allRfqs));
-  renderMfgOrders();
-  showToast(`RFQ ${rfqId} status updated to "${next}".`, 'success');
-}
-
-// ══════════════════════════════════════════════════════════
-// STORE ORDERS
-// ══════════════════════════════════════════════════════════
-function renderStoreOrders() {
-  const user = getCurrentUser();
-  if (!user) return;
-  const isAdmin = user.superAdmin || user.role === 'admin';
-  const allOrders = JSON.parse(localStorage.getItem('electrotrical_store_orders') || '[]');
-  const orders = isAdmin ? allOrders : allOrders.filter(o => o.userId === user.id);
-  const el = document.getElementById('storeOrdersSection');
-  if (!el) return;
-
-  const statusColor = { processing:'var(--warning)', shipped:'var(--cyan)', delivered:'var(--success)', cancelled:'var(--danger)' };
-
-  if (!orders.length) {
-    el.innerHTML = `<div style="text-align:center;padding:4rem 2rem;">
-      <div style="font-size:48px;margin-bottom:1rem;">🛒</div>
-      <h3 style="color:var(--white);margin-bottom:0.5rem;">No Store Orders Yet</h3>
-      <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Browse our store and place your first order.</p>
-      <a href="store.html" class="btn btn-primary">Visit the Store →</a>
-    </div>`;
-    return;
-  }
-
-  let html = `<div style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-    <h2 style="font-size:20px;font-weight:700;color:var(--white);">Store Orders</h2>
-    <a href="store.html" class="btn btn-primary btn-sm">+ Shop More</a>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:12px;">`;
-
-  orders.slice().reverse().forEach(o => {
-    const sc = statusColor[o.status] || 'var(--text-muted)';
-    const items = (o.items || []).map(i => `${i.name} ×${i.qty}`).join(', ');
-    html += `<div class="detail-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-          <span style="font-size:13px;font-weight:700;color:var(--white);font-family:var(--font-mono);">${o.id}</span>
-          <span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:${sc}22;color:${sc};border:1px solid ${sc}44;">${o.status || 'Processing'}</span>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${items}</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${formatDate(o.createdAt)} · ${(o.items||[]).length} item(s)</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:22px;font-weight:700;color:var(--primary);">$${(o.total || 0).toFixed(2)}</div>
-        ${isAdmin ? `<button onclick="updateStoreOrderStatus('${o.id}')" class="btn btn-secondary btn-sm" style="margin-top:8px;">Update Status</button>` : ''}
-      </div>
-    </div>`;
-  });
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-function updateStoreOrderStatus(orderId) {
-  const allOrders = JSON.parse(localStorage.getItem('electrotrical_store_orders') || '[]');
-  const order = allOrders.find(o => o.id === orderId);
-  if (!order) return;
-  const statuses = ['processing','shipped','delivered','cancelled'];
-  const curr = statuses.indexOf(order.status);
-  order.status = statuses[(curr + 1) % statuses.length];
-  localStorage.setItem('electrotrical_store_orders', JSON.stringify(allOrders));
-  renderStoreOrders();
-  showToast(`Order ${orderId} status updated to "${order.status}".`, 'success');
-}
-
-// Handle incoming store checkout redirect
-(function handleStoreCheckout() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('store_checkout') !== 'true') return;
-  const cart = JSON.parse(localStorage.getItem('electrotrical_cart') || '[]');
-  if (!cart.length) return;
-  // Wait for user to be logged in before creating order
-  const tryCreate = () => {
-    const user = getCurrentUser();
-    if (!user) { setTimeout(tryCreate, 300); return; }
-    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const shipping = total >= 50 ? 0 : 9.99;
-    const order = {
-      id: 'ORD-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
-      userId: user.id,
-      items: cart,
-      total: total + shipping,
-      shipping,
-      status: 'processing',
-      createdAt: new Date().toISOString()
-    };
-    const orders = JSON.parse(localStorage.getItem('electrotrical_store_orders') || '[]');
-    orders.push(order);
-    localStorage.setItem('electrotrical_store_orders', JSON.stringify(orders));
-    localStorage.removeItem('electrotrical_cart');
-    history.replaceState({}, '', 'dashboard.html');
-    setTimeout(() => {
-      switchMainTab('storeOrders');
-      showToast(`Order ${order.id} placed! We'll be in touch shortly.`, 'success');
-    }, 600);
-  };
-  setTimeout(tryCreate, 400);
-})();
-
-// Handle incoming manufacturing RFQ redirect
-(function handleMfgQuote() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('mfg_quote') !== 'true') return;
-  history.replaceState({}, '', 'dashboard.html');
-  const tryShow = () => {
-    const user = getCurrentUser();
-    if (!user) { setTimeout(tryShow, 300); return; }
-    // Tag the most recent RFQ with userId if missing
-    const rfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
-    const last = rfqs[rfqs.length - 1];
-    if (last && !last.userId) { last.userId = user.id; localStorage.setItem('electrotrical_mfg_requests', JSON.stringify(rfqs)); }
-    setTimeout(() => {
-      switchMainTab('mfgOrders');
-      showToast('Your manufacturing RFQ has been submitted!', 'success');
-    }, 600);
-  };
-  setTimeout(tryShow, 400);
 })();
 
 // Dynamic copyright year

@@ -1,0 +1,2368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCB Manufacturing | ElectroTrical</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --dark-900: #050810;
+      --dark-800: #0F1424;
+      --dark-700: #151B2E;
+      --primary: #0066FF;
+      --cyan: #00D4FF;
+      --accent-amber: #F5A623;
+      --white: #FFFFFF;
+      --text-light: rgba(255,255,255,0.85);
+      --text-muted: rgba(255,255,255,0.55);
+      --border-light: rgba(0,102,255,0.15);
+    }
+
+    html, body { font-family: 'Inter', sans-serif; background: var(--dark-900); color: var(--text-light); line-height: 1.6; }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* SERVICE NAV (Fixed, top of page) */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .service-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      background: rgba(4, 6, 16, 0.98);
+      border-bottom: 1px solid rgba(0, 102, 255, 0.18);
+      z-index: 1100;
+      backdrop-filter: blur(8px);
+    }
+
+    .service-nav-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 40px;
+      gap: 8px;
+    }
+
+    .service-nav-tab {
+      padding: 0 22px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.38);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .service-nav-tab:hover {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .service-nav-tab.active {
+      color: #4d8eff;
+      background: rgba(0, 102, 255, 0.1);
+      border-bottom-color: #4d8eff;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* NAVBAR (Fixed, below service nav) */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 38px;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: rgba(4, 6, 16, 0.95);
+      border-bottom: 1px solid rgba(0, 102, 255, 0.12);
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+    }
+
+    .nav-logo { font-weight: 700; font-size: 18px; color: var(--white); text-decoration: none; }
+    .nav-logo img { height: 32px; width: auto; }
+
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.3s; }
+    .nav-links a:hover { color: var(--cyan); }
+
+    .nav-right { display: flex; gap: 16px; align-items: center; }
+    .btn-signin { padding: 8px 18px; border: 1px solid rgba(0, 102, 255, 0.35); border-radius: 6px; color: var(--text-muted); text-decoration: none; font-size: 13px; transition: all 0.3s; }
+    .btn-signin:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-quote { padding: 10px 24px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }
+    .btn-quote:hover { background: #0052CC; box-shadow: 0 8px 24px rgba(0, 102, 255, 0.3); }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* MAIN CONTENT (offset for navbar) */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    main { margin-top: 108px; }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* HERO SECTION */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .hero {
+      padding: 80px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .hero-left {
+      padding-top: 20px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 24px;
+      color: var(--white);
+    }
+
+    .hero-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 32px;
+      max-width: 500px;
+    }
+
+    .feature-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .pill {
+      padding: 10px 16px;
+      background: rgba(0, 102, 255, 0.08);
+      border: 1px solid rgba(0, 102, 255, 0.25);
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      padding: 14px 32px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary:hover {
+      background: #0052CC;
+      box-shadow: 0 12px 32px rgba(0, 102, 255, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      padding: 14px 32px;
+      border: 1.5px solid rgba(0, 102, 255, 0.4);
+      background: transparent;
+      color: var(--text-light);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 212, 255, 0.05);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* PCB CONFIGURATOR WIDGET */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .configurator {
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.05), rgba(0, 212, 255, 0.02));
+      border: 1px solid rgba(0, 102, 255, 0.2);
+      border-radius: 16px;
+      padding: 32px;
+      backdrop-filter: blur(8px);
+    }
+
+    .config-tabs {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      border-bottom: 1px solid rgba(0, 102, 255, 0.15);
+      padding-bottom: 16px;
+    }
+
+    .config-tab {
+      padding: 8px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .config-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(0, 102, 255, 0.3);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      background: rgba(0, 102, 255, 0.03);
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 24px;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: rgba(0, 102, 255, 0.08);
+    }
+
+    .upload-icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-text { color: var(--text-light); font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .upload-subtext { color: var(--text-muted); font-size: 12px; }
+
+    #parseResult {
+      display: none;
+      margin-bottom: 24px;
+    }
+
+    #parseResult.visible {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    #parseChips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .parse-chip {
+      display: flex;
+      gap: 6px;
+      padding: 8px 12px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .parse-chip .k { color: var(--cyan); font-weight: 600; }
+    .parse-chip .v { color: var(--text-light); }
+
+    .viewer-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .btn-viewer {
+      flex: 1;
+      padding: 10px;
+      background: rgba(0, 102, 255, 0.12);
+      border: 1px solid rgba(0, 102, 255, 0.25);
+      color: var(--text-light);
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .btn-viewer:hover {
+      background: rgba(0, 102, 255, 0.25);
+      border-color: var(--primary);
+    }
+
+    .btn-viewer.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .pcb-visual {
+      background: linear-gradient(135deg, rgba(15, 20, 36, 0.5), rgba(5, 8, 16, 0.8));
+      border: 1px solid rgba(0, 102, 255, 0.2);
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+      min-height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    #pcbBoard {
+      width: 100%;
+      height: 140px;
+      background: #1a3d2a;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    #boardLabel {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    #pcbSvgCanvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .color-swatches {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .color-swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.1);
+    }
+
+    .color-swatch.selected {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .spec-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .spec-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    select, input {
+      padding: 10px 12px;
+      background: rgba(0, 102, 255, 0.08);
+      border: 1px solid rgba(0, 102, 255, 0.25);
+      border-radius: 6px;
+      color: var(--text-light);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s;
+    }
+
+    select:hover, input:hover {
+      border-color: rgba(0, 102, 255, 0.4);
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(0, 102, 255, 0.12);
+      box-shadow: 0 0 8px rgba(0, 102, 255, 0.2);
+    }
+
+    select option {
+      background: var(--dark-800);
+      color: var(--text-light);
+    }
+
+    .price-box {
+      background: rgba(0, 102, 255, 0.1);
+      border: 1px solid rgba(0, 102, 255, 0.3);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #totalPrice {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 4px;
+    }
+
+    #perPcPrice {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    #priceBreakdown {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(0, 102, 255, 0.2);
+      padding-top: 12px;
+    }
+
+    #priceBreakdown div {
+      text-align: left;
+    }
+
+    #priceBreakdown .hl {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-submit:hover {
+      background: #0052CC;
+      box-shadow: 0 12px 32px rgba(0, 102, 255, 0.35);
+      transform: translateY(-2px);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* SERVICES SECTION */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .section-wrap {
+      padding: 80px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .sec-header {
+      margin-bottom: 60px;
+      text-align: center;
+    }
+
+    .sec-h2 {
+      font-size: 40px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--white);
+    }
+
+    .sec-h2 .g {
+      color: var(--cyan);
+    }
+
+    .sec-h2 .a {
+      color: var(--accent-amber);
+    }
+
+    .sec-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .service-card {
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.05), rgba(0, 212, 255, 0.02));
+      border: 1px solid rgba(0, 102, 255, 0.15);
+      border-radius: 12px;
+      padding: 32px;
+      transition: all 0.3s;
+    }
+
+    .service-card:hover {
+      border-color: rgba(0, 102, 255, 0.35);
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.08), rgba(0, 212, 255, 0.04));
+      transform: translateY(-8px);
+      box-shadow: 0 16px 40px rgba(0, 102, 255, 0.1);
+    }
+
+    .service-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(0, 212, 255, 0.15);
+      color: var(--cyan);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+
+    .service-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 20px;
+      background: rgba(0, 102, 255, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .service-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--white);
+    }
+
+    .service-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .service-specs {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(0, 102, 255, 0.1);
+      border-bottom: 1px solid rgba(0, 102, 255, 0.1);
+    }
+
+    .service-specs div {
+      margin: 6px 0;
+    }
+
+    .service-specs .label {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    .service-price {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 4px;
+    }
+
+    .service-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .btn-service {
+      display: inline-block;
+      padding: 10px 16px;
+      background: rgba(0, 102, 255, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(0, 102, 255, 0.3);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-service:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* HOW IT WORKS */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+    }
+
+    .how-step {
+      text-align: center;
+    }
+
+    .how-num {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .how-step:nth-child(2) .how-num,
+    .how-step:nth-child(4) .how-num {
+      background: linear-gradient(135deg, var(--cyan), var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .how-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--white);
+    }
+
+    .how-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* PARTNERS SECTION */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .partners-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--white);
+    }
+
+    .partners-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      max-width: 600px;
+    }
+
+    .partners-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    .partner-card {
+      background: rgba(0, 102, 255, 0.05);
+      border: 1px solid rgba(0, 102, 255, 0.15);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .partner-card:hover {
+      border-color: rgba(0, 102, 255, 0.35);
+      background: rgba(0, 102, 255, 0.08);
+    }
+
+    .partner-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--white);
+    }
+
+    .partner-cert {
+      font-size: 12px;
+      color: var(--cyan);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .partner-location {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .trust-badges {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .trust-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* STATS BAND */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .stats-band {
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.08), rgba(0, 212, 255, 0.04));
+      border-top: 1px solid rgba(0, 102, 255, 0.15);
+      border-bottom: 1px solid rgba(0, 102, 255, 0.15);
+      padding: 60px 40px;
+    }
+
+    .stats-grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 40px;
+      text-align: center;
+    }
+
+    .stat {
+      transition: all 0.3s;
+    }
+
+    .stat:hover {
+      transform: translateY(-4px);
+    }
+
+    .stat-num {
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 8px;
+    }
+
+    .stat-num .sup {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .stat-lbl {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* FAQ */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .faq-bg {
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.03), rgba(0, 212, 255, 0.01));
+    }
+
+    .faq-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 48px;
+    }
+
+    .faq-sidebar-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .faq-topics {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .faq-topic {
+      padding: 10px 14px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .faq-topic:hover {
+      color: var(--text-light);
+      border-color: rgba(0, 102, 255, 0.2);
+      background: rgba(0, 102, 255, 0.05);
+    }
+
+    .faq-topic.active {
+      background: rgba(0, 102, 255, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .faq-item {
+      border: 1px solid rgba(0, 102, 255, 0.15);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .faq-item:hover {
+      border-color: rgba(0, 102, 255, 0.35);
+    }
+
+    .faq-q {
+      width: 100%;
+      padding: 16px;
+      background: rgba(0, 102, 255, 0.05);
+      border: none;
+      color: var(--text-light);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .faq-q:hover {
+      background: rgba(0, 102, 255, 0.1);
+    }
+
+    .faq-icon {
+      color: var(--cyan);
+      font-size: 18px;
+      transition: transform 0.3s;
+    }
+
+    .faq-item.open .faq-q {
+      background: rgba(0, 102, 255, 0.12);
+      color: var(--cyan);
+    }
+
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+    }
+
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      background: rgba(0, 102, 255, 0.02);
+      transition: max-height 0.3s ease;
+    }
+
+    .faq-item.open .faq-a {
+      max-height: 300px;
+      padding: 16px;
+    }
+
+    .faq-a {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* CTA BAND */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .cta-band {
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.12), rgba(0, 212, 255, 0.06));
+      border: 1px solid rgba(0, 102, 255, 0.25);
+      border-radius: 16px;
+      padding: 60px 40px;
+      text-align: center;
+      margin: 80px 40px;
+      max-width: 1320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-band h2 {
+      font-size: 44px;
+      font-weight: 700;
+      margin-bottom: 32px;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .cta-band .g {
+      color: var(--cyan);
+    }
+
+    .cta-band .a {
+      color: var(--accent-amber);
+    }
+
+    .cta-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* FOOTER */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    footer {
+      background: rgba(0, 0, 0, 0.5);
+      border-top: 1px solid rgba(0, 102, 255, 0.12);
+      padding: 60px 40px 20px;
+      margin-top: 80px;
+    }
+
+    .footer-grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+      gap: 60px;
+      margin-bottom: 40px;
+    }
+
+    .foot-logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+
+    .foot-logo .hi {
+      color: var(--cyan);
+    }
+
+    .foot-tag {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .foot-certs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .foot-cert {
+      padding: 4px 10px;
+      background: rgba(0, 102, 255, 0.1);
+      color: var(--cyan);
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    .foot-nav {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px;
+    }
+
+    .foot-col-hd {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-light);
+      margin-bottom: 16px;
+    }
+
+    .foot-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .foot-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.3s;
+    }
+
+    .foot-links a:hover {
+      color: var(--cyan);
+    }
+
+    .foot-bottom {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(0, 102, 255, 0.1);
+      padding-top: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .foot-copy {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .foot-legal {
+      display: flex;
+      gap: 24px;
+    }
+
+    .foot-legal a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      transition: color 0.3s;
+    }
+
+    .foot-legal a:hover {
+      color: var(--cyan);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* 3D VIEWER MODAL */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    #vModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 2000;
+      overflow: hidden;
+    }
+
+    #vModal.visible {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .viewer-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(0, 102, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .viewer-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .viewer-close {
+      width: 32px;
+      height: 32px;
+      background: rgba(0, 102, 255, 0.15);
+      border: 1px solid rgba(0, 102, 255, 0.25);
+      border-radius: 6px;
+      color: var(--text-light);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+
+    .viewer-close:hover {
+      background: rgba(0, 102, 255, 0.25);
+      border-color: var(--primary);
+    }
+
+    #vCanvas {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+    }
+
+    .viewer-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(0, 102, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .viewer-controls-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .viewer-btn {
+      padding: 8px 14px;
+      background: rgba(0, 102, 255, 0.15);
+      border: 1px solid rgba(0, 102, 255, 0.25);
+      color: var(--text-light);
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .viewer-btn:hover {
+      background: rgba(0, 102, 255, 0.25);
+      border-color: var(--primary);
+    }
+
+    #vProgress {
+      width: 0%;
+      height: 3px;
+      background: var(--primary);
+      transition: width 0.3s;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* REVEAL / SCROLL ANIMATIONS */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal.d1 { transition-delay: 0.1s; }
+    .reveal.d2 { transition-delay: 0.2s; }
+    .reveal.d3 { transition-delay: 0.3s; }
+    .reveal.d4 { transition-delay: 0.4s; }
+
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    /* RESPONSIVE */
+    /* ─────────────────────────────────────────────────────────────────────────── */
+    @media (max-width: 1080px) {
+      .hero { grid-template-columns: 1fr; gap: 40px; }
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .how-grid { grid-template-columns: repeat(2, 1fr); }
+      .partners-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+      .footer-grid { grid-template-columns: 1fr; gap: 40px; }
+      .foot-nav { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 40px; }
+      .sec-h2 { font-size: 32px; }
+      .cta-band h2 { font-size: 36px; }
+    }
+
+    @media (max-width: 860px) {
+      nav { padding: 0 24px; }
+      main { margin-top: 130px; }
+      .service-nav-inner { padding: 0 24px; }
+      .hero { padding: 60px 24px; }
+      .section-wrap { padding: 60px 24px; }
+      .cta-band { margin: 60px 24px; padding: 40px 24px; }
+      footer { padding: 40px 24px 16px; }
+      .nav-links { gap: 20px; font-size: 12px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .how-grid { grid-template-columns: 1fr; }
+      .partners-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-ctas { flex-direction: column; }
+      .btn-primary, .btn-outline { width: 100%; }
+      .faq-layout { grid-template-columns: 1fr; gap: 32px; }
+      h1 { font-size: 32px; }
+      .sec-h2 { font-size: 28px; }
+      .cta-band h2 { font-size: 28px; }
+      .specs-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      nav { height: 60px; padding: 0 16px; }
+      main { margin-top: 128px; }
+      .service-nav-inner { padding: 0 16px; font-size: 10px; }
+      .service-nav-tab { padding: 0 12px; }
+      .nav-logo img { height: 24px; }
+      .nav-links { gap: 12px; display: none; }
+      .nav-right { gap: 8px; }
+      .hero { padding: 40px 16px; gap: 24px; }
+      .section-wrap { padding: 40px 16px; }
+      .cta-band { margin: 40px 16px; padding: 32px 16px; }
+      footer { padding: 32px 16px 12px; }
+      .stats-grid { grid-template-columns: 1fr; gap: 24px; }
+      h1 { font-size: 24px; }
+      .sec-h2 { font-size: 22px; }
+      .cta-band h2 { font-size: 20px; }
+      .feature-pills { gap: 8px; margin-bottom: 24px; }
+      .pill { font-size: 11px; padding: 8px 12px; }
+      .btn-quote { padding: 8px 16px; font-size: 11px; }
+      .config-tabs { gap: 8px; }
+      .color-swatches { gap: 8px; }
+      .foot-nav { grid-template-columns: 1fr; gap: 24px; }
+      .foot-bottom { justify-content: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SERVICE NAV -->
+<div class="service-nav">
+  <div class="service-nav-inner">
+    <a href="index.html" class="service-nav-tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+      </svg>
+      &nbsp;PCB Design
+    </a>
+    <a href="manufacturing.html" class="service-nav-tab active">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+      </svg>
+      &nbsp;PCB Manufacturing
+    </a>
+    <a href="store.html" class="service-nav-tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      &nbsp;Store
+    </a>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="Logo/navbar_logo.png" alt="ElectroTrical">
+  </a>
+  <div class="nav-links">
+    <a href="#services">PCB Services</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#partners">Partners</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-right">
+    <a href="dashboard.html" class="btn-signin">Sign In</a>
+    <a href="#configurator" class="btn-quote">Get Quote</a>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left reveal">
+      <div class="eyebrow">PCB Manufacturing Service</div>
+      <h1>Fast. Precise. PCB Manufacturing You Can Trust.</h1>
+      <p class="hero-subtitle">Upload your Gerber files, configure your PCB, and get an instant quote. We forward your specifications to our trusted third-party manufacturing partners worldwide for rapid, quality production.</p>
+
+      <div class="feature-pills">
+        <div class="pill">FR-4 from $2/5pcs</div>
+        <div class="pill">PCB Assembly from $8</div>
+        <div class="pill">1–32 Layers</div>
+        <div class="pill">24hr Build</div>
+      </div>
+
+      <div class="hero-ctas">
+        <a href="#configurator" class="btn-primary">Get Instant Quote</a>
+        <a href="#services" class="btn-outline">View Services</a>
+      </div>
+    </div>
+
+    <!-- CONFIGURATOR WIDGET -->
+    <div class="configurator reveal d1">
+      <div class="config-tabs">
+        <button class="config-tab active" onclick="switchTab(this, 'pcb')">PCB</button>
+        <button class="config-tab" onclick="switchTab(this, 'pcba')">PCBA</button>
+        <button class="config-tab" onclick="switchTab(this, 'stencil')">Stencil</button>
+      </div>
+
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">Drop Gerber ZIP here</div>
+        <div class="upload-subtext">or click to browse</div>
+        <input type="file" id="fileInput" accept=".zip" style="display:none;">
+      </div>
+
+      <!-- Parse Result -->
+      <div id="parseResult">
+        <div id="parseChips"></div>
+        <div id="parseWarn" style="font-size:11px; color:rgba(255,200,0,0.8); margin-bottom:8px;"></div>
+      </div>
+
+      <!-- Viewer Controls -->
+      <div class="viewer-controls">
+        <button class="btn-viewer active" onclick="vSwitch(this, '2d')">2D Preview</button>
+        <button class="btn-viewer" onclick="vSwitch(this, '3d')">3D Board</button>
+      </div>
+
+      <!-- PCB Visual -->
+      <div class="pcb-visual">
+        <div id="pcbBoard">
+          <svg id="pcbSvgCanvas" viewBox="0 0 160 120"></svg>
+          <div id="boardLabel" style="position:absolute; pointer-events:none;"></div>
+        </div>
+      </div>
+
+      <!-- Color Swatches -->
+      <div style="margin-bottom: 16px;">
+        <div class="spec-label">Solder Mask</div>
+        <div class="color-swatches">
+          <div class="color-swatch selected" data-bg="#1a3d2a" style="background:#1a3d2a;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-bg="#1a2d4a" style="background:#1a2d4a;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-bg="#3d1a2a" style="background:#3d1a2a;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-bg="#2d2d1a" style="background:#2d2d1a;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-bg="#1a1a1a" style="background:#1a1a1a;" onclick="selectColor(this)"></div>
+        </div>
+      </div>
+
+      <!-- Specs Form -->
+      <div class="specs-grid">
+        <div class="spec-group">
+          <label class="spec-label">PCB Layers</label>
+          <select id="layers" onchange="calcPCB()">
+            <option value="1">1 Layer</option>
+            <option value="2" selected>2 Layers</option>
+            <option value="4">4 Layers</option>
+            <option value="6">6 Layers</option>
+            <option value="8">8 Layers</option>
+            <option value="10">10 Layers</option>
+          </select>
+        </div>
+        <div class="spec-group">
+          <label class="spec-label">Quantity</label>
+          <select id="quantity" onchange="calcPCB()">
+            <option value="5">5 pcs</option>
+            <option value="10">10 pcs</option>
+            <option value="25">25 pcs</option>
+            <option value="50">50 pcs</option>
+            <option value="100">100 pcs</option>
+            <option value="500">500 pcs</option>
+          </select>
+        </div>
+        <div class="spec-group">
+          <label class="spec-label">Width (mm)</label>
+          <input type="number" id="dimW" value="100" min="5" step="1">
+        </div>
+        <div class="spec-group">
+          <label class="spec-label">Height (mm)</label>
+          <input type="number" id="dimH" value="100" min="5" step="1">
+        </div>
+        <div class="spec-group">
+          <label class="spec-label">Thickness (mm)</label>
+          <select id="thickness">
+            <option value="0.6">0.6 mm</option>
+            <option value="0.8" selected>0.8 mm</option>
+            <option value="1.0">1.0 mm</option>
+            <option value="1.6">1.6 mm</option>
+          </select>
+        </div>
+        <div class="spec-group">
+          <label class="spec-label">Copper Weight</label>
+          <select id="copper" onchange="calcPCB()">
+            <option value="1" selected>1 oz</option>
+            <option value="2">2 oz</option>
+          </select>
+        </div>
+        <div class="spec-group">
+          <label class="spec-label">Surface Finish</label>
+          <select id="surface" onchange="calcPCB()">
+            <option value="hasl_lf" selected>LeadFree HASL</option>
+            <option value="enig">ENIG</option>
+            <option value="osp">OSP</option>
+            <option value="hard_gold">Hard Gold</option>
+          </select>
+        </div>
+        <div class="spec-group">
+          <label class="spec-label">Build Time</label>
+          <select id="buildtime" onchange="calcPCB()">
+            <option value="std" selected>3–5 days</option>
+            <option value="express">24–48hr</option>
+            <option value="rush">24hr</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Price Box -->
+      <div class="price-box">
+        <div id="totalPrice">$0.00</div>
+        <div id="perPcPrice">$0.00 per board</div>
+        <div id="priceBreakdown"></div>
+      </div>
+
+      <!-- Submit Button -->
+      <button class="btn-submit" onclick="submitRFQ()">Submit Manufacturing RFQ →</button>
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section class="section-wrap" id="services">
+    <div class="sec-header reveal">
+      <p class="eyebrow">Services</p>
+      <h2 class="sec-h2">PCB <span class="g">Manufacturing</span></h2>
+      <p class="sec-subtitle">Comprehensive manufacturing solutions for every PCB type and application</p>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="service-badge">Standard</div>
+        <div class="service-icon">🟢</div>
+        <div class="service-name">FR-4 PCBs</div>
+        <div class="service-desc">Durable, cost-effective rigid boards for most applications</div>
+        <div class="service-specs">
+          <div><span class="label">Layers:</span> 1–32</div>
+          <div><span class="label">Min Size:</span> 10×10mm</div>
+          <div><span class="label">Min Trace:</span> 3/3 mil</div>
+        </div>
+        <div class="service-price">From $2</div>
+        <div class="service-time">3–5 days</div>
+        <a href="#configurator" class="btn-service">Quote Now</a>
+      </div>
+
+      <div class="service-card reveal d1">
+        <div class="service-badge">Flex</div>
+        <div class="service-icon">📋</div>
+        <div class="service-name">Flexible PCBs</div>
+        <div class="service-desc">Bendable boards for wearables, medical devices, and compact designs</div>
+        <div class="service-specs">
+          <div><span class="label">Layers:</span> 1–6</div>
+          <div><span class="label">Polyimide Base:</span> ✓</div>
+          <div><span class="label">Bend Cycles:</span> 100K+</div>
+        </div>
+        <div class="service-price">From $8</div>
+        <div class="service-time">5–7 days</div>
+        <a href="#" class="btn-service">Quote Now</a>
+      </div>
+
+      <div class="service-card reveal d2">
+        <div class="service-badge">Assembly</div>
+        <div class="service-icon">⚙️</div>
+        <div class="service-name">PCB Assembly (PCBA)</div>
+        <div class="service-desc">Full turnkey assembly with component sourcing and testing</div>
+        <div class="service-specs">
+          <div><span class="label">Component Library:</span> 500K+</div>
+          <div><span class="label">Processes:</span> SMT, THT</div>
+          <div><span class="label">Inspection:</span> AOI, X-ray</div>
+        </div>
+        <div class="service-price">From $8</div>
+        <div class="service-time">4–6 days</div>
+        <a href="#" class="btn-service">Quote Now</a>
+      </div>
+
+      <div class="service-card reveal d3">
+        <div class="service-badge">High-Speed</div>
+        <div class="service-icon">⚡</div>
+        <div class="service-name">High-Frequency PCBs</div>
+        <div class="service-desc">Optimized for RF, microwave, and high-speed digital applications</div>
+        <div class="service-specs">
+          <div><span class="label">Materials:</span> Rogers, Isola</div>
+          <div><span class="label">Impedance:</span> ±10% control</div>
+          <div><span class="label">Frequencies:</span> up to 100 GHz</div>
+        </div>
+        <div class="service-price">From $15</div>
+        <div class="service-time">7–10 days</div>
+        <a href="#" class="btn-service">Quote Now</a>
+      </div>
+
+      <div class="service-card reveal d4">
+        <div class="service-badge">Metal Core</div>
+        <div class="service-icon">🔥</div>
+        <div class="service-name">Metal Core PCBs</div>
+        <div class="service-desc">Aluminum and copper substrates for thermal management and power apps</div>
+        <div class="service-specs">
+          <div><span class="label">Substrates:</span> Al, Cu</div>
+          <div><span class="label">Thermal:</span> 1–5 W/mK</div>
+          <div><span class="label">Max Current:</span> 200+ A</div>
+        </div>
+        <div class="service-price">From $12</div>
+        <div class="service-time">5–7 days</div>
+        <a href="#" class="btn-service">Quote Now</a>
+      </div>
+
+      <div class="service-card reveal">
+        <div class="service-badge">Tools</div>
+        <div class="service-icon">🛠️</div>
+        <div class="service-name">SMT Stencils</div>
+        <div class="service-desc">Precision laser-cut stencils for SMD solder paste application</div>
+        <div class="service-specs">
+          <div><span class="label">Thickness:</span> 0.15–0.20mm</div>
+          <div><span class="label">Accuracy:</span> ±0.05mm</div>
+          <div><span class="label">Lead-Free:</span> ✓</div>
+        </div>
+        <div class="service-price">From $25</div>
+        <div class="service-time">2–3 days</div>
+        <a href="#" class="btn-service">Quote Now</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section-wrap" id="how-it-works">
+    <div class="sec-header reveal">
+      <p class="eyebrow">Process</p>
+      <h2 class="sec-h2">How It <span class="g">Works</span></h2>
+    </div>
+
+    <div class="how-grid">
+      <div class="how-step reveal">
+        <div class="how-num">01</div>
+        <div class="how-title">Upload Gerbers</div>
+        <p class="how-desc">Drag and drop your Gerber ZIP, BOM, or design files. Our parser instantly reads your layers and checks for errors with an interactive preview.</p>
+      </div>
+      <div class="how-step reveal d1">
+        <div class="how-num">02</div>
+        <div class="how-title">Configure & Preview</div>
+        <p class="how-desc">Choose layers, quantity, surface finish, solder mask color, and lead time. Our calculator generates a detailed instant quote in real time.</p>
+      </div>
+      <div class="how-step reveal d2">
+        <div class="how-num">03</div>
+        <div class="how-title">Submit RFQ</div>
+        <p class="how-desc">Review your board specifications and estimated price. Submit your RFQ — it goes straight to our partner network for rapid quoting.</p>
+      </div>
+      <div class="how-step reveal d3">
+        <div class="how-num">04</div>
+        <div class="how-title">We Handle the Rest</div>
+        <p class="how-desc">Our manufacturing partners manage fabrication, quality control, and shipping. You'll receive tracking details and board status updates.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MANUFACTURING PARTNERS -->
+  <section class="section-wrap" id="partners">
+    <div class="partners-title reveal">Trusted Manufacturing Partners</div>
+    <p class="partners-subtitle reveal d1">We work with ISO-certified partners worldwide to deliver quality PCBs at competitive prices</p>
+
+    <div class="partners-grid">
+      <div class="partner-card reveal">
+        <div class="partner-name">Partner A</div>
+        <div class="partner-cert">ISO 9001:2015 Certified</div>
+        <div class="partner-location">Ships from: China</div>
+      </div>
+      <div class="partner-card reveal d1">
+        <div class="partner-name">Partner B</div>
+        <div class="partner-cert">ISO 9001:2015 Certified</div>
+        <div class="partner-location">Ships from: USA</div>
+      </div>
+      <div class="partner-card reveal d2">
+        <div class="partner-name">Partner C</div>
+        <div class="partner-cert">ISO 9001:2015 Certified</div>
+        <div class="partner-location">Ships from: Europe</div>
+      </div>
+      <div class="partner-card reveal d3">
+        <div class="partner-name">Partner D</div>
+        <div class="partner-cert">ISO 9001:2015 Certified</div>
+        <div class="partner-location">Ships from: Asia</div>
+      </div>
+    </div>
+
+    <div class="trust-badges">
+      <div class="trust-badge">
+        <span>✓</span> ISO 9001 Certified
+      </div>
+      <div class="trust-badge">
+        <span>✓</span> IPC Class 2/3
+      </div>
+      <div class="trust-badge">
+        <span>✓</span> RoHS Compliant
+      </div>
+      <div class="trust-badge">
+        <span>✓</span> UL Listed
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-band">
+    <div class="stats-grid">
+      <div class="stat reveal">
+        <div class="stat-num"><span class="count-up" data-target="10000">0</span><span class="sup">+</span></div>
+        <div class="stat-lbl">Boards Delivered</div>
+      </div>
+      <div class="stat reveal d1">
+        <div class="stat-num"><span class="count-up" data-target="98">0</span><span class="sup">%</span></div>
+        <div class="stat-lbl">On-Time Delivery</div>
+      </div>
+      <div class="stat reveal d2">
+        <div class="stat-num"><span class="count-up" data-target="24">0</span><span class="sup">hr</span></div>
+        <div class="stat-lbl">Min Build Time</div>
+      </div>
+      <div class="stat reveal d3">
+        <div class="stat-num"><span class="count-up" data-target="50">0</span><span class="sup">+</span></div>
+        <div class="stat-lbl">Manufacturing Partners</div>
+      </div>
+      <div class="stat reveal d4">
+        <div class="stat-num"><span class="count-up" data-target="180">0</span><span class="sup">+</span></div>
+        <div class="stat-lbl">Countries Served</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <section class="section-wrap faq-bg" id="faq">
+    <div class="reveal" style="margin-bottom:48px">
+      <p class="eyebrow">Support & FAQ</p>
+      <h2 class="sec-h2">Common PCB <span class="g">Questions</span></h2>
+    </div>
+    <div class="faq-layout">
+      <div class="faq-sidebar">
+        <div class="faq-sidebar-title">Browse Topics</div>
+        <div class="faq-topics">
+          <div class="faq-topic active">Gerber Files</div>
+          <div class="faq-topic">Pricing</div>
+          <div class="faq-topic">Materials</div>
+          <div class="faq-topic">Shipping</div>
+          <div class="faq-topic">Quality</div>
+        </div>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item reveal">
+          <button class="faq-q">What Gerber files do I need to submit? <span class="faq-icon">+</span></button>
+          <div class="faq-a">You need all copper layers (GTL, GBL, G2L, G3L...), solder mask layers (GTS, GBS), silkscreen layers (GTO, GBO), board outline (GKO or GM1), and drill file (XLN or DRL). Compress everything into a ZIP. Our system auto-detects layers and shows a 3D preview.</div>
+        </div>
+        <div class="faq-item reveal d1">
+          <button class="faq-q">How is the PCB price calculated? <span class="faq-icon">+</span></button>
+          <div class="faq-a">Price depends on board dimensions, layer count, quantity, surface finish, copper weight, and lead time. Larger boards, more layers, and special finishes like ENIG increase cost. The instant quote calculator gives you a real-time estimate.</div>
+        </div>
+        <div class="faq-item reveal d2">
+          <button class="faq-q">What is the minimum trace width and spacing? <span class="faq-icon">+</span></button>
+          <div class="faq-a">For standard FR-4, minimum trace/space is 3/3 mil (0.075mm). For HDI boards using laser drilling, we can achieve 2.5/2.5 mil. We recommend 4/4 mil or wider for reliable production. Our free DFM check flags any violations automatically.</div>
+        </div>
+        <div class="faq-item reveal d3">
+          <button class="faq-q">Do you offer turnkey PCB assembly (PCBA)? <span class="faq-icon">+</span></button>
+          <div class="faq-a">Yes. Our turnkey PCBA handles PCB fabrication, component sourcing (500K+ parts), SMT/THT soldering, AOI, and optional X-ray. Upload your BOM and Gerber together for a combined quote. We support BGAs, QFNs, and 0201 passives.</div>
+        </div>
+        <div class="faq-item reveal d4">
+          <button class="faq-q">What surface finish options are available? <span class="faq-icon">+</span></button>
+          <div class="faq-a">We offer HASL (Lead-free), ENIG, OSP, Hard Gold, Immersion Silver, and Immersion Tin. HASL is most economical. ENIG provides the best flat surface for fine-pitch SMD. Hard Gold is best for connectors and fingers.</div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-q">How fast can you build and ship? <span class="faq-icon">+</span></button>
+          <div class="faq-a">Standard 2-layer boards build in 24 hours. 4-layer takes 3–4 days; 6+ layers take 4–7 days. DHL Express ships most orders globally in 2–5 days. Rush processing available for additional fee.</div>
+        </div>
+        <div class="faq-item reveal d1">
+          <button class="faq-q">Do you check designs for manufacturability (DFM)? <span class="faq-icon">+</span></button>
+          <div class="faq-a">Yes, our DFM system automatically reviews your design for trace width, spacing, via placement, and more. Any issues are flagged before manufacturing, helping ensure quality and first-pass success.</div>
+        </div>
+        <div class="faq-item reveal d2">
+          <button class="faq-q">What countries do you ship to? <span class="faq-icon">+</span></button>
+          <div class="faq-a">We ship to 180+ countries with full tracking. Standard shipping via DHL Express typically takes 2–5 business days. Customs and import duties vary by destination — check with your local customs before ordering.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <div class="cta-band reveal" id="contact">
+    <h2>Ready to Manufacture <span class="g">Your PCB?</span></h2>
+    <div class="cta-btns">
+      <a href="#configurator" class="btn-primary">Submit RFQ Now</a>
+      <a href="#" class="btn-outline">Contact Us</a>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="foot-logo">Electro<span class="hi">Trical</span></div>
+      <p class="foot-tag">Fast, affordable PCB design and manufacturing for engineers worldwide.</p>
+      <div class="foot-certs">
+        <span class="foot-cert">ISO 9001</span>
+        <span class="foot-cert">IPC-A-600</span>
+        <span class="foot-cert">RoHS</span>
+        <span class="foot-cert">UL</span>
+      </div>
+    </div>
+    <div class="foot-nav">
+      <div>
+        <p class="foot-col-hd">PCB Services</p>
+        <ul class="foot-links">
+          <li><a href="#services">FR-4 PCBs</a></li>
+          <li><a href="#services">Flexible PCBs</a></li>
+          <li><a href="#services">Metal Core PCBs</a></li>
+          <li><a href="#services">High-Freq PCBs</a></li>
+          <li><a href="#services">PCB Assembly</a></li>
+          <li><a href="#services">SMT Stencils</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="foot-col-hd">Resources</p>
+        <ul class="foot-links">
+          <li><a href="#">PCB Capabilities</a></li>
+          <li><a href="#">Gerber Viewer</a></li>
+          <li><a href="#">Impedance Calc</a></li>
+          <li><a href="#">DFM Guide</a></li>
+          <li><a href="#">Design Blog</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="foot-col-hd">Support</p>
+        <ul class="foot-links">
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Track Order</a></li>
+          <li><a href="#">How to Order</a></li>
+          <li><a href="#">Shipping Info</a></li>
+          <li><a href="#">After-Sales</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="foot-col-hd">Company</p>
+        <ul class="foot-links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Quality Control</a></li>
+          <li><a href="#">Certifications</a></li>
+          <li><a href="#">News</a></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p class="foot-copy">© <span id="year"></span> ElectroTrical. All rights reserved.</p>
+    <div class="foot-legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms & Conditions</a>
+      <a href="#">Cookie Policy</a>
+    </div>
+  </div>
+</footer>
+
+<!-- 3D VIEWER MODAL -->
+<div id="vModal">
+  <div class="viewer-header">
+    <div class="viewer-title">3D PCB Board Viewer</div>
+    <div class="viewer-close" onclick="closeViewer()">×</div>
+  </div>
+  <div id="vProgress"></div>
+  <canvas id="vCanvas"></canvas>
+  <div class="viewer-footer">
+    <div class="viewer-controls-group">
+      <button class="viewer-btn" onclick="vFitView()">Fit View</button>
+      <button class="viewer-btn" onclick="vZoomBy(1.2)">Zoom In</button>
+      <button class="viewer-btn" onclick="vZoomBy(0.8)">Zoom Out</button>
+      <button class="viewer-btn" onclick="vScreenshot()">Screenshot</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ────────────────────────────────────────────────────────────────────────────
+  // CORE UTILITIES & EVENT HANDLERS
+  // ────────────────────────────────────────────────────────────────────────────
+
+  // Dynamic year in footer
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Scroll Reveal Observer
+  const ro = new IntersectionObserver(es => es.forEach(e => {
+    if(e.isIntersecting){ e.target.classList.add('visible'); ro.unobserve(e.target); }
+  }), { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+  // Tab switching
+  function switchTab(el, tab) {
+    document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Color swatch selection
+  function selectColor(el) {
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('pcbBoard').style.background = el.dataset.bg;
+  }
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if(!open) item.classList.add('open');
+    });
+  });
+
+  // FAQ topics
+  document.querySelectorAll('.faq-topic').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.faq-topic').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // PCB PRICE CALCULATOR
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const BASE_5PCS = {
+    1:  [[100, 2.0],  [225, 6.5],   [500, 14.0],  [Infinity, 28.0]],
+    2:  [[100, 2.0],  [225, 7.5],   [500, 16.0],  [Infinity, 35.0]],
+    4:  [[25,  2.0],  [100, 8.5],   [225, 22.0],  [400, 42.0], [Infinity, 75.0]],
+    6:  [[25,  2.0],  [100, 35.10], [225, 78.0],  [Infinity, 140.0]],
+    8:  [[25,  8.0],  [100, 62.0],  [225, 130.0], [Infinity, 220.0]],
+    10: [[25, 14.0],  [100, 95.0],  [225, 195.0], [Infinity, 320.0]],
+  };
+
+  const QTY_SCALE = [
+    [5,   1.00], [10,  1.75], [15,  2.30], [20,  2.80], [25,  3.20],
+    [30,  3.60], [50,  5.20], [75,  7.00], [100, 8.30], [200, 14.5],
+    [300, 20.0], [500, 41.5],
+  ];
+
+  const FINISH_ADDER = {
+    'hasl_lead': 0, 'hasl_lf': 0, 'enig': 14.0, 'osp': 2.0, 'hard_gold': 30.0,
+  };
+
+  const FINISH_NAMES = {
+    'hasl_lead': 'HASL (w/ lead)', 'hasl_lf': 'LeadFree HASL',
+    'enig': 'ENIG', 'osp': 'OSP', 'hard_gold': 'Hard Gold'
+  };
+
+  const COPPER_ADDER = { '1': 0, '2': 12.0 };
+
+  const RUSH_ADDER = { 'std': 0, 'express': 8.0, 'rush': 18.0 };
+
+  function getBase5pcs(layers, areaCm2) {
+    const table = BASE_5PCS[layers] || BASE_5PCS[2];
+    for (const [maxArea, price] of table) {
+      if (areaCm2 <= maxArea) return price;
+    }
+    return table[table.length - 1][1];
+  }
+
+  function getQtyMultiplier(qty) {
+    for (let i = QTY_SCALE.length - 1; i >= 0; i--) {
+      if (qty >= QTY_SCALE[i][0]) {
+        if (i < QTY_SCALE.length - 1) {
+          const [q0, m0] = QTY_SCALE[i];
+          const [q1, m1] = QTY_SCALE[i + 1];
+          const t = (qty - q0) / (q1 - q0);
+          return m0 + t * (m1 - m0);
+        }
+        return QTY_SCALE[i][1];
+      }
+    }
+    return 1.0;
+  }
+
+  function calcPCB() {
+    const layers  = parseInt(document.getElementById('layers').value);
+    const qty     = parseInt(document.getElementById('quantity').value);
+    const w       = Math.max(5, parseFloat(document.getElementById('dimW').value) || 100);
+    const h       = Math.max(5, parseFloat(document.getElementById('dimH').value) || 100);
+    const copper  = document.getElementById('copper').value;
+    const surface = document.getElementById('surface').value;
+
+    const areaCm2 = (w * h) / 100;
+    const base5 = getBase5pcs(layers, areaCm2);
+    const qtyMul = getQtyMultiplier(qty);
+    let boardPrice = base5 * qtyMul;
+
+    const finishAdd = FINISH_ADDER[surface] || 0;
+    const finishScale = qty <= 10 ? 1.0 : qty <= 50 ? 1.3 : 1.8;
+    boardPrice += finishAdd * finishScale;
+    boardPrice += (COPPER_ADDER[copper] || 0) * (qty / 5);
+    boardPrice += RUSH_ADDER[document.getElementById('buildtime').value] || 0;
+    boardPrice = Math.max(boardPrice, 2.0);
+
+    const total  = boardPrice.toFixed(2);
+    const perPc  = (boardPrice / qty).toFixed(3);
+
+    document.getElementById('totalPrice').textContent = '$' + total;
+    document.getElementById('perPcPrice').textContent = '$' + perPc + ' per board';
+    document.getElementById('priceBreakdown').innerHTML =
+      `<div>Qty: <span class="hl">${qty} pcs</span></div>
+       <div>Size: <span class="hl">${w}×${h}mm</span></div>
+       <div>Layers: <span class="hl">${layers}</span></div>
+       <div>Finish: <span class="hl">${FINISH_NAMES[surface]||surface}</span></div>`;
+    document.getElementById('boardLabel').innerHTML =
+      `FR-4 PCB<br/>${layers}L · ${w}×${h}mm`;
+  }
+
+  ['layers','quantity','copper','surface','buildtime'].forEach(id =>
+    document.getElementById(id).addEventListener('change', calcPCB));
+  ['dimW','dimH'].forEach(id =>
+    document.getElementById(id).addEventListener('input', calcPCB));
+  calcPCB();
+
+  // Count-up animation
+  function fmt(n, t) {
+    if(t >= 1000000) return (n/1000000).toFixed(1)+'M';
+    if(t >= 1000)    return Math.round(n/1000)+'K';
+    return n.toString();
+  }
+  const co = new IntersectionObserver(es => {
+    es.forEach(e => {
+      if(!e.isIntersecting) return;
+      const el = e.target, tgt = parseInt(el.dataset.target), t0 = performance.now();
+      (function tick(now) {
+        const p = Math.min((now-t0)/1800, 1), ease = 1-Math.pow(1-p,3);
+        el.textContent = fmt(Math.round(tgt*ease), tgt);
+        p < 1 ? requestAnimationFrame(tick) : (el.textContent = fmt(tgt,tgt));
+      })(t0);
+      co.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.count-up').forEach(c => co.observe(c));
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // GERBER PARSER
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const COPPER_PATTERNS = [
+    /\.gtl$/i, /\.gbl$/i, /\.g\d+l?$/i, /\.gp\d+$/i,
+    /-f_cu\.g[br]+$/i, /-b_cu\.g[br]+$/i, /-in\d+_cu\.g[br]+$/i,
+    /\.cmp$/i, /\.sol$/i, /\.copper\./i, /\bcopper\b/i,
+    /-(top|bottom|front|back)[\._ ]cu/i,
+    /\bTop\b.*\.(gbr|ger)$/i, /\bBot(tom)?\b.*\.(gbr|ger)$/i,
+  ];
+
+  const OUTLINE_PATTERNS = [
+    /\.gko$/i, /\.gml$/i, /-edge_cuts\.g[br]+$/i, /\bedge[_\s]?cuts?\b/i,
+    /\boutline\b/i, /\bborder\b/i, /\bbrd_outline\b/i, /\bboard_outline\b/i, /\bprofile\b/i,
+  ];
+
+  function identifyLayer(filename) {
+    const base = filename.split('/').pop();
+    if (OUTLINE_PATTERNS.some(p => p.test(base))) return 'outline';
+    if (COPPER_PATTERNS.some(p => p.test(base)))  return 'copper';
+    return 'other';
+  }
+
+  function parseGerberForDimensions(text) {
+    let decDig = 6;
+    const fsm = text.match(/%FS[LT][AI]X(\d)(\d)Y(\d)(\d)[^%]*%/i);
+    if (fsm) decDig = parseInt(fsm[2]);
+    const divisor = Math.pow(10, decDig);
+    const isInch = /%MOIN[^%]*%/i.test(text) || /^G70\b/m.test(text);
+    const toMm = isInch ? 25.4 : 1.0;
+
+    const stripped = text.replace(/%[^%]*%/g, '');
+    const xs = [], ys = [];
+    let m;
+
+    const xRe = /X([+-]?\d+)/g;
+    while ((m = xRe.exec(stripped)) !== null) xs.push(parseInt(m[1]));
+    const yRe = /Y([+-]?\d+)/g;
+    while ((m = yRe.exec(stripped)) !== null) ys.push(parseInt(m[1]));
+
+    if (xs.length < 2 || ys.length < 2) return null;
+
+    let rawMinX = xs[0], rawMaxX = xs[0], rawMinY = ys[0], rawMaxY = ys[0];
+    for (const v of xs) { if (v < rawMinX) rawMinX = v; if (v > rawMaxX) rawMaxX = v; }
+    for (const v of ys) { if (v < rawMinY) rawMinY = v; if (v > rawMaxY) rawMaxY = v; }
+
+    const minX = (rawMinX / divisor) * toMm;
+    const maxX = (rawMaxX / divisor) * toMm;
+    const minY = (rawMinY / divisor) * toMm;
+    const maxY = (rawMaxY / divisor) * toMm;
+
+    const w = Math.round((maxX - minX) * 100) / 100;
+    const h = Math.round((maxY - minY) * 100) / 100;
+
+    if (w < 0.5 || h < 0.5) return null;
+
+    const segments = [];
+    let cx = minX, cy = minY;
+
+    const cmdRe = /(?:(X)([+-]?\d+)|(Y)([+-]?\d+)|(I)([+-]?\d+)|(J)([+-]?\d+)|(D)(\d+)|\*)/g;
+    let nx = null, ny = null, dcode = null;
+
+    const flushCmd = () => {
+      if (dcode === null) return;
+      const rx = nx !== null ? (nx / divisor) * toMm : cx;
+      const ry = ny !== null ? (ny / divisor) * toMm : cy;
+      if (dcode === 1) segments.push({ x1: cx, y1: cy, x2: rx, y2: ry });
+      cx = rx; cy = ry;
+      nx = null; ny = null; dcode = null;
+    };
+
+    let t;
+    cmdRe.lastIndex = 0;
+    while ((t = cmdRe.exec(stripped)) !== null) {
+      if      (t[1] === 'X') nx = parseInt(t[2]);
+      else if (t[3] === 'Y') ny = parseInt(t[4]);
+      else if (t[9] === 'D') { dcode = parseInt(t[10]); if (dcode <= 3) flushCmd(); }
+    }
+
+    return { width: w, height: h, minX, minY, maxX, maxY, segments };
+  }
+
+  function renderOutlineSvg(result) {
+    const svg = document.getElementById('pcbSvgCanvas');
+    if (!result) { svg.innerHTML = ''; return; }
+
+    const VW = 160, VH = 120, PAD = 12;
+    const { segments, minX, minY, width: bw, height: bh } = result;
+
+    if (!segments || segments.length === 0) {
+      const scaleX = (VW - PAD*2) / bw;
+      const scaleY = (VH - PAD*2) / bh;
+      const scale  = Math.min(scaleX, scaleY);
+      const ox = (VW - bw * scale) / 2;
+      const oy = (VH - bh * scale) / 2;
+      svg.innerHTML = `<rect x="${ox.toFixed(1)}" y="${oy.toFixed(1)}" width="${(bw*scale).toFixed(1)}" height="${(bh*scale).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>`;
+      return;
+    }
+
+    const scaleX = (VW - PAD*2) / bw;
+    const scaleY = (VH - PAD*2) / bh;
+    const scale  = Math.min(scaleX, scaleY);
+    const offX   = (VW - bw * scale) / 2;
+    const offY   = (VH - bh * scale) / 2;
+
+    const px = x => ((x - minX) * scale + offX).toFixed(2);
+    const py = y => (VH - ((y - minY) * scale + offY)).toFixed(2);
+
+    const lines = segments
+      .filter(s => !(s.x1 === s.x2 && s.y1 === s.y2))
+      .map(s =>
+        `<line x1="${px(s.x1)}" y1="${py(s.y1)}" x2="${px(s.x2)}" y2="${py(s.y2)}" stroke="rgba(255,255,255,0.6)" stroke-width="1.3" stroke-linecap="round"/>`
+      ).join('');
+
+    svg.innerHTML = lines || `<rect x="12" y="9" width="136" height="102" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>`;
+  }
+
+  function showParseResult(data) {
+    const el = document.getElementById('parseResult');
+    const chips = document.getElementById('parseChips');
+    const warn = document.getElementById('parseWarn');
+    el.classList.add('visible');
+
+    chips.innerHTML = [
+      `<div class="parse-chip"><span class="k">Layers</span><span class="v">${data.layers}</span></div>`,
+      data.width  ? `<div class="parse-chip"><span class="k">Width</span><span class="v">${data.width}mm</span></div>` : '',
+      data.height ? `<div class="parse-chip"><span class="k">Length</span><span class="v">${data.height}mm</span></div>` : '',
+    ].join('');
+
+    warn.innerHTML = data.warn ? `⚠️ ${data.warn}` : '';
+
+    if (data.width && data.height) {
+      document.getElementById('dimW').value = data.width;
+      document.getElementById('dimH').value = data.height;
+      calcPCB();
+    }
+
+    if (data.outline) {
+      renderOutlineSvg(data.outline);
+    }
+  }
+
+  function autoFillForm(data) {
+    if (data.layers) document.getElementById('layers').value = Math.min(data.layers, 10);
+    calcPCB();
+  }
+
+  async function processGerberZip(file) {
+    const zip = new JSZip();
+    const zipData = await zip.loadAsync(file);
+    let outlineData = null;
+    let layerCount = 0;
+    const layers = {};
+
+    for (const [path, file] of Object.entries(zipData.files)) {
+      if (file.dir) continue;
+      const role = identifyLayer(path);
+      if (role === 'outline') {
+        const text = await file.async('text');
+        outlineData = parseGerberForDimensions(text);
+      }
+      if (role === 'copper') {
+        const text = await file.async('text');
+        if (!layers[path]) {
+          layerCount++;
+          layers[path] = text;
+        }
+      }
+    }
+
+    let warn = null;
+    if (!outlineData) warn = 'No board outline detected — using dimensions from form';
+    if (layerCount === 0) warn = (warn || '') + (warn ? ' | ' : '') + 'No copper layers found';
+
+    const data = { layers: Math.max(layerCount, 2), outline: outlineData, warn: warn || '' };
+    showParseResult(data);
+    autoFillForm(data);
+  }
+
+  async function processSingleGerber(name, text) {
+    const role = identifyLayer(name);
+    let outlineData = null;
+    if (role === 'outline') {
+      outlineData = parseGerberForDimensions(text);
+    }
+    const layerCount = role === 'copper' ? 2 : 1;
+    const data = { layers: layerCount, outline: outlineData, warn: 'Single Gerber file — assuming 2-layer board' };
+    showParseResult(data);
+    autoFillForm(data);
+  }
+
+  // File upload handling
+  const uploadZone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--primary)'; });
+  uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.style.borderColor = '';
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      fileInput.dispatchEvent(new Event('change'));
+    }
+  });
+
+  fileInput.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      if (file.name.endsWith('.zip')) {
+        await processGerberZip(file);
+      } else {
+        const text = await file.text();
+        await processSingleGerber(file.name, text);
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+    }
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // 3D VIEWER (Minimal THREE.js integration)
+  // ────────────────────────────────────────────────────────────────────────────
+
+  let vScene, vCamera, vRenderer, vBoard, vControls;
+
+  function vSwitch(el, mode) {
+    document.querySelectorAll('.btn-viewer').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    if (mode === '3d') openViewer();
+  }
+
+  function vInit3D() {
+    const canvas = document.getElementById('vCanvas');
+    vScene = new THREE.Scene();
+    vScene.background = new THREE.Color(0x050810);
+
+    vCamera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
+    vCamera.position.z = 150;
+
+    vRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    vRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    vRenderer.setPixelRatio(window.devicePixelRatio);
+
+    // Lighting
+    const light1 = new THREE.DirectionalLight(0xffffff, 0.8);
+    light1.position.set(10, 20, 15);
+    vScene.add(light1);
+
+    const light2 = new THREE.DirectionalLight(0x0066FF, 0.4);
+    light2.position.set(-10, -20, 10);
+    vScene.add(light2);
+
+    vScene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    vBuildBoard3D();
+    vRender3D();
+  }
+
+  function vBuildBoard3D() {
+    const w = Math.max(5, parseFloat(document.getElementById('dimW').value)) || 100;
+    const h = Math.max(5, parseFloat(document.getElementById('dimH').value)) || 100;
+    const thickness = 0.8;
+
+    const scale = 0.8;
+    const scaledW = w * scale;
+    const scaledH = h * scale;
+
+    if (vBoard) vScene.remove(vBoard);
+
+    const geometry = new THREE.BoxGeometry(scaledW, scaledH, thickness);
+    const boardColor = document.getElementById('pcbBoard').style.background || '#1a3d2a';
+    const material = new THREE.MeshPhongMaterial({
+      color: boardColor,
+      shininess: 30,
+    });
+
+    vBoard = new THREE.Mesh(geometry, material);
+    vScene.add(vBoard);
+
+    // Edge highlight
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00D4FF, linewidth: 1 }));
+    vBoard.add(line);
+
+    vCamera.position.z = Math.max(scaledW, scaledH) * 1.5;
+  }
+
+  function vRender3D() {
+    requestAnimationFrame(vRender3D);
+    if (vBoard) {
+      vBoard.rotation.x += 0.003;
+      vBoard.rotation.y += 0.005;
+    }
+    vRenderer.render(vScene, vCamera);
+  }
+
+  function vFitView() {
+    vBuildBoard3D();
+  }
+
+  function vZoomBy(f) {
+    vCamera.position.z *= (1 / f);
+  }
+
+  function vScreenshot() {
+    const link = document.createElement('a');
+    link.href = vRenderer.domElement.toDataURL();
+    link.download = 'pcb-board.png';
+    link.click();
+  }
+
+  function openViewer() {
+    const modal = document.getElementById('vModal');
+    modal.classList.add('visible');
+    setTimeout(() => {
+      if (!vScene) vInit3D();
+      else vRender3D();
+      window.addEventListener('resize', () => {
+        const canvas = document.getElementById('vCanvas');
+        if (vRenderer) {
+          vRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+          vCamera.aspect = canvas.clientWidth / canvas.clientHeight;
+          vCamera.updateProjectionMatrix();
+        }
+      });
+    }, 100);
+  }
+
+  function closeViewer() {
+    document.getElementById('vModal').classList.remove('visible');
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // RFQ SUBMISSION
+  // ────────────────────────────────────────────────────────────────────────────
+
+  function submitRFQ() {
+    const rfq = {
+      id: 'MFQ-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random()*9000),
+      type: 'manufacturing',
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+      specs: {
+        layers: document.getElementById('layers').value,
+        quantity: document.getElementById('quantity').value,
+        width: document.getElementById('dimW').value,
+        height: document.getElementById('dimH').value,
+        thickness: document.getElementById('thickness').value,
+        copper: document.getElementById('copper').value,
+        surface: document.getElementById('surface').value,
+        buildtime: document.getElementById('buildtime').value,
+      },
+      estimatedPrice: document.getElementById('totalPrice').textContent,
+    };
+
+    const rfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
+    rfqs.push(rfq);
+    localStorage.setItem('electrotrical_mfg_requests', JSON.stringify(rfqs));
+
+    window.location.href = 'dashboard.html?mfg_quote=true';
+  }
+</script>
+
+</body>
+</html>
