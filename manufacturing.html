@@ -564,33 +564,27 @@
       line-height: 1;
     }
 
-    .btn-viewers {
-      display: flex;
-      gap: 8px;
+    #viewerBtn {
+      display: none;
+      width: 100%;
+      padding: 14px;
       margin-bottom: 1.5rem;
-    }
-    .btn-viewer {
-      flex: 1;
-      padding: 10px;
-      background: var(--dark-700);
-      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(0,102,255,0.12), rgba(0,212,255,0.07));
+      border: 1px solid rgba(0,102,255,0.3);
       border-radius: var(--radius-sm);
-      color: var(--text);
-      font-size: 12px;
-      cursor: pointer;
-      transition: var(--transition);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .btn-viewer:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-    .btn-viewer.active {
-      background: var(--primary);
-      border-color: var(--primary);
       color: var(--white);
+      font-size: 13px;
+      font-weight: 700;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: var(--transition);
+    }
+    #viewerBtn:hover {
+      background: linear-gradient(135deg, rgba(0,102,255,0.22), rgba(0,212,255,0.14));
+      border-color: rgba(0,102,255,0.6);
     }
 
     .config-cta {
@@ -608,97 +602,6 @@
     .config-cta:hover {
       background: var(--primary-light);
       box-shadow: 0 8px 30px rgba(0,102,255,0.35);
-    }
-
-    /* ══════════════════════════════════════════
-       3D VIEWER MODAL
-       ══════════════════════════════════════════ */
-    #vModal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.9);
-      z-index: 2000;
-      backdrop-filter: blur(4px);
-    }
-    #vModal.visible {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .viewer-container {
-      width: 90%;
-      max-width: 900px;
-      height: 80vh;
-      background: var(--dark-900);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .viewer-header {
-      padding: 1rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .viewer-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--white);
-    }
-    .viewer-close {
-      background: none;
-      border: none;
-      color: var(--text);
-      cursor: pointer;
-      font-size: 24px;
-      line-height: 1;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition);
-    }
-    .viewer-close:hover {
-      color: var(--white);
-      background: rgba(255,255,255,0.1);
-    }
-
-    #vCanvas {
-      flex: 1;
-      background: var(--dark-800);
-    }
-
-    .viewer-controls {
-      padding: 1rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .viewer-btn {
-      padding: 10px 16px;
-      background: var(--dark-700);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-size: 12px;
-      cursor: pointer;
-      transition: var(--transition);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .viewer-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
     }
 
     /* ══════════════════════════════════════════
@@ -1437,11 +1340,8 @@
         </select>
       </div>
 
-      <!-- 2D/3D Viewer Buttons -->
-      <div class="btn-viewers">
-        <button class="btn-viewer active" onclick="vSwitch(this, '2d')">2D View</button>
-        <button class="btn-viewer" onclick="vSwitch(this, '3d')">3D View</button>
-      </div>
+      <!-- View in 2D/3D (shown after Gerber is parsed) -->
+      <div id="viewerBtn" onclick="openViewer()">📐 &nbsp;VIEW IN 2D / 3D</div>
 
       <!-- Price Display -->
       <div class="price-box">
@@ -1726,22 +1626,191 @@
   </div>
 </footer>
 
-<!-- ══════════════════════ 3D VIEWER MODAL ══════════════════════ -->
-<div id="vModal">
-  <div class="viewer-container">
-    <div class="viewer-header">
-      <div class="viewer-title">PCB 3D Preview</div>
-      <button class="viewer-close" onclick="closeViewer()">×</button>
+<!-- ══════════════════════ PCB VIEWER OVERLAY ══════════════════════ -->
+<style>
+  <style>
+    #pcbViewerOverlay {
+      display:none; position:fixed; inset:0; z-index:9999;
+      background:#060e16; flex-direction:column;
+    }
+    #pcbViewerOverlay.open { display:flex; }
+
+    /* Header */
+    #vHdr {
+      display:flex; align-items:center; gap:14px; padding:0 18px;
+      height:46px; background:#101D2C; border-bottom:1px solid rgba(255,255,255,.07);
+      flex-shrink:0;
+    }
+    #vHdrTitle { font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+      color:#6B8BA4; padding:3px 10px; border:1px solid rgba(255,255,255,.07); }
+    #vCloseBtn {
+      margin-left:auto; font-size:12px; color:#6B8BA4; cursor:pointer;
+      display:flex; align-items:center; gap:5px; padding:5px 12px;
+      border:1px solid rgba(255,255,255,.07); transition:.2s; user-select:none;
+    }
+    #vCloseBtn:hover { color:#EDF2F7; border-color:#00A86B; }
+
+    /* Body */
+    #vBody { display:flex; flex:1; overflow:hidden; }
+
+    /* Sidebar */
+    #vSidebar {
+      width:240px; flex-shrink:0; background:#101D2C;
+      border-right:1px solid rgba(255,255,255,.07);
+      overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px;
+    }
+    .vs-card { background:#152236; border:1px solid rgba(255,255,255,.07); padding:11px 12px; }
+    .vs-title {
+      font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#00A86B;
+      margin-bottom:9px; display:flex; align-items:center; gap:5px;
+    }
+    .vs-title::before { content:''; width:3px; height:10px; background:#00A86B; display:block; }
+    .vinfo-row { display:flex; justify-content:space-between; padding:4px 0;
+      border-bottom:1px solid rgba(255,255,255,.05); font-size:12px; }
+    .vinfo-row:last-child { border:none; }
+    .vinfo-k { color:#6B8BA4; } .vinfo-v { color:#EDF2F7; font-weight:500; }
+
+    /* Mode buttons */
+    .vmode-btns { display:flex; }
+    .vmode-btn { flex:1; padding:7px 0; text-align:center; font-size:12px; font-weight:600;
+      letter-spacing:.06em; background:#0A1520; border:1px solid rgba(255,255,255,.07);
+      cursor:pointer; color:#6B8BA4; transition:.2s; }
+    .vmode-btn.active { background:#00A86B; color:white; border-color:#00A86B; }
+    .vmode-btn:last-child { border-left:none; }
+
+    /* Layer rows */
+    .vlayer-row { display:flex; align-items:center; gap:8px; padding:5px 0;
+      cursor:pointer; user-select:none; }
+    .vlayer-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .vlayer-lbl { flex:1; font-size:12px; color:#6B8BA4; transition:.2s; }
+    .vlayer-row.von .vlayer-lbl { color:#EDF2F7; }
+    .vtoggle { width:26px; height:15px; background:#0A1520; border:1px solid rgba(255,255,255,.1);
+      border-radius:8px; position:relative; transition:.2s; flex-shrink:0; }
+    .vlayer-row.von .vtoggle { background:#00A86B; border-color:#00A86B; }
+    .vtoggle::after { content:''; position:absolute; top:2px; left:2px; width:9px; height:9px;
+      border-radius:50%; background:#6B8BA4; transition:.2s; }
+    .vlayer-row.von .vtoggle::after { left:13px; background:white; }
+
+    /* Mask swatches */
+    .vmask-sw { width:20px; height:20px; border-radius:50%; cursor:pointer;
+      border:2px solid transparent; transition:.2s; display:inline-block; margin:0 3px 3px 0; }
+    .vmask-sw.vsel { border-color:white; transform:scale(1.2); }
+
+    /* Viewport */
+    #vViewport { flex:1; position:relative; overflow:hidden; background:#060e16; }
+    #vCanvas2d, #vCanvas3d { position:absolute; inset:0; width:100%; height:100%; }
+    #vCanvas3d { display:none; }
+    #vEmpty { position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:10px; opacity:.35; pointer-events:none; }
+    #vEmpty svg { width:56px; height:56px; }
+    #vEmpty p { font-size:13px; color:#6B8BA4; }
+    #vProgress { position:absolute; top:0; left:0; height:2px; background:#00A86B;
+      transition:width .3s; width:0; z-index:5; }
+    #vErr { position:absolute; top:14px; left:50%; transform:translateX(-50%);
+      background:#1a0808; border:1px solid #e05555; color:#e05555;
+      padding:9px 18px; font-size:12px; display:none; z-index:10; max-width:380px; text-align:center; }
+    #vToolbar { position:absolute; bottom:30px; right:14px;
+      display:flex; flex-direction:column; gap:5px; z-index:5; }
+    .vtb-btn { width:34px; height:34px; background:#101D2C; border:1px solid rgba(255,255,255,.07);
+      color:#EDF2F7; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      font-size:15px; transition:.2s; user-select:none; }
+    .vtb-btn:hover { border-color:#00A86B; color:#00A86B; }
+    #vStatusbar { position:absolute; bottom:0; left:0; right:0; height:25px;
+      background:rgba(10,21,32,.88); border-top:1px solid rgba(255,255,255,.07);
+      display:flex; align-items:center; padding:0 12px; font-size:11px; color:#6B8BA4; gap:14px; }
+
+</style>
+
+  <!-- OVERLAY HTML -->
+  <div id="pcbViewerOverlay">
+    <div id="vHdr">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;">
+        Electro<span style="color:#4d8eff">Trical</span>
+      </div>
+      <div id="vHdrTitle">PCB Viewer</div>
+      <div id="vCloseBtn" onclick="closeViewer()">✕ Close Viewer</div>
     </div>
-    <canvas id="vCanvas"></canvas>
-    <div class="viewer-controls">
-      <button class="viewer-btn" onclick="vFitView()">Fit View</button>
-      <button class="viewer-btn" onclick="vZoomBy(1.2)">Zoom In</button>
-      <button class="viewer-btn" onclick="vZoomBy(0.8)">Zoom Out</button>
-      <button class="viewer-btn" onclick="vScreenshot()">Screenshot</button>
+    <div id="vBody">
+      <!-- Sidebar -->
+      <div id="vSidebar">
+        <div class="vs-card">
+          <div class="vs-title">Board Info</div>
+          <div class="vinfo-row"><span class="vinfo-k">Width</span><span class="vinfo-v" id="vInfoW">—</span></div>
+          <div class="vinfo-row"><span class="vinfo-k">Length</span><span class="vinfo-v" id="vInfoH">—</span></div>
+          <div class="vinfo-row"><span class="vinfo-k">Layers</span><span class="vinfo-v" id="vInfoL">—</span></div>
+          <div class="vinfo-row"><span class="vinfo-k">Features</span><span class="vinfo-v" id="vInfoF">—</span></div>
+          <div class="vinfo-row"><span class="vinfo-k">Holes</span><span class="vinfo-v" id="vInfoDrills">—</span></div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-title">View Mode</div>
+          <div class="vmode-btns">
+            <div class="vmode-btn active" id="vBtn2d" onclick="vSwitchMode('2d')">2D</div>
+            <div class="vmode-btn" id="vBtn3d" onclick="vSwitchMode('3d')">3D</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-title">Layers</div>
+          <div id="vLayerToggles">
+            <!-- Built dynamically after Gerber load -->
+            <div style="font-size:11px;color:#6B8BA4;">Upload a Gerber file to see layers</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-title">Soldermask</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;">
+            <div class="vmask-sw vsel" style="background:#1a6b3a" data-c="#1a6b3a" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#6b1a1a" data-c="#6b1a1a" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#1a2a6b" data-c="#1a2a6b" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#111" data-c="#111" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#d8d8c8;border:1px solid #444" data-c="#d0d0be" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#8a7000" data-c="#8a7000" onclick="vSetMask(this)"></div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-title">Controls</div>
+          <div style="font-size:11px;color:#6B8BA4;line-height:1.85;">
+            <span style="color:#EDF2F7;font-weight:500;">Scroll</span> — Zoom<br>
+            <span style="color:#EDF2F7;font-weight:500;">Left drag</span> — Pan / Orbit<br>
+            <span style="color:#EDF2F7;font-weight:500;">F</span> — Fit board<br>
+            <span style="color:#EDF2F7;font-weight:500;">Esc</span> — Close viewer
+          </div>
+        </div>
+      </div>
+
+      <!-- Viewport -->
+      <div id="vViewport">
+        <div id="vProgress"></div>
+        <div id="vEmpty">
+          <svg viewBox="0 0 56 56" fill="none" stroke="#6B8BA4" stroke-width="1.5">
+            <rect x="6" y="6" width="44" height="44" rx="3"/>
+            <line x1="14" y1="20" x2="42" y2="20"/>
+            <line x1="14" y1="28" x2="34" y2="28"/>
+            <line x1="14" y1="36" x2="26" y2="36"/>
+          </svg>
+          <p>Loading board…</p>
+        </div>
+        <canvas id="vCanvas2d"></canvas>
+        <canvas id="vCanvas3d"></canvas>
+        <div id="vErr"></div>
+        <div id="vToolbar">
+          <div class="vtb-btn" title="Fit (F)" onclick="vFitView()">⊡</div>
+          <div class="vtb-btn" title="Zoom In" onclick="vZoomBy(1.25)">+</div>
+          <div class="vtb-btn" title="Zoom Out" onclick="vZoomBy(0.8)">−</div>
+          <div class="vtb-btn" title="Screenshot" onclick="vScreenshot()">📷</div>
+        </div>
+        <div id="vStatusbar">
+          <span id="vStMode">2D</span>
+          <span id="vStZoom">Zoom: 100%</span>
+          <span id="vStCoord"></span>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+
+
+
+  <script>
+
 
 <script>
   // ════════════════════════════════════════════════════════════════════════════
@@ -2046,6 +2115,11 @@
     const data = { layers: Math.max(layerCount, 2), outline: outlineData, warn: warn || '' };
     showParseResult(data);
     autoFillForm(data);
+
+    // Store file for viewer and reveal the VIEW IN 2D/3D button
+    window._etGerberFile = file;
+    const vBtn = document.getElementById('viewerBtn');
+    if (vBtn) vBtn.style.display = 'block';
   }
 
   async function processSingleGerber(name, text) {
@@ -2092,115 +2166,1181 @@
   });
 
   // ════════════════════════════════════════════════════════════════════════════
-  // 3D VIEWER (THREE.js integration)
+  // PCB VIEWER v4.0 — Production quality (integrated from ElectroTrical viewer)
   // ════════════════════════════════════════════════════════════════════════════
+  //
+  //  Supports:
+  //    Altium Designer  .GTL .GBL .G1-G8 .GP1-GP8 .GTS .GBS .GTO .GBO
+  //                     .GTP .GBP .GKO  (and numbered variants like GBS1)
+  //    KiCad            -F_Cu.gbr -B_Cu.gbr -In1_Cu.gbr -Edge_Cuts.gbr
+  //                     -F_Mask -B_Mask -F_Silkscreen -F_Paste etc.
+  //    Eagle            .cmp .sol .plc .pls .stc .sts .crc .crs .dim
+  //    Gerber X2        TF.FileFunction header (EDA-agnostic, highest priority)
+  //    NC Drill         Round holes + routed slot holes, multi-file, METRIC/INCH
+  // ═══════════════════════════════════════════════════════════════════════
 
-  let vScene, vCamera, vRenderer, vBoard, vControls;
+  // ─── 1. GERBER LAYER PARSER ──────────────────────────────────────────
+  // Parses RS-274X into traces, flashes, regions and a bounding box.
+  class VGerberLayer {
+    constructor(text) {
+      this.traces   = [];   // {x1,y1,x2,y2,w}
+      this.flashes  = [];   // {x,y,ap:{t,p}}
+      this.regions  = [];   // [{x,y}…]
+      this.bbox     = { minX:1e9, minY:1e9, maxX:-1e9, maxY:-1e9 };
+      this.empty    = true;
+      if (text) this._parse(text);
+      if (this.empty) this.bbox = null;
+      else {
+        this.bbox.w = this.bbox.maxX - this.bbox.minX;
+        this.bbox.h = this.bbox.maxY - this.bbox.minY;
+      }
+    }
 
-  function vSwitch(el, mode) {
-    document.querySelectorAll('.btn-viewer').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    if (mode === '3d') openViewer();
+    _expand(x, y) {
+      const b = this.bbox;
+      if (x < b.minX) b.minX = x;  if (x > b.maxX) b.maxX = x;
+      if (y < b.minY) b.minY = y;  if (y > b.maxY) b.maxY = y;
+      this.empty = false;
+    }
+
+    _parse(raw) {
+      // Format spec: %FSLAX46Y46*%  → integer digits, decimal digits
+      const fsm = raw.match(/%FS[LT][AI]X(\d)(\d)Y(\d)(\d)[^%]*%/i);
+      const xDec = fsm ? +fsm[2] : 6,  yDec = fsm ? +fsm[4] : 6;
+      const xDiv = 10 ** xDec,          yDiv = 10 ** yDec;
+      const inch  = /%MOIN[^%]*%/i.test(raw) || /^G70\b/m.test(raw);
+      const toMm  = inch ? 25.4 : 1.0;
+      const toX   = v => parseInt(v, 10) / xDiv * toMm;
+      const toY   = v => parseInt(v, 10) / yDiv * toMm;
+
+      // Aperture definitions: %ADD10C,0.1*%  %ADD11R,0.2X0.1*%
+      const aps = {};
+      for (const m of raw.matchAll(/%ADD(\d+)([CROP]),?([0-9.X]*)[^%]*%/gi)) {
+        const params = m[3] ? m[3].split('X').map(Number) : [0.1];
+        aps[+m[1]] = { t: m[2].toUpperCase(), p: params.length ? params : [0.1] };
+      }
+
+      // Remove all header blocks before scanning tokens
+      const body = raw.replace(/%[^%]*%/g, '');
+
+      let px = 0, py = 0, ap = null;
+      let inRegion = false, regionPts = [];
+
+      for (const token of body.split('*')) {
+        const t = token.trim();
+        if (!t) continue;
+        if (/M0*2/.test(t)) break;                        // M02 = end of file
+
+        if (/G36/.test(t)) { inRegion = true;  regionPts = []; continue; }
+        if (/G37/.test(t)) {
+          inRegion = false;
+          if (regionPts.length >= 3) {
+            this.regions.push([...regionPts]);
+            regionPts.forEach(p => this._expand(p.x, p.y));
+          }
+          regionPts = [];
+          continue;
+        }
+
+        const xm = t.match(/X([+-]?\d+)/);
+        const ym = t.match(/Y([+-]?\d+)/);
+        const dm = t.match(/D0*(\d+)/);
+        if (!dm) continue;
+
+        const d  = +dm[1];
+        if (d > 3) { ap = aps[d] ?? null; continue; }   // aperture select
+
+        const nx = xm ? toX(xm[1]) : px;
+        const ny = ym ? toY(ym[1]) : py;
+
+        if (d === 1) {                                     // draw / move+draw
+          if (inRegion) {
+            if (!regionPts.length) regionPts.push({ x: px, y: py });
+            regionPts.push({ x: nx, y: ny });
+          } else {
+            const w = ap?.p?.[0] ?? 0.05;
+            this.traces.push({ x1: px, y1: py, x2: nx, y2: ny, w });
+            this._expand(px, py);  this._expand(nx, ny);
+          }
+        } else if (d === 2) {                              // move only
+          if (inRegion && regionPts.length >= 3) {
+            this.regions.push([...regionPts]);
+            regionPts.forEach(p => this._expand(p.x, p.y));
+            regionPts = [];
+          }
+        } else if (d === 3) {                              // flash
+          this.flashes.push({ x: nx, y: ny, ap: ap ?? { t: 'C', p: [0.1] } });
+          this._expand(nx, ny);
+        }
+
+        px = nx;  py = ny;
+      }
+    }
+
+    // Render layer to a 2D canvas context.
+    // T = transform { scale, offX, offY, minX, minY, H }
+    // flipY: true  → screen coords (Gerber Y+ = up on screen)
+    // flipY: false → texture coords (canvas top-left origin)
+    render(ctx, T, color, flipY = true, minLineW = 0.5) {
+      const { scale, offX, offY, minX, minY, H } = T;
+      const tx = x =>          (x - minX) * scale + offX;
+      const ty = flipY
+        ? y => H - ((y - minY) * scale + offY)
+        : y =>      (y - minY) * scale + offY;
+
+      ctx.save();
+      ctx.fillStyle = ctx.strokeStyle = color;
+      ctx.lineCap = ctx.lineJoin = 'round';
+
+      for (const pts of this.regions) {
+        if (pts.length < 3) continue;
+        ctx.beginPath();
+        ctx.moveTo(tx(pts[0].x), ty(pts[0].y));
+        for (let i = 1; i < pts.length; i++) ctx.lineTo(tx(pts[i].x), ty(pts[i].y));
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      for (const tr of this.traces) {
+        ctx.lineWidth = Math.max(tr.w * scale, minLineW);
+        ctx.beginPath();
+        ctx.moveTo(tx(tr.x1), ty(tr.y1));
+        ctx.lineTo(tx(tr.x2), ty(tr.y2));
+        ctx.stroke();
+      }
+
+      for (const { x, y, ap } of this.flashes) {
+        const fx = tx(x), fy = ty(y);
+        const pw = ap.p?.[0] ?? 0.1,  ph = ap.p?.[1] ?? pw;
+        ctx.beginPath();
+        if (ap.t === 'C') {
+          ctx.arc(fx, fy, Math.max(pw * scale / 2, 0.5), 0, Math.PI * 2);
+        } else if (ap.t === 'R') {
+          const w = pw * scale, h = ph * scale;
+          ctx.rect(fx - w / 2, fy - h / 2, w, h);
+        } else if (ap.t === 'O') {  // obround
+          const w = pw * scale, h = ph * scale, r = Math.min(w, h) / 2;
+          if (ctx.roundRect) ctx.roundRect(fx - w / 2, fy - h / 2, w, h, r);
+          else ctx.arc(fx, fy, Math.max(pw * scale / 2, 0.5), 0, Math.PI * 2);
+        } else {
+          ctx.arc(fx, fy, Math.max(pw * scale / 2, 0.5), 0, Math.PI * 2);
+        }
+        ctx.fill();
+      }
+      ctx.restore();
+    }
   }
+
+  // ─── 2. BOARD OUTLINE POLYGON BUILDER ───────────────────────────────
+  // Chains trace segments from a GKO (keepout/outline) layer into a polygon.
+  function vBuildPolygon(layer) {
+    if (!layer || !layer.traces.length) return null;
+    const segs = layer.traces.map(t => ({ x1:t.x1, y1:t.y1, x2:t.x2, y2:t.y2 }));
+    const poly = [];
+    let cur = segs.splice(0, 1)[0];
+    poly.push({ x: cur.x1, y: cur.y1 });
+    let ex = cur.x2, ey = cur.y2;
+
+    while (segs.length) {
+      let best = -1, bestDist = 1e9, bestFlip = false;
+      for (let i = 0; i < segs.length; i++) {
+        const { x1, y1, x2, y2 } = segs[i];
+        const d1 = Math.hypot(x1 - ex, y1 - ey);
+        const d2 = Math.hypot(x2 - ex, y2 - ey);
+        if (d1 < bestDist) { bestDist = d1; best = i; bestFlip = false; }
+        if (d2 < bestDist) { bestDist = d2; best = i; bestFlip = true;  }
+      }
+      if (best < 0 || bestDist > 0.5) break;
+      const sg = segs.splice(best, 1)[0];
+      poly.push(bestFlip ? { x: sg.x2, y: sg.y2 } : { x: sg.x1, y: sg.y1 });
+      ex = bestFlip ? sg.x1 : sg.x2;
+      ey = bestFlip ? sg.y1 : sg.y2;
+    }
+    return poly.length >= 3 ? poly : null;
+  }
+
+  // ─── 3. EXCELLON DRILL PARSER ───────────────────────────────────────
+  // Parses round holes and slot holes from Excellon/NC Drill format.
+  // Returns array of { x, y, d } in mm (d = drill diameter).
+  function vParseDrill(text) {
+    const holes = [];
+
+    // FILE_FORMAT=int:dec  (e.g. 4:4)
+    const ffm  = text.match(/FILE_FORMAT\s*=\s*(\d)\s*:\s*(\d)/i);
+    const intD = ffm ? +ffm[1] : 2;
+    const decD = ffm ? +ffm[2] : 4;
+    const total  = intD + decD;
+    const divisor = 10 ** decD;
+
+    const isMetric = /^METRIC\b/im.test(text) || /^M71\b/im.test(text);
+    const isInch   = /^INCH\b/im.test(text)   || /^M72\b/im.test(text);
+    const toMm = (!isMetric && isInch) ? 25.4 : 1.0;
+
+    // Zero suppression: TZ = trailing zeros kept → numbers are left-padded
+    const isTZ = /\bTZ\b/.test(text);
+
+    const parseCoord = str => {
+      const neg    = str[0] === '-';
+      const digits = str.replace(/[^0-9]/g, '');
+      const padded = isTZ ? digits.padStart(total, '0') : digits.padEnd(total, '0');
+      return parseInt((neg ? '-' : '') + padded, 10) / divisor * toMm;
+    };
+
+    // Tool table — handles plated / non-plated comment sections
+    const tools = {};
+    for (const m of text.matchAll(/^T(\d+)[^\n]*C([0-9.]+)/gim))
+      tools[m[1]] = parseFloat(m[2]) * toMm;
+
+    let curTool = null, curDiam = 0.3;
+    let px = 0, py = 0;
+    let inSlot = false, slotX = 0, slotY = 0;
+
+    for (const rawLine of text.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith(';'))  continue;
+      if (line === 'M48' || line === '%' || line === 'M30') continue;
+      if (line === 'M17') { inSlot = false; continue; }
+
+      // Tool select
+      const tsel = line.match(/^T(\d+)$/);
+      if (tsel) {
+        curTool = tsel[1];
+        curDiam = tools[curTool] ?? 0.3;
+        continue;
+      }
+      // Skip tool-definition lines in header (have F or S)
+      if (/^T\d+[FS]/i.test(line)) continue;
+
+      // Slot: G00 = rapid move (position before drilling)
+      if (/^G0*0/.test(line)) {
+        const xm = line.match(/X([+-]?\d+)/);
+        const ym = line.match(/Y([+-]?\d+)/);
+        if (xm) px = parseCoord(xm[1]);
+        if (ym) py = parseCoord(ym[1]);
+        slotX = px;  slotY = py;
+        inSlot = false;
+        continue;
+      }
+      // M15 = drill-down (start of routed slot)
+      if (line === 'M15') { inSlot = true; slotX = px; slotY = py; continue; }
+      // M16 = drill-up (end of slot) — emit midpoint as representative hole
+      if (line === 'M16') {
+        if (inSlot) {
+          // Represent slot with start, mid, end points
+          holes.push({ x: slotX, y: slotY,             d: curDiam });
+          holes.push({ x: (slotX+px)/2, y:(slotY+py)/2, d: curDiam });
+          holes.push({ x: px,   y: py,                 d: curDiam });
+        }
+        inSlot = false;
+        continue;
+      }
+      // G01 while in slot = linear move while drilling
+      if (/^G0*1/.test(line) && inSlot) {
+        const xm = line.match(/X([+-]?\d+)/);
+        const ym = line.match(/Y([+-]?\d+)/);
+        if (xm) px = parseCoord(xm[1]);
+        if (ym) py = parseCoord(ym[1]);
+        continue;
+      }
+
+      // Regular coordinate line = round hole
+      const xm = line.match(/X([+-]?\d+)/);
+      const ym = line.match(/Y([+-]?\d+)/);
+      if (!xm && !ym) continue;
+      const nx = xm ? parseCoord(xm[1]) : px;
+      const ny = ym ? parseCoord(ym[1]) : py;
+      holes.push({ x: nx, y: ny, d: curDiam });
+      px = nx;  py = ny;
+    }
+    return holes;
+  }
+
+  // ─── 4. UNIVERSAL LAYER CLASSIFIER ──────────────────────────────────
+  // Returns { role, side, layerNum, polarity } for any Gerber file.
+  //
+  // role:     'copper' | 'mask' | 'silk' | 'paste' | 'outline' | 'ignore'
+  // side:     'top' | 'bot' | 'inner' | null
+  // layerNum: 1=top copper, 2..N=inner, 99=bottom copper
+  //           Power planes (GP1..GP8): stored as 100+N to avoid collisions
+  // polarity: 'Positive' | 'Negative'
+  //           Negative copper = solid plane with clearance holes (GP1/GP2)
+  //           Negative mask   = layer file shows PAD OPENINGS (standard)
+  function vClassifyLayer(filename, text) {
+    const base = filename.split('/').pop();
+    const ext  = base.includes('.') ? base.split('.').pop().toUpperCase() : '';
+
+    // Read TF.FilePolarity (Gerber X2 attribute — most reliable polarity source)
+    const polm    = text.match(/TF\.FilePolarity\s*,\s*([^\n\r*%]+)/i);
+    const polarity = polm ? polm[1].trim() : 'Positive';
+
+    // ── Priority 1: TF.FileFunction (Gerber X2 — EDA-agnostic, most accurate) ──
+    const ffm = text.match(/TF\.FileFunction\s*,\s*([^\n\r*%]+)/i);
+    if (ffm) {
+      const ff  = ffm[1].trim();
+      const ffl = ff.toLowerCase();
+
+      // Copper: Copper,L1,Top  /  Copper,L3,Inr  /  Copper,L4,Bot
+      const copper = ff.match(/^Copper\s*,\s*L(\d+)\s*,\s*(Top|Inr|Bot)/i);
+      if (copper) {
+        const n    = +copper[1];
+        const raw  = copper[2].toLowerCase();
+        const side = raw === 'top' ? 'top' : raw === 'bot' ? 'bot' : 'inner';
+        // If it's a power plane layer (polarity Negative = solid plane + clearances)
+        const layerNum = side === 'top' ? 1 : side === 'bot' ? 99 : n;
+        return { role:'copper', side, layerNum, polarity };
+      }
+      if (/^Soldermask/i.test(ff)) return { role:'mask',    side: /Top/i.test(ff)?'top':'bot', layerNum:0, polarity };
+      if (/^Legend|^Silkscreen/i.test(ff)) return { role:'silk', side: /Top/i.test(ff)?'top':'bot', layerNum:0, polarity };
+      if (/^Paste/i.test(ff))        return { role:'paste',   side: /Top/i.test(ff)?'top':'bot', layerNum:0, polarity };
+      if (/^Profile|^EdgeCuts/i.test(ff)) return { role:'outline', side:null, layerNum:0, polarity };
+      // Drill drawings, fab docs, courtyard, assembly, component = ignore
+      if (/^Drill|^NonCopper|^Component|^Assembly|^OtherCopper/i.test(ff)) return { role:'ignore', side:null, layerNum:0, polarity };
+      // Unknown TF.FileFunction — fall through to extension matching
+    }
+
+    // ── Priority 2: Altium Designer extensions ────────────────────────
+    // Top / Bottom copper
+    if (/^GTL$/i.test(ext)) return { role:'copper', side:'top', layerNum:1,  polarity };
+    if (/^GBL$/i.test(ext)) return { role:'copper', side:'bot', layerNum:99, polarity };
+    // Inner copper G1–G8 (and G1L–G8L variants)
+    const gInner = ext.match(/^G([1-9]\d?)L?$/i);
+    if (gInner) return { role:'copper', side:'inner', layerNum: +gInner[1] + 1, polarity };
+    // Power planes GP1–GP8 — always Negative (solid plane, flashes = clearance holes)
+    const gPlane = ext.match(/^GP([1-9]\d?)$/i);
+    if (gPlane) return { role:'copper', side:'inner', layerNum: 100 + +gPlane[1], polarity: 'Negative' };
+    // Soldermask
+    if (/^GTS$/i.test(ext))   return { role:'mask',  side:'top', layerNum:0, polarity };
+    if (/^GBS\d*$/i.test(ext)) return { role:'mask',  side:'bot', layerNum:0, polarity };
+    // Silkscreen / overlay
+    if (/^GTO$/i.test(ext))   return { role:'silk',  side:'top', layerNum:0, polarity };
+    if (/^GBO$/i.test(ext))   return { role:'silk',  side:'bot', layerNum:0, polarity };
+    // Paste / cream
+    if (/^GTP$/i.test(ext))   return { role:'paste', side:'top', layerNum:0, polarity };
+    if (/^GBP\d*$/i.test(ext)) return { role:'paste', side:'bot', layerNum:0, polarity };
+    // Board outline / keepout
+    if (/^GKO$/i.test(ext))   return { role:'outline', side:null, layerNum:0, polarity };
+    if (/^GML$/i.test(ext))   return { role:'outline', side:null, layerNum:0, polarity };
+    // Altium layers to ignore: mechanical, drill drawing, drill guide, pad master, component body
+    if (/^GM\d*$|^GD\d*$|^GG\d*$|^GPT$|^GPB$|^GCT\d*$|^GCB\d*$/i.test(ext)) return { role:'ignore', side:null, layerNum:0, polarity };
+    // Non-Gerber files to ignore
+    if (/^(REP|DRR|LDP|APR|APR_LIB|EXTREP|NETLIST|IPC|CSV|PDF|PNG|JPG|BMP)$/i.test(ext)) return { role:'ignore', side:null, layerNum:0, polarity };
+
+    // ── Priority 3: KiCad filename conventions ────────────────────────
+    const bn = base.toLowerCase();
+    if (/-f[_\-]cu\b/i.test(bn))   return { role:'copper', side:'top', layerNum:1,  polarity };
+    if (/-b[_\-]cu\b/i.test(bn))   return { role:'copper', side:'bot', layerNum:99, polarity };
+    const kInn = bn.match(/-in(\d+)[_\-]cu\b/i);
+    if (kInn) return { role:'copper', side:'inner', layerNum: +kInn[1] + 1, polarity };
+    if (/-f[_\-]mask\b/i.test(bn))  return { role:'mask',  side:'top', layerNum:0, polarity };
+    if (/-b[_\-]mask\b/i.test(bn))  return { role:'mask',  side:'bot', layerNum:0, polarity };
+    if (/-f[_\-]silk/i.test(bn))    return { role:'silk',  side:'top', layerNum:0, polarity };
+    if (/-b[_\-]silk/i.test(bn))    return { role:'silk',  side:'bot', layerNum:0, polarity };
+    if (/-f[_\-]paste\b/i.test(bn)) return { role:'paste', side:'top', layerNum:0, polarity };
+    if (/-b[_\-]paste\b/i.test(bn)) return { role:'paste', side:'bot', layerNum:0, polarity };
+    if (/-edge[_\-]cuts\b/i.test(bn)) return { role:'outline', side:null, layerNum:0, polarity };
+    // KiCad fab/courtyard/comments → ignore
+    if (/-[fb][_\-](fab|crtyd|courtyard|user|eco)\b/i.test(bn)) return { role:'ignore', side:null, layerNum:0, polarity };
+
+    // ── Priority 4: Eagle filename conventions ────────────────────────
+    if (/^CMP$/i.test(ext)) return { role:'copper', side:'top', layerNum:1,  polarity };  // top copper
+    if (/^SOL$/i.test(ext)) return { role:'copper', side:'bot', layerNum:99, polarity };  // bottom copper
+    if (/^PLC$/i.test(ext)) return { role:'silk',  side:'top', layerNum:0, polarity };    // silkscreen top
+    if (/^PLS$/i.test(ext)) return { role:'silk',  side:'bot', layerNum:0, polarity };    // silkscreen bot
+    if (/^STC$/i.test(ext)) return { role:'mask',  side:'top', layerNum:0, polarity };    // stop cream top
+    if (/^STS$/i.test(ext)) return { role:'mask',  side:'bot', layerNum:0, polarity };    // stop cream bot
+    if (/^CRC$/i.test(ext)) return { role:'paste', side:'top', layerNum:0, polarity };    // cream top
+    if (/^CRS$/i.test(ext)) return { role:'paste', side:'bot', layerNum:0, polarity };    // cream bot
+    if (/^DIM$/i.test(ext)) return { role:'outline',side:null, layerNum:0, polarity };    // dimension
+
+    return { role:'ignore', side:null, layerNum:0, polarity };
+  }
+
+  // ─── 5. DISPLAY PROPERTIES ───────────────────────────────────────────
+  // Maps { role, side, layerNum, polarity } → { label, dot, color, alpha }.
+  // dot   = sidebar indicator color (always shows the semantic meaning)
+  // color = canvas render color
+  // alpha = render opacity
+  function vDisplayProps(role, side, layerNum, polarity) {
+    const isTop   = side === 'top';
+    const isBot   = side === 'bot';
+    const isPlane = polarity === 'Negative' && role === 'copper';
+
+    if (role === 'copper') {
+      if (isTop) return { label:'Top Copper (L1)',     dot:'#d4a843', color:'#d4a843', alpha:0.90 };
+      if (isBot) return { label:'Bottom Copper',        dot:'#c8922a', color:'#c8922a', alpha:0.75 };
+      if (isPlane) {
+        const n = layerNum - 100; // GP1→1, GP2→2
+        return { label:`Power Plane ${n}`,              dot:'#8a6010', color:'#9a7018', alpha:0.60 };
+      }
+      // Inner copper: graduated shading so layers are distinguishable
+      const idx = Math.min(layerNum - 2, 6); // 0-based index among inners
+      const shades = ['#b87c20','#ac7018','#a06415','#945812','#8a5210','#804c0e','#764708'];
+      const c = shades[idx] || '#704200';
+      return { label:`Inner L${layerNum}`,             dot:c, color:c, alpha:0.65 };
+    }
+    if (role === 'mask') {
+      // Dot shows the mask color (what the layer looks like on the board)
+      // Render color for the exposed-pad highlights = copper gold
+      const maskDot   = isTop ? '#2a7a4a' : '#1e6840';
+      const copperCol = isTop ? '#e0b050' : '#d4a030';  // bright copper for exposed pads
+      return { label: isTop ? 'Top Soldermask' : 'Bot Soldermask', dot:maskDot, color:copperCol, alpha:0.95 };
+    }
+    if (role === 'silk') {
+      const c = isTop ? '#e8e8d0' : '#c8c8a8';
+      return { label: isTop ? 'Top Silkscreen' : 'Bot Silkscreen', dot:c, color:c, alpha:isTop ? 0.90 : 0.80 };
+    }
+    if (role === 'paste') {
+      return { label: isTop ? 'Top Paste' : 'Bot Paste', dot:'#888', color:'#b0b0b0', alpha:0.35 };
+    }
+    if (role === 'outline') {
+      return { label:'Board Outline', dot:'#00ff88', color:'#00ff88', alpha:1.0 };
+    }
+    return { label:'Unknown', dot:'#555', color:'#888', alpha:0.5 };
+  }
+
+  // ─── 6. VIEWER STATE ─────────────────────────────────────────────────
+  const vs = {
+    layers:     [],    // [{id, role, side, layerNum, polarity, label, dot, color, alpha, layer, vis}]
+    bbox:       null,  // {minX, minY, maxX, maxY, w, h} in mm
+    polygon:    null,  // [{x,y}…] outline polygon
+    drills:     [],    // [{x,y,d}…]
+    loaded:     false,
+    mode:       '2d',
+    maskColor:  '#1a6b3a',
+    zoom:       1, panX:0, panY:0,
+    // 3D
+    scene:null, camera:null, renderer3d:null, boardGrp:null,
+    rotX:0.5, rotY:0.4, camDist:100,
+    drag:false, dragX:0, dragY:0,
+    gerberFile: null,
+  };
+
+  const $2d  = document.getElementById('vCanvas2d');
+  const $3d  = document.getElementById('vCanvas3d');
+  const ctx2 = $2d.getContext('2d');
+
+  // ─── 7. 2D RENDERING ─────────────────────────────────────────────────
+
+  // Compute the pixel→mm transform for the current viewport and zoom level.
+  function vGetT() {
+    const vp = document.getElementById('vViewport');
+    const W  = vp.clientWidth,  H = vp.clientHeight - 25;
+    if (!vs.bbox) return null;
+    const PAD   = 60;
+    const base  = Math.min((W - PAD*2) / vs.bbox.w, (H - PAD*2) / vs.bbox.h);
+    const scale = base * vs.zoom;
+    const offX  = (W - vs.bbox.w * scale) / 2 + vs.panX;
+    const offY  = (H - vs.bbox.h * scale) / 2 + vs.panY;
+    return { scale, offX, offY, minX:vs.bbox.minX, minY:vs.bbox.minY, H, W };
+  }
+
+  // Draw drill holes onto ctx with annular-ring look.
+  function vRenderDrills(ctx, T, flipY = true) {
+    if (!vs.drills.length) return;
+    const { scale, offX, offY, minX, minY, H } = T;
+    const tx = x =>          (x - minX) * scale + offX;
+    const ty = flipY
+      ? y => H - ((y - minY) * scale + offY)
+      : y =>      (y - minY) * scale + offY;
+
+    ctx.save();
+    for (const { x, y, d } of vs.drills) {
+      const fx = tx(x), fy = ty(y);
+      const r  = Math.max(d * scale / 2, 0.8);
+      // Annular ring shadow
+      ctx.beginPath(); ctx.arc(fx, fy, r + Math.max(r * 0.5, 1.2), 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
+      // Hole
+      ctx.beginPath(); ctx.arc(fx, fy, r, 0, Math.PI*2);
+      ctx.fillStyle = '#04090f'; ctx.fill();
+      // Copper ring highlight
+      ctx.beginPath(); ctx.arc(fx, fy, r, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(210,180,100,0.40)'; ctx.lineWidth = 0.8; ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Full 2D render pipeline.
+  function vRender2D() {
+    const vp = document.getElementById('vViewport');
+    const W  = vp.clientWidth,  H = vp.clientHeight;
+    $2d.width = W;  $2d.height = H;
+    const ctx = ctx2;
+
+    // Background
+    ctx.fillStyle = '#060e16'; ctx.fillRect(0, 0, W, H);
+    // Dot grid
+    ctx.fillStyle = 'rgba(0,168,107,0.04)';
+    for (let x = 0; x < W; x += 20) for (let y = 0; y < H; y += 20) ctx.fillRect(x, y, 1, 1);
+
+    if (!vs.bbox) return;
+    const T = vGetT();
+    const { scale, offX, offY, minX, minY } = T;
+    const tx = x =>          (x - minX) * scale + offX;
+    const ty = y => T.H - ((y - minY) * scale + offY);
+
+    // Helper: clip drawing to board silhouette
+    function clipToBoard() {
+      ctx.beginPath();
+      if (vs.polygon && vs.polygon.length >= 3) {
+        ctx.moveTo(tx(vs.polygon[0].x), ty(vs.polygon[0].y));
+        for (let i = 1; i < vs.polygon.length; i++) ctx.lineTo(tx(vs.polygon[i].x), ty(vs.polygon[i].y));
+        ctx.closePath();
+      } else {
+        ctx.rect(tx(vs.bbox.minX), ty(vs.bbox.maxY), vs.bbox.w * scale, vs.bbox.h * scale);
+      }
+      ctx.clip();
+    }
+
+    // ── 1. Board silhouette (soldermask base colour) ──
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 28;
+    ctx.fillStyle = vs.maskColor;
+    if (vs.polygon && vs.polygon.length >= 3) {
+      ctx.beginPath();
+      ctx.moveTo(tx(vs.polygon[0].x), ty(vs.polygon[0].y));
+      for (let i = 1; i < vs.polygon.length; i++) ctx.lineTo(tx(vs.polygon[i].x), ty(vs.polygon[i].y));
+      ctx.closePath(); ctx.fill();
+    } else {
+      ctx.fillRect(tx(vs.bbox.minX), ty(vs.bbox.maxY), vs.bbox.w * scale, vs.bbox.h * scale);
+    }
+    ctx.restore();
+
+    // Sort active layers into render order:
+    // bot copper → inner copper (ascending layerNum) → top copper
+    // → bot mask → top mask → bot silk → top silk → paste
+    // Outline and drills handled separately below.
+    const renderRank = l => {
+      if (l.role === 'copper') {
+        if (l.side === 'bot')   return 10;
+        if (l.side === 'inner') return 20 + (l.layerNum >= 100 ? l.layerNum - 80 : l.layerNum);
+        if (l.side === 'top')   return 50;
+      }
+      if (l.role === 'mask'  && l.side === 'bot') return 60;
+      if (l.role === 'mask'  && l.side === 'top') return 61;
+      if (l.role === 'silk'  && l.side === 'bot') return 70;
+      if (l.role === 'silk'  && l.side === 'top') return 71;
+      if (l.role === 'paste') return 80;
+      return 99;
+    };
+
+    const active = vs.layers
+      .filter(l => l.vis && l.layer && !l.layer.empty && l.role !== 'outline' && l.role !== 'drills')
+      .sort((a, b) => renderRank(a) - renderRank(b));
+
+    // ── 2. Copper layers clipped to board ──
+    const copperLayers = active.filter(l => l.role === 'copper');
+    if (copperLayers.length) {
+      ctx.save(); ctx.beginPath(); clipToBoard();
+      for (const ld of copperLayers) {
+        // Power planes (Negative) = solid copper fill; clearance holes too small to show
+        if (ld.polarity === 'Negative') {
+          ctx.save();
+          ctx.globalAlpha = ld.alpha;
+          ctx.fillStyle = ld.color;
+          ctx.fillRect(0, 0, W, H);   // entire clipped board area
+          ctx.restore();
+        } else {
+          ctx.globalAlpha = ld.alpha;
+          ld.layer.render(ctx, T, ld.color, true);
+          ctx.globalAlpha = 1;
+        }
+      }
+      ctx.restore();
+    }
+
+    // ── 3. Soldermask openings = exposed pads (bright copper highlights) ──
+    const maskLayers = active.filter(l => l.role === 'mask');
+    if (maskLayers.length) {
+      ctx.save(); clipToBoard();
+      for (const ld of maskLayers) {
+        // Negative soldermask file: features = pad openings → render as bright copper
+        ctx.globalAlpha = ld.alpha;
+        ld.layer.render(ctx, T, ld.color, true);
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+    }
+
+    // ── 4. Silkscreen ──
+    const silkLayers = active.filter(l => l.role === 'silk');
+    if (silkLayers.length) {
+      ctx.save(); clipToBoard();
+      for (const ld of silkLayers) {
+        ctx.globalAlpha = ld.alpha;
+        ld.layer.render(ctx, T, ld.color, true);
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+    }
+
+    // ── 5. Paste (optional, faint) ──
+    const pasteLayers = active.filter(l => l.role === 'paste');
+    for (const ld of pasteLayers) {
+      ctx.globalAlpha = ld.alpha;
+      ld.layer.render(ctx, T, ld.color, true);
+      ctx.globalAlpha = 1;
+    }
+
+    // ── 6. Board outline ──
+    const outlineL = vs.layers.find(l => l.role === 'outline' && l.vis && l.layer && !l.layer.empty);
+    if (outlineL) {
+      ctx.save();
+      ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 4;
+      outlineL.layer.render(ctx, T, '#00ff88', true);
+      ctx.restore();
+    }
+
+    // ── 7. Drills ──
+    const drillEntry = vs.layers.find(l => l.id === 'drills');
+    if (drillEntry?.vis && vs.drills.length) vRenderDrills(ctx, T, true);
+
+    // Status bar
+    document.getElementById('vStZoom').textContent = 'Zoom: ' + Math.round(vs.zoom * 100) + '%';
+  }
+
+  // ─── 8. 3D RENDERING ─────────────────────────────────────────────────
 
   function vInit3D() {
-    const canvas = document.getElementById('vCanvas');
-    vScene = new THREE.Scene();
-    vScene.background = new THREE.Color(0x050810);
+    const vp = document.getElementById('vViewport');
+    const W  = vp.clientWidth,  H = Math.max(vp.clientHeight - 25, 100);
+    $3d.width = W;  $3d.height = H;
 
-    vCamera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
-    vCamera.position.z = 150;
+    if (!vs.renderer3d) {
+      vs.renderer3d = new THREE.WebGLRenderer({ canvas:$3d, antialias:true });
+      vs.renderer3d.setSize(W, H, false);
+      vs.renderer3d.setPixelRatio(Math.min(devicePixelRatio, 2));
+      vs.scene      = new THREE.Scene();
+      vs.scene.background = new THREE.Color(0x060e16);
+      vs.camera     = new THREE.PerspectiveCamera(45, W/H, 0.1, 5000);
 
-    vRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    vRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    vRenderer.setPixelRatio(window.devicePixelRatio);
+      vs.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+      const dl1 = new THREE.DirectionalLight(0xffffff, 1.1); dl1.position.set(60, 100, 80); vs.scene.add(dl1);
+      const dl2 = new THREE.DirectionalLight(0x4466cc, 0.30); dl2.position.set(-40,-30,-60); vs.scene.add(dl2);
+      const grid = new THREE.GridHelper(400, 40, 0x0d2018, 0x091610); grid.position.y = -3; vs.scene.add(grid);
 
-    const light1 = new THREE.DirectionalLight(0xffffff, 0.8);
-    light1.position.set(10, 20, 15);
-    vScene.add(light1);
-
-    const light2 = new THREE.DirectionalLight(0x0066FF, 0.4);
-    light2.position.set(-10, -20, 10);
-    vScene.add(light2);
-
-    vScene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-    vBuildBoard3D();
-    vRender3D();
-  }
-
-  function vBuildBoard3D() {
-    const w = Math.max(5, parseFloat(document.getElementById('dimW').value)) || 100;
-    const h = Math.max(5, parseFloat(document.getElementById('dimH').value)) || 100;
-    const thickness = 0.8;
-
-    const scale = 0.8;
-    const scaledW = w * scale;
-    const scaledH = h * scale;
-
-    if (vBoard) vScene.remove(vBoard);
-
-    const geometry = new THREE.BoxGeometry(scaledW, scaledH, thickness);
-    const boardColor = document.getElementById('pcbBoard').style.background || '#1a3d2a';
-    const material = new THREE.MeshPhongMaterial({
-      color: boardColor,
-      shininess: 30,
-    });
-
-    vBoard = new THREE.Mesh(geometry, material);
-    vScene.add(vBoard);
-
-    const edges = new THREE.EdgesGeometry(geometry);
-    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00D4FF, linewidth: 1 }));
-    vBoard.add(line);
-
-    vCamera.position.z = Math.max(scaledW, scaledH) * 1.5;
+      // Mouse orbit
+      $3d.addEventListener('mousedown', e => { vs.drag=true; vs.dragX=e.clientX; vs.dragY=e.clientY; });
+      window.addEventListener('mouseup', () => vs.drag = false);
+      $3d.addEventListener('mousemove', e => {
+        if (!vs.drag) return;
+        vs.rotY += (e.clientX - vs.dragX) * 0.009;
+        vs.rotX += (e.clientY - vs.dragY) * 0.009;
+        vs.rotX = Math.max(-1.4, Math.min(1.4, vs.rotX));
+        vs.dragX = e.clientX;  vs.dragY = e.clientY;
+        vRender3D();
+      });
+      $3d.addEventListener('wheel', e => {
+        e.preventDefault();
+        vs.camDist *= 1 + e.deltaY * 0.001;
+        vs.camDist = Math.max(5, Math.min(2000, vs.camDist));
+        vRender3D();
+      }, { passive:false });
+      // Touch orbit
+      let t0 = null, t1 = null;
+      $3d.addEventListener('touchstart', e => { t0 = e.touches[0]; t1 = e.touches.length > 1 ? e.touches[1] : null; });
+      $3d.addEventListener('touchmove', e => {
+        e.preventDefault();
+        if (e.touches.length === 1 && t0) {
+          vs.rotY += (e.touches[0].clientX - t0.clientX) * 0.012;
+          vs.rotX += (e.touches[0].clientY - t0.clientY) * 0.012;
+          vs.rotX = Math.max(-1.4, Math.min(1.4, vs.rotX));
+          t0 = e.touches[0]; vRender3D();
+        }
+      }, { passive:false });
+    } else {
+      vs.renderer3d.setSize(W, H, false);
+      vs.camera.aspect = W/H;
+      vs.camera.updateProjectionMatrix();
+    }
   }
 
   function vRender3D() {
-    requestAnimationFrame(vRender3D);
-    if (vBoard) {
-      vBoard.rotation.x += 0.003;
-      vBoard.rotation.y += 0.005;
+    if (!vs.renderer3d || !vs.scene || !vs.camera) return;
+    const r  = vs.camDist;
+    const rx = vs.rotX, ry = vs.rotY;
+    vs.camera.position.set(r * Math.sin(ry) * Math.cos(rx), r * Math.sin(rx), r * Math.cos(ry) * Math.cos(rx));
+    vs.camera.lookAt(0, 0, 0);
+    vs.renderer3d.render(vs.scene, vs.camera);
+    document.getElementById('vStZoom').textContent = 'Dist: ' + Math.round(vs.camDist) + 'mm';
+  }
+
+  // Build a face texture by compositing all relevant layers onto a canvas.
+  function vMakeFaceTex(face) {
+    const b  = vs.bbox;
+    // 4096px on the longest dimension — crisp silkscreen at up to 80px/mm
+    const maxPx = 4096;
+    const TW = b.w >= b.h ? maxPx : Math.round(maxPx * b.w / b.h);
+    const TH = b.h >= b.w ? maxPx : Math.round(maxPx * b.h / b.w);
+    const tc = document.createElement('canvas');
+    tc.width = TW;  tc.height = TH;
+    const tctx = tc.getContext('2d');
+    tctx.imageSmoothingEnabled = true;
+    tctx.imageSmoothingQuality = 'high';
+    const T = { scale: TW / b.w, offX:0, offY:0, minX:b.minX, minY:b.minY, H:TH, W:TW };
+
+    // Correct PCB layer stack (bottom → top of texture):
+    //   1. FR-4 substrate / soldermask base colour
+    //   2. Copper layers (all, at appropriate alpha per face distance)
+    //   3. Soldermask cover — re-fills the whole face with mask colour, covering copper traces
+    //      THEN punches out pad openings (GTS/GBS negative-polarity features)
+    //   4. Silkscreen on top of soldermask
+
+    // ── Pass 1: Soldermask base fill ──────────────────────────────
+    tctx.fillStyle = vs.maskColor;
+    tctx.fillRect(0, 0, TW, TH);
+
+    // ── Pass 2: Copper layers ─────────────────────────────────────
+    const copperRank = l => {
+      if (l.side === 'bot')   return 10;
+      if (l.side === 'inner') return 20 + (l.layerNum >= 100 ? l.layerNum - 80 : l.layerNum);
+      if (l.side === 'top')   return 50;
+      return 99;
+    };
+    const copperLayers = vs.layers
+      .filter(l => l.vis && l.layer && !l.layer.empty && l.role === 'copper')
+      .sort((a, b) => copperRank(a) - copperRank(b));
+
+    for (const ld of copperLayers) {
+      let alpha;
+      if (ld.side === face)        alpha = ld.alpha;
+      else if (ld.side === 'inner') alpha = ld.alpha * 0.45;
+      else                          alpha = ld.alpha * 0.07;
+      if (alpha < 0.01) continue;
+      tctx.globalAlpha = alpha;
+      if (ld.polarity === 'Negative') {
+        tctx.fillStyle = ld.color;
+        tctx.fillRect(0, 0, TW, TH);
+      } else {
+        ld.layer.render(tctx, T, ld.color, true);
+      }
+      tctx.globalAlpha = 1;
     }
-    vRenderer.render(vScene, vCamera);
+
+    // ── Pass 3: Soldermask cover — re-fill with mask colour to hide copper traces,
+    //            then punch out pad openings so copper shows through at pads only ──
+    const maskLayer = vs.layers.find(l =>
+      l.vis && l.layer && !l.layer.empty && l.role === 'mask' && l.side === face
+    );
+    if (maskLayer) {
+      // Re-cover the entire face with soldermask (hides copper traces beneath it)
+      tctx.globalAlpha = 0.92;
+      tctx.fillStyle = vs.maskColor;
+      tctx.fillRect(0, 0, TW, TH);
+      tctx.globalAlpha = 1;
+      // Now punch out the pad openings to reveal copper beneath
+      // Use destination-out to erase mask at pad locations, then draw bright copper
+      tctx.save();
+      tctx.globalCompositeOperation = 'destination-out';
+      maskLayer.layer.render(tctx, T, 'rgba(0,0,0,1)', true);
+      tctx.restore();
+      // Fill erased areas with bright copper colour
+      tctx.save();
+      tctx.globalCompositeOperation = 'destination-over';
+      tctx.globalAlpha = 0.95;
+      maskLayer.layer.render(tctx, T, maskLayer.color, true);
+      tctx.globalAlpha = 1;
+      tctx.restore();
+    } else {
+      // No mask layer — do a lighter re-cover pass so copper still peeks through
+      tctx.globalAlpha = 0.55;
+      tctx.fillStyle = vs.maskColor;
+      tctx.fillRect(0, 0, TW, TH);
+      tctx.globalAlpha = 1;
+    }
+
+    // ── Pass 4: Silkscreen on top of soldermask ───────────────────
+    const silkLayer = vs.layers.find(l =>
+      l.vis && l.layer && !l.layer.empty && l.role === 'silk' && l.side === face
+    );
+    if (silkLayer) {
+      tctx.globalAlpha = 1.0;   // silk always full opacity — never dim it
+      silkLayer.layer.render(tctx, T, silkLayer.color, true, 1.5);
+      tctx.globalAlpha = 1;
+    }
+
+    // ── Pass 5: Paste (very faint) ────────────────────────────────
+    const pasteLayer = vs.layers.find(l =>
+      l.vis && l.layer && !l.layer.empty && l.role === 'paste' && l.side === face
+    );
+    if (pasteLayer) {
+      tctx.globalAlpha = pasteLayer.alpha;
+      pasteLayer.layer.render(tctx, T, pasteLayer.color, true);
+      tctx.globalAlpha = 1;
+    }
+
+    // ── Pass 6: Drills ────────────────────────────────────────────
+    const drillEntry = vs.layers.find(l => l.id === 'drills');
+    if (drillEntry?.vis && vs.drills.length) vRenderDrills(tctx, T, true);
+
+    const tex = new THREE.CanvasTexture(tc);
+    tex.flipY = true;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  function vBuildBoard3D(resetCamera = false) {
+    if (!vs.bbox || !vs.scene) return;
+    const b = vs.bbox;
+    const hw = b.w / 2,  hh = b.h / 2,  thick = 1.6;
+    const cx = (b.minX + b.maxX) / 2,  cy = (b.minY + b.maxY) / 2;
+
+    if (vs.boardGrp) { vs.scene.remove(vs.boardGrp); vs.boardGrp = null; }
+
+    // Board shape (THREE.Shape centered at origin)
+    let shape;
+    if (vs.polygon && vs.polygon.length >= 3) {
+      shape = new THREE.Shape(vs.polygon.map(p => new THREE.Vector2(p.x - cx, p.y - cy)));
+    } else {
+      shape = new THREE.Shape([
+        new THREE.Vector2(-hw,-hh), new THREE.Vector2(hw,-hh),
+        new THREE.Vector2( hw, hh), new THREE.Vector2(-hw, hh)
+      ]);
+    }
+
+    // Fix UVs for ShapeGeometry (r128 writes raw XY, not 0-1)
+    function fixUVs(geo) {
+      const uv = geo.attributes.uv;
+      for (let i = 0; i < uv.count; i++)
+        uv.setXY(i, (uv.getX(i) + hw) / b.w, (uv.getY(i) + hh) / b.h);
+      uv.needsUpdate = true;
+    }
+
+    const grp = new THREE.Group();
+
+    // FR-4 body sides
+    const extGeo = new THREE.ExtrudeGeometry(shape, { depth:thick, bevelEnabled:false });
+    grp.add(new THREE.Mesh(extGeo, new THREE.MeshPhongMaterial({ color:0x2d6a44, shininess:15 })));
+
+    // Top face
+    const topGeo = new THREE.ShapeGeometry(shape);
+    fixUVs(topGeo);
+    const topMesh = new THREE.Mesh(topGeo, new THREE.MeshPhongMaterial({ map:vMakeFaceTex('top'), shininess:80 }));
+    topMesh.position.z = thick + 0.02;
+    grp.add(topMesh);
+
+    // Bottom face (rendered from below → mirror UV in X)
+    const botGeo = new THREE.ShapeGeometry(shape);
+    fixUVs(botGeo);
+    const botMesh = new THREE.Mesh(botGeo, new THREE.MeshPhongMaterial({ map:vMakeFaceTex('bot'), shininess:55, side:THREE.BackSide }));
+    botMesh.position.z = -0.02;
+    grp.add(botMesh);
+
+    grp.rotation.x = -Math.PI / 2;
+    vs.scene.add(grp);
+    vs.boardGrp = grp;
+
+    if (resetCamera) {
+      vs.camDist = Math.max(b.w, b.h) * 2.8;
+      vs.rotX = 0.5;  vs.rotY = 0.4;
+    }
+    vRender3D();
+  }
+
+  // ─── 9. ZIP LOADER ───────────────────────────────────────────────────
+  function vSetProg(p) { document.getElementById('vProgress').style.width = p + '%'; }
+
+  async function vLoadZip(file) {
+    vs.gerberFile = file;
+    const emptyEl = document.getElementById('vEmpty');
+    const errEl   = document.getElementById('vErr');
+    emptyEl.style.display = 'flex';
+    emptyEl.querySelector('p').textContent = 'Parsing Gerber files…';
+    errEl.style.display = 'none';
+    vSetProg(5);
+
+    try {
+      const zip = await JSZip.loadAsync(file);
+      vSetProg(12);
+      const allFiles = Object.keys(zip.files).filter(fn => !zip.files[fn].dir);
+
+      // ── Pass 1: Categorise every file ──────────────────────────────
+      const gerberCands = [];   // files to classify as Gerber layers
+      const drillCands  = [];   // files to parse as drill
+
+      for (const fn of allFiles) {
+        const base = fn.split('/').pop();
+        const ext  = base.includes('.') ? base.split('.').pop().toUpperCase() : '';
+
+        // Known non-Gerber binary / report files
+        if (/^(APR_LIB|EXTREP|APR|DRR|LDP|REP|PDF|PNG|JPG|BMP|SVG|ZIP|CSV|NETLIST|IPC)$/i.test(ext)) continue;
+
+        if (/^(XLN|DRL|EXC|NCD)$/i.test(ext)) {
+          drillCands.push(fn);  // unambiguous drill
+        } else if (/^TXT$/i.test(ext)) {
+          drillCands.push(fn);  // may be drill; will verify with M48 check
+        } else {
+          gerberCands.push(fn);
+        }
+      }
+
+      vSetProg(18);
+
+      // ── Pass 2: Read & classify Gerber candidates ──────────────────
+      const classified = [];  // { fn, text, cls }
+      for (let i = 0; i < gerberCands.length; i++) {
+        const fn   = gerberCands[i];
+        const text = await zip.files[fn].async('string');
+
+        // Must look like a real Gerber file
+        if (!/%FS/i.test(text) && !/G36/i.test(text) && !/D0*1\b/.test(text)) continue;
+
+        const cls = vClassifyLayer(fn, text);
+        if (cls.role !== 'ignore') classified.push({ fn, text, cls });
+
+        vSetProg(18 + Math.round((i + 1) / gerberCands.length * 42));
+        await new Promise(r => setTimeout(r, 0));
+      }
+      vSetProg(62);
+
+      // ── Pass 3: Deduplicate — one file per role+side+layerNum ──────
+      // For outline: prefer GKO > GML > edge_cuts > others
+      const outlineScore = fn => {
+        const e = fn.split('.').pop().toUpperCase();
+        if (e === 'GKO') return 4;
+        if (e === 'GML') return 3;
+        if (/-edge_cuts\./i.test(fn)) return 3;
+        return 1;
+      };
+      const seen = {};  // key → { item, score }
+      for (const item of classified) {
+        const { role, side, layerNum } = item.cls;
+        const key  = `${role}:${side}:${layerNum}`;
+        const score = (role === 'outline') ? outlineScore(item.fn) : 1;
+        if (!seen[key] || score > seen[key].score) seen[key] = { item, score };
+      }
+      const deduped = Object.values(seen).map(v => v.item);
+      vSetProg(65);
+
+      // ── Pass 4: Parse Gerber layers ───────────────────────────────
+      const layerList = [];
+      for (let i = 0; i < deduped.length; i++) {
+        const { fn, text, cls } = deduped[i];
+        const gl = new VGerberLayer(text);
+        if (gl.empty && cls.role !== 'outline') { vSetProg(65 + Math.round((i+1)/deduped.length*20)); continue; }
+        const dp = vDisplayProps(cls.role, cls.side, cls.layerNum, cls.polarity);
+        // Unique ID: role_side_layerNum
+        const id = `${cls.role}_${cls.side ?? 'null'}_${cls.layerNum}`;
+        layerList.push({ id, ...cls, ...dp, layer:gl, vis:true });
+        vSetProg(65 + Math.round((i+1)/deduped.length*20));
+        await new Promise(r => setTimeout(r, 0));
+      }
+      vSetProg(87);
+
+      // ── Pass 5: Parse ALL drill files and merge ───────────────────
+      vs.drills = [];
+      for (const fn of drillCands) {
+        try {
+          const text = await zip.files[fn].async('string');
+          // Must have Excellon M48 header or tool definitions
+          if (/^M48\b/m.test(text) || /^T\d+[^\n]*C[0-9.]/m.test(text)) {
+            vs.drills.push(...vParseDrill(text));
+          }
+        } catch (e) { console.warn('[PCBViewer] Drill parse error:', fn, e); }
+      }
+      vSetProg(93);
+
+      // ── Store state ───────────────────────────────────────────────
+      vs.layers = [...layerList,
+        // Synthetic "Drills" toggle entry (no layer object)
+        { id:'drills', role:'drills', side:null, layerNum:0, polarity:'Positive',
+          label:'Drills / Vias', dot:'#2a3a4a', color:'#000', alpha:1, layer:null, vis:true }
+      ];
+
+      // ── Board dimensions ──────────────────────────────────────────
+      // Prefer outline layer bbox > top copper > any layer with bbox
+      const outlineL = layerList.find(l => l.role === 'outline' && l.layer?.bbox);
+      const topCuL   = layerList.find(l => l.role === 'copper' && l.side === 'top' && l.layer?.bbox);
+      const anyL     = layerList.find(l => l.layer?.bbox);
+      const dimSrc   = outlineL || topCuL || anyL;
+      if (!dimSrc) throw new Error('Could not determine board dimensions — no valid layer data found.');
+
+      vs.bbox    = dimSrc.layer.bbox;
+      vs.polygon = vBuildPolygon(outlineL?.layer ?? null);
+
+      // ── Info panel ────────────────────────────────────────────────
+      const copperCount = layerList.filter(l => l.role === 'copper').length;
+      let feats = 0;
+      for (const ld of layerList) if (ld.layer) feats += ld.layer.traces.length + ld.layer.flashes.length + ld.layer.regions.length;
+
+      const b = vs.bbox;
+      document.getElementById('vInfoW').textContent      = (Math.round(b.w * 100) / 100) + ' mm';
+      document.getElementById('vInfoH').textContent      = (Math.round(b.h * 100) / 100) + ' mm';
+      document.getElementById('vInfoL').textContent      = copperCount;
+      document.getElementById('vInfoF').textContent      = feats.toLocaleString();
+      document.getElementById('vInfoDrills').textContent = vs.drills.length ? vs.drills.length + ' holes' : '—';
+
+      // ── Sidebar ───────────────────────────────────────────────────
+      vBuildLayerToggles();
+
+      vSetProg(100);
+      setTimeout(() => vSetProg(0), 600);
+      vs.loaded = true;  vs.zoom = 1;  vs.panX = 0;  vs.panY = 0;
+      emptyEl.style.display = 'none';
+
+      if (vs.mode === '2d') vRender2D();
+      else { vInit3D(); vBuildBoard3D(true); }
+
+    } catch (e) {
+      errEl.textContent = '⚠ ' + e.message;
+      errEl.style.display = 'block';
+      setTimeout(() => errEl.style.display = 'none', 8000);
+      emptyEl.style.display = 'none';
+      vSetProg(0);
+      console.error('[PCBViewer]', e);
+    }
+  }
+
+  // ─── 10. SIDEBAR LAYER TOGGLES ───────────────────────────────────────
+  function vBuildLayerToggles() {
+    const container = document.getElementById('vLayerToggles');
+
+    // Display order: top copper → inner copper → power planes → bot copper
+    //                → top mask → bot mask → top silk → bot silk → paste → outline → drills
+    const rank = l => {
+      if (l.role === 'copper' && l.side === 'top')   return 0;
+      if (l.role === 'copper' && l.side === 'inner')
+        return l.layerNum >= 100 ? 10 + (l.layerNum - 99) : 5 + l.layerNum;
+      if (l.role === 'copper' && l.side === 'bot')   return 40;
+      if (l.role === 'mask'   && l.side === 'top')   return 50;
+      if (l.role === 'mask'   && l.side === 'bot')   return 51;
+      if (l.role === 'silk'   && l.side === 'top')   return 60;
+      if (l.role === 'silk'   && l.side === 'bot')   return 61;
+      if (l.role === 'paste')  return 70;
+      if (l.role === 'outline') return 80;
+      if (l.role === 'drills')  return 90;
+      return 100;
+    };
+
+    const sorted = [...vs.layers].sort((a, b) => rank(a) - rank(b));
+
+    const html = sorted.map(ld => `
+      <div class="vlayer-row von" id="vlr-${ld.id}" onclick="vToggleLayer('${ld.id}')">
+        <div class="vlayer-dot" style="background:${ld.dot};box-shadow:0 0 4px ${ld.dot}55"></div>
+        <div class="vlayer-lbl">${ld.label}</div>
+        <div class="vtoggle"></div>
+      </div>`).join('');
+
+    container.innerHTML = html || '<div style="font-size:11px;color:#6B8BA4;padding:8px">No layers detected</div>';
+  }
+
+  // ─── 11. UI EVENT HANDLERS ───────────────────────────────────────────
+
+  function vSwitchMode(m) {
+    vs.mode = m;
+    document.getElementById('vBtn2d').classList.toggle('active', m === '2d');
+    document.getElementById('vBtn3d').classList.toggle('active', m === '3d');
+    $2d.style.display = m === '2d' ? 'block' : 'none';
+    $3d.style.display = m === '3d' ? 'block' : 'none';
+    document.getElementById('vStMode').textContent = m.toUpperCase();
+    if (m === '2d') { if (vs.loaded) vRender2D(); }
+    else            { vInit3D(); if (vs.loaded) vBuildBoard3D(true); else vRender3D(); }
+  }
+
+  function vToggleLayer(id) {
+    const ld = vs.layers.find(l => l.id === id);
+    if (!ld) return;
+    ld.vis = !ld.vis;
+    document.getElementById('vlr-' + id)?.classList.toggle('von', ld.vis);
+    if (vs.mode === '2d') vRender2D();
+    else if (vs.loaded)   vBuildBoard3D();
+  }
+
+  function vSetMask(el) {
+    document.querySelectorAll('.vmask-sw').forEach(s => s.classList.remove('vsel'));
+    el.classList.add('vsel');
+    vs.maskColor = el.dataset.c;
+    if (vs.mode === '2d') vRender2D();
+    else if (vs.loaded)   vBuildBoard3D();
   }
 
   function vFitView() {
-    vBuildBoard3D();
+    if (vs.mode === '2d') { vs.zoom = 1; vs.panX = 0; vs.panY = 0; vRender2D(); }
+    else if (vs.bbox) { vs.rotX = 0.5; vs.rotY = 0.4; vs.camDist = Math.max(vs.bbox.w, vs.bbox.h) * 2.8; vRender3D(); }
   }
 
   function vZoomBy(f) {
-    vCamera.position.z *= (1 / f);
+    if (vs.mode === '2d') { vs.zoom = Math.max(0.05, Math.min(80, vs.zoom * f)); vRender2D(); }
+    else { vs.camDist = Math.max(5, Math.min(2000, vs.camDist / f)); vRender3D(); }
   }
 
   function vScreenshot() {
-    const link = document.createElement('a');
-    link.href = vRenderer.domElement.toDataURL();
-    link.download = 'pcb-board.png';
-    link.click();
+    const cv = vs.mode === '2d' ? $2d : $3d;
+    const a  = document.createElement('a');
+    a.download = 'pcb_view.png';
+    a.href     = cv.toDataURL('image/png');
+    a.click();
   }
 
+  // 2D pan
+  let _vPan = false, _vPX = 0, _vPY = 0, _vPX0 = 0, _vPY0 = 0;
+  $2d.addEventListener('mousedown', e => {
+    _vPan = true;  _vPX = e.clientX;  _vPY = e.clientY;  _vPX0 = vs.panX;  _vPY0 = vs.panY;
+    $2d.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mouseup', () => { _vPan = false; $2d.style.cursor = 'crosshair'; });
+  $2d.addEventListener('mousemove', e => {
+    if (_vPan) { vs.panX = _vPX0 + (e.clientX - _vPX); vs.panY = _vPY0 + (e.clientY - _vPY); vRender2D(); }
+    if (vs.bbox) {
+      const T = vGetT();
+      if (T) {
+        const gx = (e.offsetX - T.offX) / T.scale + T.minX;
+        const gy = T.minY + (T.H - e.offsetY - T.offY) / T.scale;
+        document.getElementById('vStCoord').textContent = `X:${gx.toFixed(2)}  Y:${gy.toFixed(2)} mm`;
+      }
+    }
+  });
+  $2d.addEventListener('wheel', e => {
+    e.preventDefault();
+    vs.zoom = Math.max(0.05, Math.min(80, vs.zoom * (e.deltaY < 0 ? 1.15 : 0.87)));
+    vRender2D();
+  }, { passive:false });
+
+  // Keyboard shortcuts
+  window.addEventListener('keydown', e => {
+    if (!document.getElementById('pcbViewerOverlay').classList.contains('open')) return;
+    if (e.key === 'Escape') closeViewer();
+    if (e.key === 'f' || e.key === 'F') vFitView();
+    if (e.key === '2') vSwitchMode('2d');
+    if (e.key === '3') vSwitchMode('3d');
+  });
+
+  // Resize observer
+  new ResizeObserver(() => {
+    if (!document.getElementById('pcbViewerOverlay').classList.contains('open')) return;
+    if (vs.mode === '2d' && vs.loaded) {
+      vRender2D();
+    } else if (vs.mode === '3d' && vs.renderer3d) {
+      const vp = document.getElementById('vViewport');
+      const W = vp.clientWidth, H = vp.clientHeight - 25;
+      vs.renderer3d.setSize(W, H, false);
+      vs.camera.aspect = W / H;
+      vs.camera.updateProjectionMatrix();
+      vRender3D();
+    }
+  }).observe(document.getElementById('vViewport'));
+
+  // ─── 12. OPEN / CLOSE ────────────────────────────────────────────────
   function openViewer() {
-    const modal = document.getElementById('vModal');
-    modal.classList.add('visible');
-    setTimeout(() => {
-      if (!vScene) vInit3D();
-      else vRender3D();
-      window.addEventListener('resize', () => {
-        const canvas = document.getElementById('vCanvas');
-        if (vRenderer) {
-          vRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
-          vCamera.aspect = canvas.clientWidth / canvas.clientHeight;
-          vCamera.updateProjectionMatrix();
-        }
-      });
-    }, 100);
+    const ov = document.getElementById('pcbViewerOverlay');
+    ov.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (window._etGerberFile && window._etGerberFile !== vs.gerberFile) {
+      vLoadZip(window._etGerberFile);
+    } else if (vs.loaded) {
+      if (vs.mode === '2d') vRender2D();
+      else { vInit3D(); vBuildBoard3D(); }
+    }
   }
 
   function closeViewer() {
-    document.getElementById('vModal').classList.remove('visible');
+    document.getElementById('pcbViewerOverlay').classList.remove('open');
+    document.body.style.overflow = '';
   }
+  </script>
+
+</body>
+
 
   // ════════════════════════════════════════════════════════════════════════════
   // RFQ SUBMISSION
