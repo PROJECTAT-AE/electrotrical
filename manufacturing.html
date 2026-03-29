@@ -2841,7 +2841,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!outlineData) warn = 'No board outline detected — using dimensions from form';
     if (layerCount === 0) warn = (warn || '') + (warn ? ' | ' : '') + 'No copper layers found';
 
-    const data = { layers: Math.max(layerCount, 2), outline: outlineData, warn: warn || '' };
+    const data = {
+      layers:  Math.max(layerCount, 2),
+      outline: outlineData,
+      width:   outlineData ? outlineData.width  : null,
+      height:  outlineData ? outlineData.height : null,
+      warn:    warn || ''
+    };
     showParseResult(data);
     autoFillForm(data);
 
@@ -2858,7 +2864,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       outlineData = parseGerberForDimensions(text);
     }
     const layerCount = role === 'copper' ? 2 : 1;
-    const data = { layers: layerCount, outline: outlineData, warn: 'Single Gerber file — assuming 2-layer board' };
+    const data = { layers: layerCount, outline: outlineData, width: outlineData?.width, height: outlineData?.height, warn: 'Single Gerber file — assuming 2-layer board' };
     showParseResult(data);
     autoFillForm(data);
   }
@@ -2959,11 +2965,35 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       let px = 0, py = 0, ap = null;
       let inRegion = false, regionPts = [];
+      let arcMode = 'linear';   // 'linear' | 'cw' | 'ccw'
+
+      // Helper: tessellate a Gerber arc into ~N line segments
+      const tessArc = (x1, y1, x2, y2, ci, cj, cw, steps = 16) => {
+        const cx = x1 + ci, cy = y1 + cj;
+        const r  = Math.hypot(ci, cj);
+        if (r < 1e-6) return [{ x: x2, y: y2 }];  // degenerate
+        let a0 = Math.atan2(y1 - cy, x1 - cx);
+        let a1 = Math.atan2(y2 - cy, x2 - cx);
+        // Normalise sweep direction
+        if (cw)  { if (a1 > a0) a1 -= 2 * Math.PI; }
+        else     { if (a1 < a0) a1 += 2 * Math.PI; }
+        const pts = [];
+        for (let k = 1; k <= steps; k++) {
+          const a = a0 + (a1 - a0) * k / steps;
+          pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+        }
+        return pts;
+      };
 
       for (const token of body.split('*')) {
         const t = token.trim();
         if (!t) continue;
         if (/M0*2/.test(t)) break;                        // M02 = end of file
+
+        // Arc / linear mode G-codes (may appear alone or combined with XYD)
+        if (/G01/.test(t)) arcMode = 'linear';
+        if (/G02/.test(t)) arcMode = 'cw';
+        if (/G03/.test(t)) arcMode = 'ccw';
 
         if (/G36/.test(t)) { inRegion = true;  regionPts = []; continue; }
         if (/G37/.test(t)) {
@@ -2987,14 +3017,36 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         const nx = xm ? toX(xm[1]) : px;
         const ny = ym ? toY(ym[1]) : py;
 
+        // Arc centre offsets I (x) and J (y) — relative to current position
+        const im = t.match(/I([+-]?\d+)/);
+        const jm = t.match(/J([+-]?\d+)/);
+        const ci = im ? toX(im[1]) : 0;
+        const cj = jm ? toY(jm[1]) : 0;
+
         if (d === 1) {                                     // draw / move+draw
           if (inRegion) {
             if (!regionPts.length) regionPts.push({ x: px, y: py });
-            regionPts.push({ x: nx, y: ny });
+            // Tessellate arcs inside regions too
+            if (arcMode !== 'linear' && (im || jm)) {
+              tessArc(px, py, nx, ny, ci, cj, arcMode === 'cw').forEach(p => regionPts.push(p));
+            } else {
+              regionPts.push({ x: nx, y: ny });
+            }
           } else {
             const w = ap?.p?.[0] ?? 0.05;
-            this.traces.push({ x1: px, y1: py, x2: nx, y2: ny, w });
-            this._expand(px, py);  this._expand(nx, ny);
+            // Tessellate arc commands into multiple short segments
+            if (arcMode !== 'linear' && (im || jm)) {
+              const arcPts = tessArc(px, py, nx, ny, ci, cj, arcMode === 'cw');
+              let lx = px, ly = py;
+              for (const ap2 of arcPts) {
+                this.traces.push({ x1: lx, y1: ly, x2: ap2.x, y2: ap2.y, w });
+                this._expand(lx, ly);  this._expand(ap2.x, ap2.y);
+                lx = ap2.x;  ly = ap2.y;
+              }
+            } else {
+              this.traces.push({ x1: px, y1: py, x2: nx, y2: ny, w });
+              this._expand(px, py);  this._expand(nx, ny);
+            }
           }
         } else if (d === 2) {                              // move only
           if (inRegion && regionPts.length >= 3) {
@@ -3086,7 +3138,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (d1 < bestDist) { bestDist = d1; best = i; bestFlip = false; }
         if (d2 < bestDist) { bestDist = d2; best = i; bestFlip = true;  }
       }
-      if (best < 0 || bestDist > 0.5) break;
+      if (best < 0 || bestDist > 1.0) break;  // 1mm tolerance handles minor arc tessellation gaps
       const sg = segs.splice(best, 1)[0];
       poly.push(bestFlip ? { x: sg.x2, y: sg.y2 } : { x: sg.x1, y: sg.y1 });
       ex = bestFlip ? sg.x1 : sg.x2;
@@ -3838,10 +3890,14 @@ void main(){
     const n = clean.length;
     if (n < 3) return { tris: [], clean };
     const idx = []; for (let i=0;i<n;i++) idx.push(i);
-    // Ensure CCW winding
+    // Ensure CCW winding (standard shoelace: positive = CCW in Y-up coords)
     let area = 0;
-    for (let i=0, j=n-1; i<n; j=i++) area += (clean[j].x - clean[i].x) * (clean[j].y + clean[i].y);
-    if (area > 0) idx.reverse();
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      area += clean[i].x * clean[j].y - clean[j].x * clean[i].y;
+    }
+    // area > 0 means CCW (Y-up); we want CCW for correct front-face winding
+    if (area < 0) idx.reverse();  // CW polygon → reverse to CCW
     const tris = [];
     let rem = [...idx], guard = rem.length * 4;
     while (rem.length > 2 && guard-- > 0) {
