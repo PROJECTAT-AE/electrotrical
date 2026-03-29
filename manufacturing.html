@@ -619,6 +619,77 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
 
     /* ══════════════════════════════════════════
+       JLCPCB-STYLE SPEC ROWS
+       ══════════════════════════════════════════ */
+    .spec-row {
+      display: flex; align-items: flex-start; padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px;
+    }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-lbl {
+      width: 130px; flex-shrink: 0; font-size: 12px; color: var(--text-muted);
+      font-weight: 500; padding-top: 7px; line-height: 1.3;
+    }
+    .spec-opts { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+    .sopt {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 5px; color: var(--text-secondary); font-size: 12px;
+      font-weight: 500; padding: 5px 10px; cursor: pointer;
+      transition: all 0.15s; white-space: nowrap; font-family: var(--font-sans);
+      line-height: 1.4;
+    }
+    .sopt:hover { border-color: rgba(0,102,255,0.5); color: var(--white); background: rgba(0,102,255,0.08); }
+    .sopt.active {
+      background: rgba(30,30,30,0.9); border-color: #4a7cf7;
+      color: var(--white); box-shadow: 0 0 0 1px rgba(74,124,247,0.25);
+    }
+    /* Color option pills */
+    .csopt {
+      display: flex; align-items: center; gap: 5px; padding: 5px 10px;
+      border: 1.5px solid rgba(255,255,255,0.12); border-radius: 16px;
+      cursor: pointer; font-size: 11px; color: var(--text-muted);
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .csopt .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.25); }
+    .csopt.active { border-color: #4a7cf7; color: var(--white); }
+    /* Dimensions */
+    .dim-wrap { display: flex; align-items: center; gap: 6px; }
+    .dim-inp, .qty-inp {
+      width: 64px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 5px; color: var(--white); font-size: 12px; padding: 5px 8px;
+      text-align: center; font-family: var(--font-mono);
+    }
+    .dim-inp:focus, .qty-inp:focus { outline: none; border-color: #4a7cf7; }
+    .dim-x, .dim-unit { color: var(--text-muted); font-size: 12px; }
+    /* Collapsible spec section */
+    .spec-section { margin-top: 10px; }
+    .spec-section-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 12px; cursor: pointer; background: rgba(255,255,255,0.04);
+      border-radius: 6px; border: 1px solid rgba(255,255,255,0.07); margin-bottom: 6px;
+      user-select: none;
+    }
+    .spec-section-hdr h4 { font-size: 13px; font-weight: 600; color: var(--white); margin: 0; }
+    .spec-section-arrow { color: var(--text-muted); font-size: 11px; transition: transform 0.2s; }
+    .spec-section-hdr.collapsed .spec-section-arrow { transform: rotate(-90deg); }
+    .spec-section-body.hidden { display: none; }
+    /* Charge breakdown */
+    .charge-rows { margin-bottom: 12px; }
+    .charge-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .charge-item:last-child { border-bottom: none; }
+    .charge-name { color: var(--text-muted); }
+    .charge-val { color: var(--text); font-weight: 500; font-family: var(--font-mono); }
+    .charge-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0 0; border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .charge-total-label { font-size: 13px; font-weight: 600; color: var(--white); }
+    .charge-total-val { font-size: 24px; font-weight: 800; color: #fbbf24; font-family: var(--font-mono); }
+
+    /* ══════════════════════════════════════════
        SERVICES SECTION
        ══════════════════════════════════════════ */
     #services {
@@ -1275,96 +1346,163 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <svg id="pcbSvgCanvas" viewBox="0 0 160 120" style="width:160px; height:120px; background:rgba(255,255,255,0.02); border-radius:4px; border:1px solid rgba(255,255,255,0.1);"></svg>
       </div>
 
-      <!-- Color Swatches -->
-      <div style="margin-bottom:1.5rem;">
-        <div class="form-label">Solder Mask Color</div>
-        <div class="color-swatches">
-          <div class="color-swatch selected" style="background:#1a3d2a;" data-bg="#1a3d2a" data-color="green" onclick="selectColor(this);" title="Green"></div>
-          <div class="color-swatch" style="background:#2d1a1a;" data-bg="#2d1a1a" data-color="red" onclick="selectColor(this);" title="Red"></div>
-          <div class="color-swatch" style="background:#1a1a3d;" data-bg="#1a1a3d" data-color="blue" onclick="selectColor(this);" title="Blue"></div>
-          <div class="color-swatch" style="background:#0d0d0d;" data-bg="#0d0d0d" data-color="black" onclick="selectColor(this);" title="Black"></div>
-          <div class="color-swatch" style="background:#ffffff; border-color:#666;" data-bg="#ffffff" data-color="white" onclick="selectColor(this);" title="White"></div>
-          <div class="color-swatch" style="background:#3d3d1a;" data-bg="#3d3d1a" data-color="yellow" onclick="selectColor(this);" title="Yellow"></div>
+      <!-- Hidden inputs (read by calcPCB + submitRFQ JS) -->
+      <input type="hidden" id="layers"    value="2">
+      <input type="hidden" id="thickness" value="1.6">
+      <input type="hidden" id="copper"    value="1oz">
+      <input type="hidden" id="surface"   value="hasl">
+      <input type="hidden" id="buildtime" value="standard">
+
+      <!-- ── Basic Specs ── -->
+      <div style="margin-bottom:4px;">
+
+        <!-- Layers -->
+        <div class="spec-row">
+          <div class="spec-lbl">Layers</div>
+          <div class="spec-opts" id="grp-layers">
+            <button class="sopt active" data-val="2"  onclick="pickSpec('layers',this)">2</button>
+            <button class="sopt"        data-val="4"  onclick="pickSpec('layers',this)">4</button>
+            <button class="sopt"        data-val="6"  onclick="pickSpec('layers',this)">6</button>
+            <button class="sopt"        data-val="8"  onclick="pickSpec('layers',this)">8</button>
+            <button class="sopt"        data-val="10" onclick="pickSpec('layers',this)">10</button>
+          </div>
+        </div>
+
+        <!-- Dimensions -->
+        <div class="spec-row">
+          <div class="spec-lbl">Dimensions</div>
+          <div class="spec-opts">
+            <div class="dim-wrap">
+              <input id="dimW" type="number" class="dim-inp" value="100" min="5" onchange="calcPCB()" placeholder="100">
+              <span class="dim-x">×</span>
+              <input id="dimH" type="number" class="dim-inp" value="100" min="5" onchange="calcPCB()" placeholder="100">
+              <span class="dim-unit">mm</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PCB Qty -->
+        <div class="spec-row">
+          <div class="spec-lbl">PCB Qty</div>
+          <div class="spec-opts" id="grp-qty">
+            <button class="sopt active" data-val="5"   onclick="pickQty(this)">5</button>
+            <button class="sopt"        data-val="10"  onclick="pickQty(this)">10</button>
+            <button class="sopt"        data-val="25"  onclick="pickQty(this)">25</button>
+            <button class="sopt"        data-val="50"  onclick="pickQty(this)">50</button>
+            <button class="sopt"        data-val="100" onclick="pickQty(this)">100</button>
+            <input id="quantity" type="number" class="qty-inp" value="5" min="1" onchange="syncQtyBtns()" placeholder="Qty" title="Custom quantity">
+          </div>
         </div>
       </div>
 
-      <!-- Form Fields -->
-      <div class="form-group">
-        <label class="form-label">Layers</label>
-        <select id="layers" class="form-select" onchange="calcPCB()">
-          <option value="2">2-Layer</option>
-          <option value="4">4-Layer</option>
-          <option value="6">6-Layer</option>
-          <option value="8">8-Layer</option>
-          <option value="10">10-Layer</option>
-        </select>
-      </div>
+      <!-- ── PCB Specifications (collapsible) ── -->
+      <div class="spec-section">
+        <div class="spec-section-hdr" onclick="toggleSection(this)">
+          <h4>PCB Specifications</h4>
+          <span class="spec-section-arrow">▼</span>
+        </div>
+        <div class="spec-section-body">
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Width (mm)</label>
-          <input id="dimW" type="number" class="form-input" value="100" min="5" onchange="calcPCB()" placeholder="100">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Height (mm)</label>
-          <input id="dimH" type="number" class="form-input" value="100" min="5" onchange="calcPCB()" placeholder="100">
-        </div>
-      </div>
+          <!-- PCB Thickness -->
+          <div class="spec-row">
+            <div class="spec-lbl">PCB Thickness</div>
+            <div class="spec-opts" id="grp-thickness">
+              <button class="sopt"        data-val="0.8" onclick="pickSpec('thickness',this)">0.8mm</button>
+              <button class="sopt"        data-val="1.0" onclick="pickSpec('thickness',this)">1.0mm</button>
+              <button class="sopt"        data-val="1.2" onclick="pickSpec('thickness',this)">1.2mm</button>
+              <button class="sopt active" data-val="1.6" onclick="pickSpec('thickness',this)">1.6mm</button>
+              <button class="sopt"        data-val="2.0" onclick="pickSpec('thickness',this)">2.0mm</button>
+            </div>
+          </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Thickness</label>
-          <select id="thickness" class="form-select" onchange="calcPCB()">
-            <option value="0.8">0.8 mm</option>
-            <option value="1.0">1.0 mm</option>
-            <option value="1.6">1.6 mm</option>
-            <option value="2.0">2.0 mm</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Quantity</label>
-          <input id="quantity" type="number" class="form-input" value="5" min="1" onchange="calcPCB()" placeholder="5">
-        </div>
-      </div>
+          <!-- PCB Color -->
+          <div class="spec-row">
+            <div class="spec-lbl">PCB Color</div>
+            <div class="spec-opts" id="grp-color">
+              <button class="csopt active" data-bg="#0d5e2f" data-mask="#0d5e2f" data-color="green" onclick="pickColor(this)">
+                <span class="dot" style="background:#0d5e2f;"></span>Green
+              </button>
+              <button class="csopt" data-bg="#5e0d0d" data-mask="#5e0d0d" data-color="red" onclick="pickColor(this)">
+                <span class="dot" style="background:#8b0000;"></span>Red
+              </button>
+              <button class="csopt" data-bg="#0d1a5e" data-mask="#0d1a5e" data-color="blue" onclick="pickColor(this)">
+                <span class="dot" style="background:#00008b;"></span>Blue
+              </button>
+              <button class="csopt" data-bg="#5e2d7d" data-mask="#5e2d7d" data-color="purple" onclick="pickColor(this)">
+                <span class="dot" style="background:#6a0dad;"></span>Purple
+              </button>
+              <button class="csopt" data-bg="#1a1a1a" data-mask="#111111" data-color="black" onclick="pickColor(this)">
+                <span class="dot" style="background:#111;"></span>Black
+              </button>
+              <button class="csopt" data-bg="#e8e4d0" data-mask="#e8e4d0" data-color="white" onclick="pickColor(this)">
+                <span class="dot" style="background:#e8e4d0; border-color:#999;"></span>White
+              </button>
+              <button class="csopt" data-bg="#5e4f0d" data-mask="#a08020" data-color="yellow" onclick="pickColor(this)">
+                <span class="dot" style="background:#d4a017;"></span>Yellow
+              </button>
+            </div>
+          </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Copper Weight</label>
-          <select id="copper" class="form-select" onchange="calcPCB()">
-            <option value="1oz">1 oz</option>
-            <option value="2oz">2 oz</option>
-            <option value="3oz">3 oz</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Surface Finish</label>
-          <select id="surface" class="form-select" onchange="calcPCB()">
-            <option value="hasl">HASL</option>
-            <option value="rohs">RoHS HASL</option>
-            <option value="enig">ENIG</option>
-            <option value="immersion-tin">Immersion Tin</option>
-            <option value="immersion-silver">Immersion Silver</option>
-          </select>
-        </div>
-      </div>
+          <!-- Silkscreen -->
+          <div class="spec-row">
+            <div class="spec-lbl">Silkscreen</div>
+            <div class="spec-opts" id="grp-silk">
+              <button class="sopt active" data-val="white" onclick="pickSpec('silk',this)">White</button>
+              <button class="sopt"        data-val="black" onclick="pickSpec('silk',this)">Black</button>
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label class="form-label">Build Time</label>
-        <select id="buildtime" class="form-select" onchange="calcPCB()">
-          <option value="standard">Standard (10-14 days)</option>
-          <option value="express">Express (5-7 days)</option>
-          <option value="rush">Rush (2-3 days)</option>
-        </select>
-      </div>
+          <!-- Copper Weight -->
+          <div class="spec-row">
+            <div class="spec-lbl">Copper Weight</div>
+            <div class="spec-opts" id="grp-copper">
+              <button class="sopt active" data-val="1oz" onclick="pickSpec('copper',this)">1 oz</button>
+              <button class="sopt"        data-val="2oz" onclick="pickSpec('copper',this)">2 oz</button>
+              <button class="sopt"        data-val="3oz" onclick="pickSpec('copper',this)">3 oz</button>
+            </div>
+          </div>
 
-      <!-- Price Display -->
-      <div class="price-box">
-        <div class="price-label">Estimated Price</div>
-        <div class="price-number" id="totalPrice">$25.00</div>
+          <!-- Surface Finish -->
+          <div class="spec-row">
+            <div class="spec-lbl">Surface Finish</div>
+            <div class="spec-opts" id="grp-surface">
+              <button class="sopt active" data-val="hasl"             onclick="pickSpec('surface',this)">HASL (Lead)</button>
+              <button class="sopt"        data-val="rohs"             onclick="pickSpec('surface',this)">LeadFree HASL</button>
+              <button class="sopt"        data-val="enig"             onclick="pickSpec('surface',this)">ENIG</button>
+              <button class="sopt"        data-val="immersion-tin"    onclick="pickSpec('surface',this)">Imm. Tin</button>
+              <button class="sopt"        data-val="immersion-silver" onclick="pickSpec('surface',this)">Imm. Silver</button>
+            </div>
+          </div>
+
+          <!-- Build Time -->
+          <div class="spec-row">
+            <div class="spec-lbl">Build Time</div>
+            <div class="spec-opts" id="grp-buildtime">
+              <button class="sopt active" data-val="standard" onclick="pickSpec('buildtime',this)">Standard <span style="opacity:.6;font-size:10px;">10-14d</span></button>
+              <button class="sopt"        data-val="express"  onclick="pickSpec('buildtime',this)">Express <span style="opacity:.6;font-size:10px;">5-7d</span></button>
+              <button class="sopt"        data-val="rush"     onclick="pickSpec('buildtime',this)">Rush <span style="opacity:.6;font-size:10px;">2-3d</span></button>
+            </div>
+          </div>
+
+        </div><!-- /spec-section-body -->
+      </div><!-- /spec-section -->
+
+      <!-- ── Charge Breakdown ── -->
+      <div style="margin-top:14px; padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px;">
+        <div style="font-size:12px; font-weight:600; color:var(--text-secondary); letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px;">Charge Details</div>
+        <div class="charge-rows">
+          <div class="charge-item"><span class="charge-name">Board Price</span><span class="charge-val" id="chargeBoard">$25.00</span></div>
+          <div class="charge-item"><span class="charge-name">Surface Finish</span><span class="charge-val" id="chargeFinish">$0.00</span></div>
+          <div class="charge-item"><span class="charge-name">Build Time</span><span class="charge-val" id="chargeBuild">$0.00</span></div>
+        </div>
+        <div class="charge-total-row">
+          <span class="charge-total-label">Calculated Price</span>
+          <span class="charge-total-val" id="totalPrice">$25.00</span>
+        </div>
       </div>
 
       <!-- CTA Button -->
-      <button class="config-cta" onclick="submitRFQ()">Submit Manufacturing RFQ →</button>
+      <button class="config-cta" style="margin-top:12px;" onclick="submitRFQ()">Submit Manufacturing RFQ →</button>
     </div>
   </section>
 
@@ -1849,6 +1987,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   // Color swatch selection
   function selectColor(el) {
+    // Legacy — kept for any remaining references
     document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
     el.classList.add('selected');
     document.getElementById('pcbBoard').style.background = el.dataset.bg;
@@ -1907,6 +2046,44 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return 1.0;
   }
 
+  // ── Button-group spec pickers ──────────────────────────────────────────
+  function pickSpec(hiddenId, btn) {
+    const grp = btn.closest('.spec-opts');
+    grp.querySelectorAll('.sopt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(hiddenId).value = btn.dataset.val;
+    calcPCB();
+  }
+  function pickQty(btn) {
+    const grp = btn.closest('.spec-opts');
+    grp.querySelectorAll('.sopt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('quantity').value = btn.dataset.val;
+    calcPCB();
+  }
+  function syncQtyBtns() {
+    // when custom qty typed, deselect preset buttons
+    document.getElementById('grp-qty').querySelectorAll('.sopt').forEach(b => b.classList.remove('active'));
+    calcPCB();
+  }
+  function pickColor(btn) {
+    document.getElementById('grp-color').querySelectorAll('.csopt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const maskCol = btn.dataset.mask || btn.dataset.bg;
+    if (typeof vs !== 'undefined' && maskCol) {
+      vs.maskColor = maskCol;
+      if (vs.loaded) { if (vs.mode === '2d') vRender2D(); else vBuildBoard3D(); }
+    }
+    const boardEl = document.getElementById('pcbBoard');
+    if (boardEl) boardEl.style.background = btn.dataset.bg;
+    calcPCB();
+  }
+  function toggleSection(hdr) {
+    hdr.classList.toggle('collapsed');
+    const body = hdr.nextElementSibling;
+    body.classList.toggle('hidden');
+  }
+  // ── calcPCB with itemised breakdown ────────────────────────────────────
   function calcPCB() {
     const layers  = parseInt(document.getElementById('layers').value);
     const qty     = parseInt(document.getElementById('quantity').value);
@@ -1918,17 +2095,23 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const areaCm2 = (w * h) / 100;
     const base5 = getBase5pcs(layers, areaCm2);
     const qtyMul = getQtyMultiplier(qty);
-    let boardPrice = base5 * qtyMul;
+    let boardBase = base5 * qtyMul;
+    boardBase += (COPPER_ADDER[copper] || 0) * (qty / 5);
+    boardBase = Math.max(boardBase, 2.0);
 
     const finishAdd = FINISH_ADDER[surface] || 0;
     const finishScale = qty <= 10 ? 1.0 : qty <= 50 ? 1.3 : 1.8;
-    boardPrice += finishAdd * finishScale;
-    boardPrice += (COPPER_ADDER[copper] || 0) * (qty / 5);
-    boardPrice += RUSH_ADDER[document.getElementById('buildtime').value] || 0;
-    boardPrice = Math.max(boardPrice, 2.0);
+    const finishCost = finishAdd * finishScale;
 
-    const total  = boardPrice.toFixed(2);
-    document.getElementById('totalPrice').textContent = '$' + total;
+    const rushCost = RUSH_ADDER[document.getElementById('buildtime').value] || 0;
+
+    const total = (boardBase + finishCost + rushCost).toFixed(2);
+
+    const $ = id => document.getElementById(id);
+    if ($('chargeBoard'))  $('chargeBoard').textContent  = '$' + boardBase.toFixed(2);
+    if ($('chargeFinish')) $('chargeFinish').textContent = '$' + finishCost.toFixed(2);
+    if ($('chargeBuild'))  $('chargeBuild').textContent  = '$' + rushCost.toFixed(2);
+    $('totalPrice').textContent = '$' + total;
   }
 
   // Initial calc
@@ -2090,7 +2273,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   function autoFillForm(data) {
-    if (data.layers) document.getElementById('layers').value = Math.min(data.layers, 10);
+    if (data.layers) {
+      const lv = String(Math.min(data.layers, 10));
+      document.getElementById('layers').value = lv;
+      // Sync layer buttons
+      const grp = document.getElementById('grp-layers');
+      if (grp) {
+        grp.querySelectorAll('.sopt').forEach(b => {
+          b.classList.toggle('active', b.dataset.val === lv);
+        });
+      }
+    }
     calcPCB();
   }
 
