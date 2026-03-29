@@ -238,8 +238,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
        ══════════════════════════════════════════ */
     main { margin-top: 110px; position: relative; z-index: 1; }
 
+    /* Legacy hero — kept for other sections that may use it */
     .hero {
-      padding: 6rem 2rem;
+      padding: 4rem 2rem;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 4rem;
@@ -588,6 +589,131 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
 
     /* ══════════════════════════════════════════
+       JLCPCB-STYLE PAGE LAYOUT
+       ══════════════════════════════════════════ */
+    /* Page banner (like PCBcraft hero) */
+    .quote-banner {
+      background: linear-gradient(135deg, rgba(0,102,255,0.08) 0%, rgba(0,212,255,0.04) 100%);
+      border-bottom: 1px solid rgba(0,102,255,0.15);
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+      position: relative;
+    }
+    .quote-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(0,102,255,0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .quote-banner-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,102,255,0.08); border: 1px solid rgba(0,102,255,0.2);
+      color: var(--cyan); font-size: 11px; font-weight: 500;
+      padding: 5px 14px; border-radius: 20px; margin-bottom: 1.2rem;
+      letter-spacing: 0.04em;
+    }
+    .quote-banner-badge-dot {
+      width: 6px; height: 6px; background: var(--accent);
+      border-radius: 50%; animation: pulse 2s infinite;
+    }
+    .quote-banner h1 {
+      font-size: clamp(24px, 4vw, 40px); font-weight: 700; color: var(--white);
+      line-height: 1.15; margin-bottom: 0.8rem; letter-spacing: -0.5px;
+    }
+    .quote-banner h1 .gradient {
+      background: linear-gradient(135deg, var(--primary-light), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .quote-banner-desc {
+      font-size: 14px; color: var(--text-secondary); max-width: 560px; margin: 0 auto;
+      line-height: 1.65;
+    }
+    .quote-banner-pills {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 1.2rem;
+    }
+    .quote-banner-pill {
+      font-size: 12px; color: var(--text-secondary); padding: 5px 14px;
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* Main 2-col quote layout */
+    .quote-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 0;
+      max-width: 1280px;
+      margin: 0 auto;
+      align-items: start;
+      min-height: calc(100vh - 110px);
+    }
+    .quote-main {
+      padding: 2rem 2rem 3rem;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .quote-sidebar {
+      padding: 1.5rem;
+      position: sticky;
+      top: 110px;
+    }
+    /* Sidebar panels */
+    .qs-panel {
+      background: var(--dark-800);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .qs-panel-hdr {
+      padding: 12px 16px;
+      font-size: 13px; font-weight: 600; color: var(--white);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .qs-panel-body { padding: 14px 16px; }
+    .qs-charge-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .qs-charge-item:last-child { border-bottom: none; }
+    .qs-charge-name { color: var(--text-secondary); }
+    .qs-charge-val { color: var(--text); font-weight: 500; font-family: var(--font-mono); }
+    .qs-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,102,255,0.04);
+    }
+    .qs-total-label { font-size: 14px; font-weight: 600; color: var(--white); }
+    .qs-total-val { font-size: 26px; font-weight: 800; color: #fbbf24; font-family: var(--font-mono); }
+    /* Selected spec summary in sidebar */
+    .qs-spec-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; font-size: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .qs-spec-item:last-child { border-bottom: none; }
+    .qs-spec-key { color: var(--text-muted); }
+    .qs-spec-val { color: var(--white); font-weight: 500; }
+    /* Configurator card becomes flat, no border */
+    .configurator-card {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      max-height: none !important;
+      overflow: visible !important;
+      padding: 0 !important;
+    }
+    .configurator-card::before { display: none !important; }
+    /* Responsive */
+    @media (max-width: 900px) {
+      .quote-layout { grid-template-columns: 1fr; }
+      .quote-main { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+      .quote-sidebar { position: static; }
+    }
+
+    /* ══════════════════════════════════════════
        JLCPCB-STYLE SPEC ROWS
        ══════════════════════════════════════════ */
     .spec-row {
@@ -626,10 +752,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     .dim-inp, .qty-inp {
       width: 64px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
       border-radius: 5px; color: var(--white); font-size: 12px; padding: 5px 8px;
-      text-align: center; font-family: var(--font-mono);
+      text-align: center; font-family: var(--font-mono); appearance: textfield;
     }
     .dim-inp:focus, .qty-inp:focus { outline: none; border-color: #4a7cf7; }
     .dim-x, .dim-unit { color: var(--text-muted); font-size: 12px; }
+    /* Hide default number spinners, replace with styled ones */
+    .dim-inp::-webkit-outer-spin-button,
+    .dim-inp::-webkit-inner-spin-button,
+    .qty-inp::-webkit-outer-spin-button,
+    .qty-inp::-webkit-inner-spin-button {
+      -webkit-appearance: none; margin: 0;
+    }
+    /* Also remove Firefox spinner */
+    .dim-inp[type=number], .qty-inp[type=number] { -moz-appearance: textfield; }
     /* Collapsible spec section */
     .spec-section { margin-top: 10px; }
     .spec-section-hdr {
@@ -1255,29 +1390,29 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 <!-- ══════════════════════ MAIN CONTENT ══════════════════════ -->
 <main>
-  <!-- HERO SECTION -->
-  <section class="hero reveal">
-    <div class="hero-left">
-      <div class="hero-badge">
-        <span class="hero-badge-dot"></span>
-        PCB Manufacturing Service
-      </div>
-      <h1>Fast, Reliable <span class="gradient">PCB Manufacturing</span></h1>
-      <p class="hero-subtitle">Upload your Gerber files, configure your PCB specs, and get an instant quote. We partner with world-class manufacturers to ship high-quality boards worldwide.</p>
-      <div class="feature-pills">
-        <div class="pill">✓ Instant Quotes</div>
-        <div class="pill">✓ Worldwide Shipping</div>
-        <div class="pill">✓ Quality Guaranteed</div>
-        <div class="pill">✓ Rush Options</div>
-      </div>
-      <div class="hero-actions">
-        <a href="#configurator" class="btn-primary">Configure & Quote →</a>
-        <a href="#how" class="btn-secondary">Learn More</a>
-      </div>
-    </div>
 
-    <!-- CONFIGURATOR CARD (Right side) -->
-    <div id="configurator" class="configurator-card reveal-delay-1">
+  <!-- PAGE BANNER -->
+  <div class="quote-banner">
+    <div class="quote-banner-badge">
+      <span class="quote-banner-badge-dot"></span>
+      Online PCB Quote
+    </div>
+    <h1>PCB <span class="gradient">Manufacturing</span> Quote</h1>
+    <p class="quote-banner-desc">Upload your Gerber files, configure specs, and get an instant price estimate. We partner with world-class manufacturers for fast, high-quality boards.</p>
+    <div class="quote-banner-pills">
+      <span class="quote-banner-pill">✓ Instant Quote</span>
+      <span class="quote-banner-pill">✓ Worldwide Shipping</span>
+      <span class="quote-banner-pill">✓ Quality Guaranteed</span>
+      <span class="quote-banner-pill">✓ Rush Available</span>
+    </div>
+  </div>
+
+  <!-- QUOTE LAYOUT: 2/3 left + 1/3 right -->
+  <div class="quote-layout">
+
+    <!-- LEFT: Configurator -->
+    <div class="quote-main">
+      <div id="configurator" class="configurator-card">
       <h3 class="config-title">PCB Configurator</h3>
 
       <div class="config-tabs">
@@ -1454,24 +1589,56 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div><!-- /spec-section-body -->
       </div><!-- /spec-section -->
 
-      <!-- ── Charge Breakdown ── -->
-      <div style="margin-top:14px; padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px;">
-        <div style="font-size:12px; font-weight:600; color:var(--text-secondary); letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px;">Charge Details</div>
-        <div class="charge-rows">
-          <div class="charge-item"><span class="charge-name">Board Price</span><span class="charge-val" id="chargeBoard">$25.00</span></div>
-          <div class="charge-item"><span class="charge-name">Surface Finish</span><span class="charge-val" id="chargeFinish">$0.00</span></div>
-          <div class="charge-item"><span class="charge-name">Build Time</span><span class="charge-val" id="chargeBuild">$0.00</span></div>
+      <!-- CTA Button -->
+      <button class="config-cta" style="margin-top:16px; display:none;" onclick="submitRFQ()">Submit Manufacturing RFQ →</button>
+
+      </div><!-- /configurator-card -->
+    </div><!-- /quote-main -->
+
+    <!-- RIGHT: Sticky Sidebar -->
+    <div class="quote-sidebar">
+
+      <!-- Charge Details -->
+      <div class="qs-panel">
+        <div class="qs-panel-hdr">
+          Charge Details
+          <span style="font-size:11px; color:var(--text-muted); font-weight:400;">estimated</span>
         </div>
-        <div class="charge-total-row">
-          <span class="charge-total-label">Calculated Price</span>
-          <span class="charge-total-val" id="totalPrice">$25.00</span>
+        <div class="qs-panel-body">
+          <div class="qs-charge-item"><span class="qs-charge-name">Board Price</span><span class="qs-charge-val" id="chargeBoard">$25.00</span></div>
+          <div class="qs-charge-item"><span class="qs-charge-name">Surface Finish</span><span class="qs-charge-val" id="chargeFinish">$0.00</span></div>
+          <div class="qs-charge-item"><span class="qs-charge-name">Build Time</span><span class="qs-charge-val" id="chargeBuild">$0.00</span></div>
+        </div>
+        <div class="qs-total-row">
+          <span class="qs-total-label">Calculated Price</span>
+          <span class="qs-total-val" id="totalPrice">$25.00</span>
         </div>
       </div>
 
-      <!-- CTA Button -->
-      <button class="config-cta" style="margin-top:12px;" onclick="submitRFQ()">Submit Manufacturing RFQ →</button>
-    </div>
-  </section>
+      <!-- Selected Specs Summary -->
+      <div class="qs-panel">
+        <div class="qs-panel-hdr">Selected Specs</div>
+        <div class="qs-panel-body" id="specSummary">
+          <div class="qs-spec-item"><span class="qs-spec-key">Layers</span><span class="qs-spec-val" id="ss-layers">2</span></div>
+          <div class="qs-spec-item"><span class="qs-spec-key">Dimensions</span><span class="qs-spec-val" id="ss-dims">100 × 100 mm</span></div>
+          <div class="qs-spec-item"><span class="qs-spec-key">Quantity</span><span class="qs-spec-val" id="ss-qty">5 pcs</span></div>
+          <div class="qs-spec-item"><span class="qs-spec-key">Thickness</span><span class="qs-spec-val" id="ss-thick">1.6 mm</span></div>
+          <div class="qs-spec-item"><span class="qs-spec-key">Color</span><span class="qs-spec-val" id="ss-color">Green</span></div>
+          <div class="qs-spec-item"><span class="qs-spec-key">Surface</span><span class="qs-spec-val" id="ss-surf">HASL</span></div>
+          <div class="qs-spec-item"><span class="qs-spec-key">Build Time</span><span class="qs-spec-val" id="ss-build">Standard</span></div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button class="config-cta" onclick="submitRFQ()" style="width:100%; font-size:14px; padding:14px;">
+        Submit Manufacturing RFQ →
+      </button>
+      <p style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:10px; line-height:1.5;">
+        Additional charges may apply for special cases.<br>Final price confirmed by our team.
+      </p>
+
+    </div><!-- /quote-sidebar -->
+  </div><!-- /quote-layout -->
 
   <!-- SERVICES SECTION -->
   <section id="services" class="section-pad reveal">
@@ -2056,7 +2223,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const body = hdr.nextElementSibling;
     body.classList.toggle('hidden');
   }
-  // ── calcPCB with itemised breakdown ────────────────────────────────────
+  // ── calcPCB with itemised breakdown + sidebar spec summary ─────────────
+  const SURFACE_LABEL = { hasl:'HASL (Lead)', rohs:'LeadFree HASL', enig:'ENIG', 'immersion-tin':'Imm. Tin', 'immersion-silver':'Imm. Silver' };
+  const BUILD_LABEL   = { standard:'Standard (10-14d)', express:'Express (5-7d)', rush:'Rush (2-3d)' };
+
   function calcPCB() {
     const layers  = parseInt(document.getElementById('layers').value);
     const qty     = parseInt(document.getElementById('quantity').value);
@@ -2064,6 +2234,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const h       = Math.max(5, parseFloat(document.getElementById('dimH').value) || 100);
     const copper  = document.getElementById('copper').value;
     const surface = document.getElementById('surface').value;
+    const thick   = document.getElementById('thickness').value;
+    const build   = document.getElementById('buildtime').value;
 
     const areaCm2 = (w * h) / 100;
     const base5 = getBase5pcs(layers, areaCm2);
@@ -2075,16 +2247,26 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const finishAdd = FINISH_ADDER[surface] || 0;
     const finishScale = qty <= 10 ? 1.0 : qty <= 50 ? 1.3 : 1.8;
     const finishCost = finishAdd * finishScale;
-
-    const rushCost = RUSH_ADDER[document.getElementById('buildtime').value] || 0;
-
+    const rushCost = RUSH_ADDER[build] || 0;
     const total = (boardBase + finishCost + rushCost).toFixed(2);
 
     const $ = id => document.getElementById(id);
+    // Charge breakdown (sidebar)
     if ($('chargeBoard'))  $('chargeBoard').textContent  = '$' + boardBase.toFixed(2);
     if ($('chargeFinish')) $('chargeFinish').textContent = '$' + finishCost.toFixed(2);
     if ($('chargeBuild'))  $('chargeBuild').textContent  = '$' + rushCost.toFixed(2);
-    $('totalPrice').textContent = '$' + total;
+    if ($('totalPrice'))   $('totalPrice').textContent   = '$' + total;
+
+    // Spec summary (sidebar)
+    const colorBtn = document.querySelector('#grp-color .csopt.active');
+    const colorName = colorBtn ? colorBtn.dataset.color : 'Green';
+    if ($('ss-layers')) $('ss-layers').textContent = layers + '-Layer';
+    if ($('ss-dims'))   $('ss-dims').textContent   = w.toFixed(0) + ' × ' + h.toFixed(0) + ' mm';
+    if ($('ss-qty'))    $('ss-qty').textContent    = qty + ' pcs';
+    if ($('ss-thick'))  $('ss-thick').textContent  = thick + ' mm';
+    if ($('ss-color'))  $('ss-color').textContent  = colorName.charAt(0).toUpperCase() + colorName.slice(1);
+    if ($('ss-surf'))   $('ss-surf').textContent   = SURFACE_LABEL[surface] || surface;
+    if ($('ss-build'))  $('ss-build').textContent  = BUILD_LABEL[build] || build;
   }
 
   // Initial calc
