@@ -2161,6 +2161,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       border:2px solid transparent; transition:.2s; display:inline-block; margin:0 3px 3px 0; }
     .vmask-sw.vsel { border-color:white; transform:scale(1.2); }
 
+    #vCanvasLayers { position:absolute; inset:0; width:100%; height:100%; display:none; cursor:crosshair; }
+
     /* Viewport */
     #vViewport { flex:1; position:relative; overflow:hidden; background:#060e16; }
     #vCanvas2d, #vCanvas3d { position:absolute; inset:0; width:100%; height:100%; }
@@ -2211,6 +2213,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <div class="vmode-btns">
             <div class="vmode-btn active" id="vBtn2d" onclick="vSwitchMode('2d')">2D</div>
             <div class="vmode-btn" id="vBtn3d" onclick="vSwitchMode('3d')">3D</div>
+            <div class="vmode-btn" id="vBtnLy" style="font-size:10px;letter-spacing:.04em;" onclick="vSwitchMode('layers')">LAYERS</div>
           </div>
         </div>
         <div class="vs-card">
@@ -2223,12 +2226,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <div class="vs-card">
           <div class="vs-title">Soldermask</div>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;">
-            <div class="vmask-sw vsel" style="background:#1a6b3a" data-c="#1a6b3a" onclick="vSetMask(this)"></div>
-            <div class="vmask-sw" style="background:#6b1a1a" data-c="#6b1a1a" onclick="vSetMask(this)"></div>
-            <div class="vmask-sw" style="background:#1a2a6b" data-c="#1a2a6b" onclick="vSetMask(this)"></div>
-            <div class="vmask-sw" style="background:#111" data-c="#111" onclick="vSetMask(this)"></div>
-            <div class="vmask-sw" style="background:#d8d8c8;border:1px solid #444" data-c="#d0d0be" onclick="vSetMask(this)"></div>
-            <div class="vmask-sw" style="background:#8a7000" data-c="#8a7000" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw vsel" style="background:#1a7a3c" data-c="#1a7a3c" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#8b2020" data-c="#8b2020" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#1c3a8a" data-c="#1c3a8a" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#151515" data-c="#151515" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#d0d0be;border:1px solid #555" data-c="#c8c8b4" onclick="vSetMask(this)"></div>
+            <div class="vmask-sw" style="background:#b88a00" data-c="#b88a00" onclick="vSetMask(this)"></div>
           </div>
         </div>
         <div class="vs-card">
@@ -2256,6 +2259,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
         <canvas id="vCanvas2d"></canvas>
         <canvas id="vCanvas3d"></canvas>
+        <canvas id="vCanvasLayers"></canvas>
         <div id="vErr"></div>
         <div id="vToolbar">
           <div class="vtb-btn" title="Fit (F)" onclick="vFitView()">⊡</div>
@@ -3358,8 +3362,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const isPlane = polarity === 'Negative' && role === 'copper';
 
     if (role === 'copper') {
-      if (isTop) return { label:'Top Copper (L1)',     dot:'#d4a843', color:'#d4a843', alpha:0.90 };
-      if (isBot) return { label:'Bottom Copper',        dot:'#c8922a', color:'#c8922a', alpha:0.75 };
+      if (isTop) return { label:'Top Copper (L1)',     dot:'#ddb84e', color:'#ddb84e', alpha:0.95 };
+      if (isBot) return { label:'Bottom Copper',        dot:'#d0a030', color:'#d0a030', alpha:0.80 };
       if (isPlane) {
         const n = layerNum - 100; // GP1→1, GP2→2
         return { label:`Power Plane ${n}`,              dot:'#8a6010', color:'#9a7018', alpha:0.60 };
@@ -3374,7 +3378,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // Dot shows the mask color (what the layer looks like on the board)
       // Render color for the exposed-pad highlights = copper gold
       const maskDot   = isTop ? '#2a7a4a' : '#1e6840';
-      const copperCol = isTop ? '#e0b050' : '#d4a030';  // bright copper for exposed pads
+      const copperCol = isTop ? '#e8c060' : '#ddb040';  // bright HASL gold for exposed pads
       return { label: isTop ? 'Top Soldermask' : 'Bot Soldermask', dot:maskDot, color:copperCol, alpha:0.95 };
     }
     if (role === 'silk') {
@@ -3398,7 +3402,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     drills:     [],    // [{x,y,d}…]
     loaded:     false,
     mode:       '2d',
-    maskColor:  '#0d5e2f',
+    maskColor:  '#1a7a3c',
     zoom:       1, panX:0, panY:0,
     // 3D
     
@@ -3409,9 +3413,140 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   const $2d  = document.getElementById('vCanvas2d');
   const $3d  = document.getElementById('vCanvas3d');
+  const $ly  = document.getElementById('vCanvasLayers');
   const ctx2 = $2d.getContext('2d');
+  const ctxLY = $ly.getContext('2d');
 
   // ─── 7. 2D RENDERING ─────────────────────────────────────────────────
+
+  // ── JLCPCB-style per-layer colour for "Layers" mode ──
+  function vJLCColor(ld) {
+    const r = ld.role, s = ld.side;
+    if (r === 'silk'   && s === 'top') return '#d4c820';  // yellow
+    if (r === 'silk'   && s === 'bot') return '#20c840';  // bright green
+    if (r === 'paste'  && s === 'top') return '#909090';
+    if (r === 'paste'  && s === 'bot') return '#808090';
+    if (r === 'mask'   && s === 'top') return '#009898';  // teal
+    if (r === 'mask'   && s === 'bot') return '#8830b0';  // purple
+    if (r === 'copper' && s === 'top') return '#d82020';  // red
+    if (r === 'copper' && s === 'bot') return '#2850d8';  // blue
+    if (r === 'copper' && s === 'inner') {
+      // Inner layer palette (matches JLCPCB colour rotation)
+      const n = ld.layerNum >= 100 ? ld.layerNum - 99 : ld.layerNum;
+      const pal = ['#909020','#209830','#30c030','#909020','#207878','#30a030','#c07020','#2070a8'];
+      return pal[(n - 1) % pal.length];
+    }
+    if (r === 'outline') return '#c8c8c8';
+    return '#6080a0';
+  }
+
+  // PCB stack position — top of board = low number (matches JLCPCB list order)
+  function vLayerStackRank(ld) {
+    if (ld.role === 'silk'   && ld.side === 'top') return 1;
+    if (ld.role === 'silk'   && ld.side === 'bot') return 2;
+    if (ld.role === 'paste'  && ld.side === 'top') return 3;
+    if (ld.role === 'mask'   && ld.side === 'top') return 4;
+    if (ld.role === 'copper' && ld.side === 'top') return 5;
+    if (ld.role === 'copper' && ld.side === 'inner') {
+      const n = ld.layerNum >= 100 ? ld.layerNum - 99 : ld.layerNum;
+      return 6 + n;
+    }
+    if (ld.role === 'copper' && ld.side === 'bot') return 30;
+    if (ld.role === 'mask'   && ld.side === 'bot') return 31;
+    if (ld.role === 'paste'  && ld.side === 'bot') return 32;
+    if (ld.role === 'outline') return 33;
+    if (ld.role === 'drills')  return 34;
+    return 50;
+  }
+
+  // Compute transform for Layers canvas — same geometry as 2D view
+  function vGetTLayers() { return vGetT(); }
+
+  // Render all Gerber layers in their JLCPCB colour scheme
+  function vRenderLayersMode() {
+    const vp = document.getElementById('vViewport');
+    const W = vp.clientWidth, H = vp.clientHeight;
+    $ly.width = W;  $ly.height = H;
+    const ctx = ctxLY;
+
+    // Near-black grid background (same as 2D mode)
+    ctx.fillStyle = '#060e16';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(0,168,107,0.035)';
+    for (let x = 0; x < W; x += 20) for (let y = 0; y < H; y += 20) ctx.fillRect(x,y,1,1);
+
+    if (!vs.bbox || !vs.loaded) return;
+
+    const T = vGetTLayers();
+    if (!T) return;
+    const { scale, offX, offY, minX, minY } = T;
+    const tx = x =>     (x - minX) * scale + offX;
+    const ty = y => H - ((y - minY) * scale + offY);
+
+    // Board silhouette — very dark fill with drop shadow so board reads against grid
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.85)'; ctx.shadowBlur = 24;
+    ctx.fillStyle = '#080d14';
+    if (vs.polygon && vs.polygon.length >= 3) {
+      ctx.beginPath();
+      ctx.moveTo(tx(vs.polygon[0].x), ty(vs.polygon[0].y));
+      for (let i = 1; i < vs.polygon.length; i++) ctx.lineTo(tx(vs.polygon[i].x), ty(vs.polygon[i].y));
+      ctx.closePath(); ctx.fill();
+    } else {
+      ctx.fillRect(tx(vs.bbox.minX), ty(vs.bbox.maxY), vs.bbox.w*scale, vs.bbox.h*scale);
+    }
+    ctx.restore();
+
+    // Render order (bottom → top of visual stack):
+    //  bottom copper → inner copper → top copper → mask (low alpha) → silk → paste
+    // Soldermask is drawn at very low alpha so it tints but doesn't swamp colours.
+    const groups = [
+      { filter: l => l.role==='copper' && l.side==='bot',   alpha: 0.82 },
+      { filter: l => l.role==='copper' && l.side==='inner', alpha: 0.75 },
+      { filter: l => l.role==='copper' && l.side==='top',   alpha: 0.85 },
+      { filter: l => l.role==='mask',                        alpha: 0.22 },  // very subtle tint only
+      { filter: l => l.role==='paste',                       alpha: 0.40 },
+      { filter: l => l.role==='silk',                        alpha: 0.90 },
+    ];
+
+    for (const g of groups) {
+      const layers = vs.layers
+        .filter(l => l.vis && l.layer && !l.layer.empty && g.filter(l))
+        .sort((a,b) => vLayerStackRank(a) - vLayerStackRank(b));
+      for (const ld of layers) {
+        const col = vJLCColor(ld);
+        ctx.globalAlpha = g.alpha;
+        if (ld.polarity === 'Negative') {
+          // Power plane: fill board area with layer colour
+          ctx.save(); ctx.fillStyle = col; ctx.fillRect(0,0,W,H); ctx.restore();
+        } else {
+          ld.layer.render(ctx, T, col, true);
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // Drill holes — solid dark circles, thin bright ring
+    const drillEntry = vs.layers.find(l => l.id === 'drills');
+    if (drillEntry?.vis && vs.drills.length) {
+      for (const d of vs.drills) {
+        const cx2 = tx(d.x), cy2 = ty(d.y);
+        const r2  = d.d / 2 * scale;
+        if (r2 < 0.5) continue;
+        ctx.beginPath(); ctx.arc(cx2, cy2, r2, 0, Math.PI*2);
+        ctx.fillStyle = '#0c1218'; ctx.globalAlpha = 1; ctx.fill();
+        ctx.strokeStyle = '#5a6878';
+        ctx.lineWidth = Math.max(0.5, r2 * 0.15); ctx.stroke();
+      }
+    }
+
+    // Board outline — crisp light-grey line on top of everything
+    const outL = vs.layers.find(l => l.role==='outline' && l.vis && l.layer && !l.layer.empty);
+    if (outL) { ctx.globalAlpha = 0.90; outL.layer.render(ctx, T, '#c8c8c0', false); ctx.globalAlpha = 1; }
+
+    document.getElementById('vStZoom').textContent = `Zoom: ${Math.round(vs.zoom*100)}%`;
+    document.getElementById('vStMode').textContent = 'LAYERS';
+  }
 
   // Compute the pixel→mm transform for the current viewport and zoom level.
   function vGetT() {
@@ -3640,24 +3775,24 @@ void main(){
   vec3 base=uUseTex?texture2D(uTex,vUV).rgb:uCol;
   vec3 V=normalize(uEye-vW);
 
-  // Ambient
-  vec3 c=base*0.32;
+  // Ambient — raised so dark soldermask colours read clearly
+  vec3 c=base*0.46;
 
   // Key light (warm white from upper-right-front)
   vec3 L1=normalize(vec3(0.5,0.85,0.6));
   float d1=max(dot(N,L1),0.0);
   vec3 H1=normalize(L1+V);
-  float s1=pow(max(dot(N,H1),0.0),48.0)*0.35;
-  c+=base*d1*0.85+vec3(1.0,0.98,0.95)*s1;
+  float s1=pow(max(dot(N,H1),0.0),48.0)*0.40;
+  c+=base*d1*0.92+vec3(1.0,0.98,0.95)*s1;
 
   // Fill light (cool from left-below)
   vec3 L2=normalize(vec3(-0.6,-0.2,-0.5));
   float d2=max(dot(N,L2),0.0);
-  c+=base*d2*0.25;
+  c+=base*d2*0.28;
 
   // Rim light (subtle edge highlight)
   float rim=1.0-max(dot(N,V),0.0);
-  rim=smoothstep(0.55,1.0,rim)*0.12;
+  rim=smoothstep(0.55,1.0,rim)*0.14;
   c+=vec3(0.7,0.85,1.0)*rim;
 
   gl_FragColor=vec4(clamp(c,0.0,1.0),1.0);
@@ -3671,8 +3806,20 @@ void main(){
     gl.attachShader(p,_sh(gl,gl.FRAGMENT_SHADER,fs)); gl.linkProgram(p);
     if(!gl.getProgramParameter(p,gl.LINK_STATUS)){ console.error('Program:',gl.getProgramInfoLog(p)); return null; } return p; }
   function _buf(gl,d){ const b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(d),gl.STATIC_DRAW); return b; }
-  function _tex(gl,cv){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
-    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cv);
+  function _tex(gl,cv){
+    // WebGL1 requires power-of-2 dimensions for mipmapping.
+    // Force the canvas into the nearest PoT square so generateMipmap works.
+    const pot = (v) => { let p=1; while(p<v) p<<=1; return p; };
+    const W2 = pot(cv.width), H2 = pot(cv.height);
+    let src = cv;
+    if (W2 !== cv.width || H2 !== cv.height) {
+      const tmp = document.createElement('canvas');
+      tmp.width = W2;  tmp.height = H2;
+      tmp.getContext('2d').drawImage(cv, 0, 0, W2, H2);
+      src = tmp;
+    }
+    const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,src);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
@@ -3814,22 +3961,26 @@ void main(){
       l.vis && l.layer && !l.layer.empty && l.role === 'mask' && l.side === face
     );
     if (maskLayer) {
-      tctx.globalAlpha = 0.92;
+      // Lay down soldermask at 94% opacity — keeps colour vivid but copper bleeds through
+      tctx.globalAlpha = 0.94;
       tctx.fillStyle = vs.maskColor;
       tctx.fillRect(0, 0, TW, TH);
       tctx.globalAlpha = 1;
+      // Punch open pad areas with destination-out
       tctx.save();
       tctx.globalCompositeOperation = 'destination-out';
       maskLayer.layer.render(tctx, T, 'rgba(0,0,0,1)', true);
       tctx.restore();
+      // Draw bright copper colour in the opened pads behind the mask
       tctx.save();
       tctx.globalCompositeOperation = 'destination-over';
-      tctx.globalAlpha = 0.95;
+      tctx.globalAlpha = 1.0;
       maskLayer.layer.render(tctx, T, maskLayer.color, true);
       tctx.globalAlpha = 1;
       tctx.restore();
     } else {
-      tctx.globalAlpha = 0.55;
+      // No mask Gerber — lay a semi-transparent tint so copper traces remain visible
+      tctx.globalAlpha = 0.42;
       tctx.fillStyle = vs.maskColor;
       tctx.fillRect(0, 0, TW, TH);
       tctx.globalAlpha = 1;
@@ -4280,14 +4431,20 @@ void main(){
     vs.mode = m;
     document.getElementById('vBtn2d').classList.toggle('active', m === '2d');
     document.getElementById('vBtn3d').classList.toggle('active', m === '3d');
+    document.getElementById('vBtnLy').classList.toggle('active', m === 'layers');
     $2d.style.display = m === '2d' ? 'block' : 'none';
     $3d.style.display = m === '3d' ? 'block' : 'none';
-    document.getElementById('vStMode').textContent = m.toUpperCase();
+    $ly.style.display = m === 'layers' ? 'block' : 'none';
+    document.getElementById('vStMode').textContent =
+      m === '2d' ? '2D' : m === '3d' ? '3D' : 'LAYERS';
     if (m === '2d') {
-      vStop3DLoop(); // cancel RAF, stop 3D loop
+      vStop3DLoop();
       if (vs.loaded) vRender2D();
-    } else {
+    } else if (m === '3d') {
       setTimeout(() => { vInit3D(); if (vs.loaded) vBuildBoard3D(true); vStart3DLoop(); }, 30);
+    } else {
+      vStop3DLoop();
+      if (vs.loaded) vRenderLayersMode();
     }
   }
 
@@ -4295,9 +4452,11 @@ void main(){
     const ld = vs.layers.find(l => l.id === id);
     if (!ld) return;
     ld.vis = !ld.vis;
+    // Update sidebar toggle row
     document.getElementById('vlr-' + id)?.classList.toggle('von', ld.vis);
     if (vs.mode === '2d') vRender2D();
-    else if (vs.loaded)   vBuildBoard3D();
+    else if (vs.mode === '3d' && vs.loaded) vBuildBoard3D();
+    else if (vs.mode === 'layers' && vs.loaded) vRenderLayersMode();
   }
 
   function vSetMask(el) {
@@ -4309,45 +4468,63 @@ void main(){
   }
 
   function vFitView() {
-    if (vs.mode === '2d') { vs.zoom = 1; vs.panX = 0; vs.panY = 0; vRender2D(); }
+    vs.zoom = 1; vs.panX = 0; vs.panY = 0;
+    if (vs.mode === '2d') vRender2D();
+    else if (vs.mode === 'layers') vRenderLayersMode();
     else if (vs.bbox) { vs.rotX = 0.6; vs.rotY = 0.35; vs.camDist = Math.max(vs.bbox.w, vs.bbox.h) * 2.8; vRender3D(); }
   }
 
   function vZoomBy(f) {
     if (vs.mode === '2d') { vs.zoom = Math.max(0.05, Math.min(80, vs.zoom * f)); vRender2D(); }
+    else if (vs.mode === 'layers') { vs.zoom = Math.max(0.05, Math.min(80, vs.zoom * f)); vRenderLayersMode(); }
     else { vs.camDist = Math.max(5, Math.min(2000, vs.camDist / f)); vRender3D(); }
   }
 
   function vScreenshot() {
-    const cv = vs.mode === '2d' ? $2d : $3d;
+    const cv = vs.mode === '2d' ? $2d : vs.mode === 'layers' ? $ly : $3d;
     const a  = document.createElement('a');
     a.download = 'pcb_view.png';
     a.href     = cv.toDataURL('image/png');
     a.click();
   }
 
-  // 2D pan
+  // 2D / Layers pan
   let _vPan = false, _vPX = 0, _vPY = 0, _vPX0 = 0, _vPY0 = 0;
-  $2d.addEventListener('mousedown', e => {
+
+  function _vStartPan(e, cv) {
     _vPan = true;  _vPX = e.clientX;  _vPY = e.clientY;  _vPX0 = vs.panX;  _vPY0 = vs.panY;
-    $2d.style.cursor = 'grabbing';
+    cv.style.cursor = 'grabbing';
+  }
+  $2d.addEventListener('mousedown', e => _vStartPan(e, $2d));
+  $ly.addEventListener('mousedown', e => _vStartPan(e, $ly));
+  window.addEventListener('mouseup', () => {
+    _vPan = false;
+    $2d.style.cursor = 'crosshair';
+    $ly.style.cursor = 'crosshair';
   });
-  window.addEventListener('mouseup', () => { _vPan = false; $2d.style.cursor = 'crosshair'; });
-  $2d.addEventListener('mousemove', e => {
-    if (_vPan) { vs.panX = _vPX0 + (e.clientX - _vPX); vs.panY = _vPY0 + (e.clientY - _vPY); vRender2D(); }
+  function _vHandleMove(e, getT, rerender) {
+    if (_vPan) { vs.panX = _vPX0 + (e.clientX - _vPX); vs.panY = _vPY0 + (e.clientY - _vPY); rerender(); }
     if (vs.bbox) {
-      const T = vGetT();
+      const T = getT();
       if (T) {
         const gx = (e.offsetX - T.offX) / T.scale + T.minX;
         const gy = T.minY + (T.H - e.offsetY - T.offY) / T.scale;
         document.getElementById('vStCoord').textContent = `X:${gx.toFixed(2)}  Y:${gy.toFixed(2)} mm`;
       }
     }
-  });
+  }
+  $2d.addEventListener('mousemove', e => _vHandleMove(e, vGetT, vRender2D));
+  $ly.addEventListener('mousemove', e => _vHandleMove(e, vGetTLayers, vRenderLayersMode));
+
   $2d.addEventListener('wheel', e => {
     e.preventDefault();
     vs.zoom = Math.max(0.05, Math.min(80, vs.zoom * (e.deltaY < 0 ? 1.15 : 0.87)));
     vRender2D();
+  }, { passive:false });
+  $ly.addEventListener('wheel', e => {
+    e.preventDefault();
+    vs.zoom = Math.max(0.05, Math.min(80, vs.zoom * (e.deltaY < 0 ? 1.15 : 0.87)));
+    vRenderLayersMode();
   }, { passive:false });
 
   // Keyboard shortcuts
@@ -4357,6 +4534,7 @@ void main(){
     if (e.key === 'f' || e.key === 'F') vFitView();
     if (e.key === '2') vSwitchMode('2d');
     if (e.key === '3') vSwitchMode('3d');
+    if (e.key === 'l' || e.key === 'L') vSwitchMode('layers');
   });
 
   // Resize observer
@@ -4364,6 +4542,8 @@ void main(){
     if (!document.getElementById('pcbViewerOverlay').classList.contains('open')) return;
     if (vs.mode === '2d' && vs.loaded) {
       vRender2D();
+    } else if (vs.mode === 'layers' && vs.loaded) {
+      vRenderLayersMode();
     } else if (vs.mode === '3d' && _gl.ctx) {
       const vp = document.getElementById('vViewport');
       const W = vp.clientWidth, H = Math.max(vp.clientHeight - 25, 100);
