@@ -740,13 +740,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     /* Color option pills */
     .csopt {
-      display: flex; align-items: center; gap: 5px; padding: 5px 10px;
+      display: flex; align-items: center; gap: 6px; padding: 6px 12px;
       border: 1.5px solid rgba(255,255,255,0.12); border-radius: 16px;
-      cursor: pointer; font-size: 11px; color: var(--text-muted);
-      transition: all 0.15s; white-space: nowrap;
+      cursor: pointer; font-size: 12px; color: var(--text-secondary);
+      transition: all 0.15s; white-space: nowrap; background: rgba(255,255,255,0.03);
+      font-weight: 500;
     }
-    .csopt .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.25); }
-    .csopt.active { border-color: #4a7cf7; color: var(--white); }
+    .csopt:hover { border-color: rgba(255,255,255,0.28); color: var(--white); background: rgba(255,255,255,0.06); }
+    .csopt .dot {
+      width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.3) inset;
+    }
+    /* Active state — border from the PCB color, text contrast via data-light */
+    .csopt.active { border-width: 2px; color: #ffffff; }
+    .csopt.active[data-color="green"]  { border-color: #22c55e; background: rgba(34,197,94,0.12);  }
+    .csopt.active[data-color="red"]    { border-color: #ef4444; background: rgba(239,68,68,0.12);  }
+    .csopt.active[data-color="blue"]   { border-color: #3b82f6; background: rgba(59,130,246,0.12); }
+    .csopt.active[data-color="purple"] { border-color: #a855f7; background: rgba(168,85,247,0.12); }
+    .csopt.active[data-color="black"]  { border-color: #9ca3af; background: rgba(156,163,175,0.12); }
+    .csopt.active[data-color="white"]  { border-color: #d1d5db; background: rgba(255,255,255,0.14); color: #f0f0f0; }
+    .csopt.active[data-color="yellow"] { border-color: #eab308; background: rgba(234,179,8,0.14);  color: #fde047; }
     /* Dimensions */
     .dim-wrap { display: flex; align-items: center; gap: 6px; }
     .dim-inp, .qty-inp {
@@ -1522,25 +1536,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <div class="spec-lbl">PCB Color</div>
             <div class="spec-opts" id="grp-color">
               <button class="csopt active" data-bg="#0d5e2f" data-mask="#0d5e2f" data-color="green" onclick="pickColor(this)">
-                <span class="dot" style="background:#0d5e2f;"></span>Green
+                <span class="dot" style="background:linear-gradient(135deg,#16a34a,#065f46);"></span>Green
               </button>
-              <button class="csopt" data-bg="#5e0d0d" data-mask="#5e0d0d" data-color="red" onclick="pickColor(this)">
-                <span class="dot" style="background:#8b0000;"></span>Red
+              <button class="csopt" data-bg="#5e0d0d" data-mask="#7f1d1d" data-color="red" onclick="pickColor(this)">
+                <span class="dot" style="background:linear-gradient(135deg,#dc2626,#7f1d1d);"></span>Red
               </button>
-              <button class="csopt" data-bg="#0d1a5e" data-mask="#0d1a5e" data-color="blue" onclick="pickColor(this)">
-                <span class="dot" style="background:#00008b;"></span>Blue
+              <button class="csopt" data-bg="#0d1a5e" data-mask="#1e3a8a" data-color="blue" onclick="pickColor(this)">
+                <span class="dot" style="background:linear-gradient(135deg,#2563eb,#1e3a8a);"></span>Blue
               </button>
-              <button class="csopt" data-bg="#5e2d7d" data-mask="#5e2d7d" data-color="purple" onclick="pickColor(this)">
-                <span class="dot" style="background:#6a0dad;"></span>Purple
+              <button class="csopt" data-bg="#4c1d95" data-mask="#4c1d95" data-color="purple" onclick="pickColor(this)">
+                <span class="dot" style="background:linear-gradient(135deg,#7c3aed,#4c1d95);"></span>Purple
               </button>
-              <button class="csopt" data-bg="#1a1a1a" data-mask="#111111" data-color="black" onclick="pickColor(this)">
-                <span class="dot" style="background:#111;"></span>Black
+              <button class="csopt" data-bg="#111827" data-mask="#111111" data-color="black" onclick="pickColor(this)">
+                <span class="dot" style="background:linear-gradient(135deg,#374151,#111827); border-color:rgba(255,255,255,0.15);"></span>Black
               </button>
               <button class="csopt" data-bg="#e8e4d0" data-mask="#e8e4d0" data-color="white" onclick="pickColor(this)">
-                <span class="dot" style="background:#e8e4d0; border-color:#999;"></span>White
+                <span class="dot" style="background:linear-gradient(135deg,#f9fafb,#d1d5db); border-color:#9ca3af;"></span>White
               </button>
-              <button class="csopt" data-bg="#5e4f0d" data-mask="#a08020" data-color="yellow" onclick="pickColor(this)">
-                <span class="dot" style="background:#d4a017;"></span>Yellow
+              <button class="csopt" data-bg="#78350f" data-mask="#92400e" data-color="yellow" onclick="pickColor(this)">
+                <span class="dot" style="background:linear-gradient(135deg,#fbbf24,#d97706);"></span>Yellow
               </button>
             </div>
           </div>
