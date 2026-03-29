@@ -354,10 +354,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       background: var(--dark-800);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       position: relative;
       padding: 2rem;
+      max-height: calc(100vh - 140px);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,102,255,0.35) transparent;
     }
+    .configurator-card::-webkit-scrollbar { width: 4px; }
+    .configurator-card::-webkit-scrollbar-track { background: transparent; }
+    .configurator-card::-webkit-scrollbar-thumb {
+      background: rgba(0,102,255,0.38);
+      border-radius: 4px;
+    }
+    .configurator-card::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
     .configurator-card::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
       background: linear-gradient(90deg, var(--primary), var(--cyan));
@@ -425,69 +436,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     #fileInput { display: none; }
 
+    /* Parse result — slim info bar shown after upload */
     #parseResult {
       display: none;
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background: rgba(0,102,255,0.05);
-      border: 1px solid rgba(0,102,255,0.2);
-      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      background: rgba(0,102,255,0.07);
+      border: 1px solid rgba(0,102,255,0.18);
+      border-radius: 8px;
     }
-    #parseResult.visible {
-      display: block;
-    }
-    #parseChips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 0.5rem;
-    }
+    #parseResult.visible { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+    #parseChips { display: contents; }
     .parse-chip {
-      display: flex;
-      gap: 6px;
-      padding: 6px 12px;
-      background: rgba(0,102,255,0.1);
-      border: 1px solid rgba(0,102,255,0.2);
-      border-radius: var(--radius-sm);
-      font-size: 12px;
+      display: flex; gap: 5px; padding: 3px 10px;
+      background: rgba(0,102,255,0.12); border: 1px solid rgba(0,102,255,0.22);
+      border-radius: 20px; font-size: 11px; align-items: center;
     }
-    .parse-chip .k {
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-    .parse-chip .v {
-      color: var(--cyan);
-      font-weight: 600;
-      font-family: var(--font-mono);
-    }
-    #parseWarn {
-      font-size: 12px;
-      color: #FFB84D;
-    }
-
-    .pcb-preview {
-      background: var(--dark-700);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    #pcbBoard {
-      width: 80px;
-      height: 60px;
-      border-radius: var(--radius-sm);
-      background: #1a3d2a;
-      border: 1px solid var(--border);
-    }
-    #pcbSvgCanvas {
-      width: 160px;
-      height: 120px;
-      background: var(--dark-600);
-      border-radius: var(--radius-sm);
-    }
+    .parse-chip .k { color: var(--text-muted); font-weight: 500; }
+    .parse-chip .v { color: var(--cyan); font-weight: 700; font-family: var(--font-mono); }
+    #parseWarn { font-size: 11px; color: #FFB84D; width: 100%; margin-top: 2px; }
+    /* Hidden legacy elements */
+    .pcb-preview, #pcbBoard, #pcbSvgCanvas { display: none !important; }
 
     .color-swatches {
       display: flex;
@@ -1340,11 +1309,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <!-- View in 2D/3D (shown after Gerber is parsed) -->
       <div id="viewerBtn" onclick="openViewer()">📐 &nbsp;VIEW IN 2D / 3D</div>
 
-      <!-- PCB Preview -->
-      <div class="pcb-preview">
-        <div id="pcbBoard" style="width:80px; height:60px; border-radius:4px; border:1px solid rgba(255,255,255,0.1);"></div>
-        <svg id="pcbSvgCanvas" viewBox="0 0 160 120" style="width:160px; height:120px; background:rgba(255,255,255,0.02); border-radius:4px; border:1px solid rgba(255,255,255,0.1);"></svg>
-      </div>
+      <!-- Hidden legacy elements (kept for JS compatibility) -->
+      <div id="pcbBoard" style="display:none;"></div>
+      <svg id="pcbSvgCanvas" style="display:none;"></svg>
 
       <!-- Hidden inputs (read by calcPCB + submitRFQ JS) -->
       <input type="hidden" id="layers"    value="2">
@@ -1809,7 +1776,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       width:240px; flex-shrink:0; background:#101D2C;
       border-right:1px solid rgba(255,255,255,.07);
       overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,102,255,0.35) transparent;
     }
+    #vSidebar::-webkit-scrollbar { width: 4px; }
+    #vSidebar::-webkit-scrollbar-track { background: transparent; }
+    #vSidebar::-webkit-scrollbar-thumb { background: rgba(0,102,255,0.38); border-radius: 4px; }
+    #vSidebar::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
     .vs-card { background:#152236; border:1px solid rgba(255,255,255,.07); padding:11px 12px; }
     .vs-title {
       font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#00A86B;
