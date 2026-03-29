@@ -182,9 +182,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     .nav-inner {
       max-width: 1200px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
       padding: 0 2rem; height: 72px;
     }
+    .nav-inner .nav-brand { justify-self: start; }
+    .nav-inner .nav-links-center { justify-self: center; }
+    .nav-inner .nav-links-right { justify-self: end; }
     .nav-brand {
       display: inline-flex; align-items: center;
       text-decoration: none; cursor: pointer;
@@ -215,7 +220,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     .mobile-toggle {
       display: none; background: none; border: none;
-      color: var(--text); cursor: pointer; padding: 8px;
+      color: var(--text); cursor: pointer; padding: 8px; font-size: 20px;
+    }
+    @media (max-width: 768px) {
+      .nav-inner { grid-template-columns: 1fr auto; }
+      .nav-links-center { display: none; }
+      .mobile-toggle { display: block !important; }
     }
     .mobile-menu {
       display: none; position: fixed; top: 110px; left: 0; right: 0;
@@ -1385,16 +1395,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <a class="nav-brand" href="index.html">
       <img src="Logo/navbar_logo.png" alt="ElectroTrical" loading="lazy">
     </a>
-    <div class="nav-links">
+    <div class="nav-links nav-links-center">
       <button class="nav-link" onclick="document.querySelector('#services').scrollIntoView({behavior:'smooth'})">Services</button>
       <button class="nav-link" onclick="document.querySelector('#how').scrollIntoView({behavior:'smooth'})">How It Works</button>
       <button class="nav-link" onclick="document.querySelector('#faq').scrollIntoView({behavior:'smooth'})">FAQ</button>
       <button class="nav-link" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">Contact</button>
     </div>
-    <div class="nav-links" style="margin-left:auto;">
+    <div class="nav-links-right" style="display:flex;align-items:center;gap:8px;">
       <a class="nav-cta-btn" href="#configurator">Get Quote →</a>
+      <button class="mobile-toggle" onclick="document.querySelector('.mobile-menu').classList.toggle('open')" style="display:none;">☰</button>
     </div>
-    <button class="mobile-toggle" onclick="this.parentElement.querySelector('.mobile-menu').classList.toggle('open')">☰</button>
   </div>
   <div class="mobile-menu">
     <button class="nav-link" onclick="document.querySelector('#services').scrollIntoView({behavior:'smooth'}); this.parentElement.classList.remove('open')">Services</button>
@@ -1487,17 +1497,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <!-- Layers -->
         <div class="spec-row">
           <div class="spec-lbl">Layers</div>
-          <div class="spec-opts" id="grp-layers" style="position:relative;">
+          <div class="spec-opts" id="grp-layers" style="position:relative;flex-wrap:wrap;">
             <button class="sopt active" data-val="2"  onclick="pickSpec('layers',this)">2</button>
             <button class="sopt"        data-val="4"  onclick="pickSpec('layers',this)">4</button>
             <button class="sopt"        data-val="6"  onclick="pickSpec('layers',this)">6</button>
             <button class="sopt"        data-val="8"  onclick="pickSpec('layers',this)">8</button>
             <button class="sopt"        data-val="10" onclick="pickSpec('layers',this)">10</button>
+            <button class="sopt"        data-val="12" onclick="pickSpec('layers',this)">12</button>
+            <button class="sopt"        data-val="14" onclick="pickSpec('layers',this)">14</button>
+            <button class="sopt"        data-val="16" onclick="pickSpec('layers',this)">16</button>
             <button class="sopt" id="btn-more-layers" onclick="toggleMoreLayers(event)">More ▾</button>
             <div id="more-layers-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:200;background:var(--dark-800);border:1px solid var(--border);border-radius:8px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);flex-wrap:wrap;gap:4px;width:220px;">
-              <button class="sopt" data-val="12"  onclick="pickMoreLayers(12,this)">12</button>
-              <button class="sopt" data-val="14"  onclick="pickMoreLayers(14,this)">14</button>
-              <button class="sopt" data-val="16"  onclick="pickMoreLayers(16,this)">16</button>
               <button class="sopt" data-val="18"  onclick="pickMoreLayers(18,this)">18</button>
               <button class="sopt" data-val="20"  onclick="pickMoreLayers(20,this)">20</button>
               <button class="sopt" data-val="22"  onclick="pickMoreLayers(22,this)">22</button>
@@ -2782,7 +2792,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       const grp = document.getElementById('grp-layers');
       if (grp) {
         const moreBtn = document.getElementById('btn-more-layers');
-        if (lv > 10) {
+        if (lv > 16) {
           grp.querySelectorAll('.sopt').forEach(b => b.classList.remove('active'));
           if (moreBtn) { moreBtn.classList.add('active'); moreBtn.textContent = lv + ' ▾'; }
         } else {
