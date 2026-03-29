@@ -1475,12 +1475,26 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <!-- Layers -->
         <div class="spec-row">
           <div class="spec-lbl">Layers</div>
-          <div class="spec-opts" id="grp-layers">
+          <div class="spec-opts" id="grp-layers" style="position:relative;">
             <button class="sopt active" data-val="2"  onclick="pickSpec('layers',this)">2</button>
             <button class="sopt"        data-val="4"  onclick="pickSpec('layers',this)">4</button>
             <button class="sopt"        data-val="6"  onclick="pickSpec('layers',this)">6</button>
             <button class="sopt"        data-val="8"  onclick="pickSpec('layers',this)">8</button>
             <button class="sopt"        data-val="10" onclick="pickSpec('layers',this)">10</button>
+            <button class="sopt" id="btn-more-layers" onclick="toggleMoreLayers(event)">More ▾</button>
+            <div id="more-layers-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:200;background:var(--dark-800);border:1px solid var(--border);border-radius:8px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);display:none;flex-wrap:wrap;gap:4px;width:220px;">
+              <button class="sopt" data-val="12"  onclick="pickMoreLayers(12,this)">12</button>
+              <button class="sopt" data-val="14"  onclick="pickMoreLayers(14,this)">14</button>
+              <button class="sopt" data-val="16"  onclick="pickMoreLayers(16,this)">16</button>
+              <button class="sopt" data-val="18"  onclick="pickMoreLayers(18,this)">18</button>
+              <button class="sopt" data-val="20"  onclick="pickMoreLayers(20,this)">20</button>
+              <button class="sopt" data-val="22"  onclick="pickMoreLayers(22,this)">22</button>
+              <button class="sopt" data-val="24"  onclick="pickMoreLayers(24,this)">24</button>
+              <button class="sopt" data-val="26"  onclick="pickMoreLayers(26,this)">26</button>
+              <button class="sopt" data-val="28"  onclick="pickMoreLayers(28,this)">28</button>
+              <button class="sopt" data-val="30"  onclick="pickMoreLayers(30,this)">30</button>
+              <button class="sopt" data-val="32"  onclick="pickMoreLayers(32,this)">32</button>
+            </div>
           </div>
         </div>
 
@@ -2441,16 +2455,50 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
   }
 
+  function toggleMoreLayers(e) {
+    e.stopPropagation();
+    const dd = document.getElementById('more-layers-dropdown');
+    const isOpen = dd.style.display === 'flex';
+    dd.style.display = isOpen ? 'none' : 'flex';
+    if (!isOpen) {
+      // close when clicking outside
+      const close = ev => { dd.style.display = 'none'; document.removeEventListener('click', close); };
+      setTimeout(() => document.addEventListener('click', close), 0);
+    }
+  }
+
+  function pickMoreLayers(val, btn) {
+    document.getElementById('layers').value = String(val);
+    // Deactivate all main buttons
+    const grp = document.getElementById('grp-layers');
+    grp.querySelectorAll('.sopt').forEach(b => b.classList.remove('active'));
+    // Activate the More button showing the chosen value
+    const moreBtn = document.getElementById('btn-more-layers');
+    moreBtn.classList.add('active');
+    moreBtn.textContent = val + ' ▾';
+    // Close dropdown
+    document.getElementById('more-layers-dropdown').style.display = 'none';
+    calcPCB();
+  }
+
   function autoFillForm(data) {
     if (data.layers) {
-      const lv = String(Math.min(data.layers, 10));
-      document.getElementById('layers').value = lv;
-      // Sync layer buttons
+      const lv = data.layers;
+      document.getElementById('layers').value = String(lv);
       const grp = document.getElementById('grp-layers');
       if (grp) {
-        grp.querySelectorAll('.sopt').forEach(b => {
-          b.classList.toggle('active', b.dataset.val === lv);
-        });
+        const moreBtn = document.getElementById('btn-more-layers');
+        if (lv > 10) {
+          // Use More button
+          grp.querySelectorAll('.sopt').forEach(b => b.classList.remove('active'));
+          if (moreBtn) { moreBtn.classList.add('active'); moreBtn.textContent = lv + ' ▾'; }
+        } else {
+          // Standard buttons
+          if (moreBtn) { moreBtn.classList.remove('active'); moreBtn.textContent = 'More ▾'; }
+          grp.querySelectorAll('.sopt[data-val]').forEach(b => {
+            b.classList.toggle('active', b.dataset.val === String(lv));
+          });
+        }
       }
     }
     calcPCB();
