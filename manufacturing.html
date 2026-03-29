@@ -2633,8 +2633,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   ];
 
   const OUTLINE_PATTERNS = [
-    /\.gko$/i, /\.gml$/i, /-edge_cuts\.g[br]+$/i, /\bedge[_\s]?cuts?\b/i,
-    /\boutline\b/i, /\bborder\b/i, /\bbrd_outline\b/i, /\bboard_outline\b/i, /\bprofile\b/i,
+    /\.gko$/i, /\.gml$/i,
+    /\.gm$/i,                                          // Altium bare .GM = Profile / board outline
+    /\.gm1$/i,                                         // some Altium exports use .GM1 for profile
+    /-edge_cuts\.g[br]+$/i, /\bedge[_\s]?cuts?\b/i,
+    /\boutline\b/i, /\bborder\b/i, /\bbrd_outline\b/i, /\bboard_outline\b/i,
+    /\bprofile\b/i, /\bmech(anical)?\b/i,              // "profile" or "mechanical" in filename
   ];
 
   function identifyLayer(filename) {
@@ -2691,9 +2695,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     let t;
     cmdRe.lastIndex = 0;
     while ((t = cmdRe.exec(stripped)) !== null) {
-      if      (t[1] === 'X') nx = parseInt(t[2]);
-      else if (t[3] === 'Y') ny = parseInt(t[4]);
-      else if (t[9] === 'D') { dcode = parseInt(t[10]); if (dcode <= 3) flushCmd(); }
+      // t[1] = X capture, t[2] = Y capture, t[3] = D capture
+      if      (t[1] !== undefined) nx = parseInt(t[1]);
+      else if (t[2] !== undefined) ny = parseInt(t[2]);
+      else if (t[3] !== undefined) { dcode = parseInt(t[3]); if (dcode <= 3) flushCmd(); }
     }
 
     return { width: w, height: h, minX, minY, maxX, maxY, segments };
@@ -3251,8 +3256,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // Board outline / keepout
     if (/^GKO$/i.test(ext))   return { role:'outline', side:null, layerNum:0, polarity };
     if (/^GML$/i.test(ext))   return { role:'outline', side:null, layerNum:0, polarity };
-    // Altium layers to ignore: mechanical, drill drawing, drill guide, pad master, component body
-    if (/^GM\d*$|^GD\d*$|^GG\d*$|^GPT$|^GPB$|^GCT\d*$|^GCB\d*$/i.test(ext)) return { role:'ignore', side:null, layerNum:0, polarity };
+    // Altium bare .GM (no digit suffix) = Profile / board outline layer
+    if (/^GM$/i.test(ext))    return { role:'outline', side:null, layerNum:0, polarity };
+    // Altium .GM1 is commonly used as Profile in some exports
+    if (/^GM1$/i.test(ext))   return { role:'outline', side:null, layerNum:0, polarity };
+    // Altium layers to ignore: mechanical (GM2+), drill drawing, drill guide, pad master, component body
+    if (/^GM[2-9]\d*$|^GD\d*$|^GG\d*$|^GPT$|^GPB$|^GCT\d*$|^GCB\d*$/i.test(ext)) return { role:'ignore', side:null, layerNum:0, polarity };
     // Non-Gerber files to ignore
     if (/^(REP|DRR|LDP|APR|APR_LIB|EXTREP|NETLIST|IPC|CSV|PDF|PNG|JPG|BMP)$/i.test(ext)) return { role:'ignore', side:null, layerNum:0, polarity };
 
