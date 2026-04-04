@@ -168,7 +168,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
 
     .navbar {
-      position: fixed; top: 38px; left: 0; right: 0; z-index: 1000;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
       width: 100%; max-width: 100vw; overflow-x: clip;
       background: rgba(10, 14, 26, 0.8);
       backdrop-filter: blur(20px) saturate(1.5);
@@ -182,14 +182,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     .nav-inner {
       max-width: 1200px; margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 0 2rem; height: 72px;
     }
-    .nav-inner .nav-brand { justify-self: start; }
-    .nav-inner .nav-links-center { justify-self: center; }
-    .nav-inner .nav-links-right { justify-self: end; }
     .nav-brand {
       display: inline-flex; align-items: center;
       text-decoration: none; cursor: pointer;
@@ -218,23 +213,64 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       box-shadow: 0 4px 20px rgba(0,102,255,0.4);
     }
 
+    /* Services Dropdown */
+    .nav-dropdown { position: relative; display: inline-flex; }
+    .nav-dropdown-menu {
+      display: none; position: absolute; top: calc(100% + 8px); left: 0;
+      background: rgba(10,14,26,0.98); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      min-width: 230px; padding: 8px; z-index: 1200;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+      animation: ddFade .15s ease;
+    }
+    @keyframes ddFade { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    .nav-dropdown:hover .nav-dropdown-menu,
+    .nav-dropdown.open .nav-dropdown-menu { display: block; }
+    .nav-dropdown-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px; border-radius: 8px; text-decoration: none;
+      color: var(--text-secondary); font-size: 14px; font-weight: 500;
+      transition: var(--transition);
+    }
+    .nav-dropdown-item:hover { background: rgba(0,102,255,0.1); color: var(--white); }
+    .nav-dropdown-item-icon {
+      width: 34px; height: 34px; border-radius: 8px; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .nav-dropdown-item-text { display: flex; flex-direction: column; }
+    .nav-dropdown-item-title { font-weight: 600; color: var(--white); font-size: 13px; }
+    .nav-dropdown-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .nav-dropdown-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 6px 8px; }
+    .nav-dropdown-trigger .dd-chevron { transition: transform .2s ease; }
+    .nav-dropdown:hover .dd-chevron,
+    .nav-dropdown.open .dd-chevron { transform: rotate(180deg); }
+
     .mobile-toggle {
       display: none; background: none; border: none;
       color: var(--text); cursor: pointer; padding: 8px; font-size: 20px;
     }
     @media (max-width: 768px) {
-      .nav-inner { grid-template-columns: 1fr auto; }
-      .nav-links-center { display: none; }
+      .nav-links { display: none !important; }
       .mobile-toggle { display: block !important; }
     }
     .mobile-menu {
-      display: none; position: fixed; top: 110px; left: 0; right: 0;
+      display: none; position: fixed; top: 72px; left: 0; right: 0;
       background: rgba(10, 14, 26, 0.98);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       padding: 1rem; z-index: 999;
     }
     .mobile-menu.open { display: block; }
+    .mobile-menu .mobile-submenu {
+      padding-left: 16px; border-left: 2px solid rgba(0,102,255,0.3);
+      margin: 4px 16px 8px; display: flex; flex-direction: column; gap: 2px;
+    }
+    .mobile-menu .mobile-submenu a {
+      display: block; padding: 8px 12px; font-size: 14px;
+      color: var(--text-secondary); text-decoration: none; border-radius: 6px;
+      transition: var(--transition);
+    }
+    .mobile-menu .mobile-submenu a:hover { color: var(--white); background: rgba(255,255,255,0.05); }
     .mobile-menu .nav-link {
       display: block; width: 100%; text-align: left;
       padding: 12px 16px; font-size: 16px;
@@ -246,7 +282,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     /* ══════════════════════════════════════════
        HERO SECTION
        ══════════════════════════════════════════ */
-    main { margin-top: 110px; position: relative; z-index: 1; }
+    main { margin-top: 72px; position: relative; z-index: 1; }
 
     /* Legacy hero — kept for other sections that may use it */
     .hero {
@@ -494,12 +530,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     .form-group {
       margin-bottom: 1.25rem;
     }
+    .adv-grid .form-group { margin-bottom: 0; }
     .form-label {
       display: block;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 600;
-      color: var(--text);
-      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -663,8 +700,23 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     .quote-sidebar {
       padding: 1.5rem;
-      position: sticky;
-      top: 110px;
+      align-self: start;
+    }
+    .quote-sidebar.is-fixed {
+      position: fixed;
+      top: 72px;
+      width: 340px;
+      /* left is set precisely by JS — no right calc needed */
+    }
+    .quote-sidebar.is-bottom {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 340px;
+    }
+    @media (max-width: 900px) {
+      .quote-sidebar.is-fixed,
+      .quote-sidebar.is-bottom { position: static; width: auto; right: auto; bottom: auto; }
     }
     /* Sidebar panels */
     .qs-panel {
@@ -803,6 +855,188 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     .spec-section-body.hidden { display: none; }
     /* Surcharge badge inside button */
     .spec-surcharge { font-size:9px; opacity:.75; color:#fbbf24; margin-left:2px; }
+
+    /* ── Product Type selector ── */
+    .product-type-row {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .pt-label {
+      font-size: 12px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 10px;
+    }
+    .pt-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 900px) {
+      .pt-cards { grid-template-columns: repeat(3, 1fr); }
+    }
+    .pt-card {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; padding: 10px 6px;
+      background: var(--dark-800);
+      border: 1.5px solid var(--border);
+      border-radius: 10px; cursor: pointer;
+      transition: border-color .18s, background .18s, transform .12s;
+      text-align: center;
+    }
+    .pt-card:hover {
+      border-color: rgba(255,255,255,0.2);
+      background: var(--dark-700);
+      transform: translateY(-1px);
+    }
+    .pt-card.active {
+      border-color: var(--primary);
+      background: rgba(59,130,246,0.1);
+    }
+    .pt-icon { font-size: 20px; line-height: 1; }
+    .pt-name { font-size: 11px; font-weight: 600; color: var(--white); line-height: 1.3; }
+    .pt-desc { font-size: 9px; color: var(--text-muted); line-height: 1.3; }
+    .pt-badge {
+      font-size: 8px; padding: 1px 5px; border-radius: 4px;
+      background: rgba(16,185,129,0.15); color: #10b981;
+      font-weight: 600; text-transform: uppercase;
+    }
+    .pt-badge.premium { background: rgba(251,191,36,0.15); color: #fbbf24; }
+
+    /* ── PCBA side selector ── */
+    .pcba-side-selector {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      margin-bottom: 20px;
+    }
+    .pcba-side-opt {
+      border: 2px solid var(--border); border-radius: var(--radius-md);
+      padding: 12px; cursor: pointer; transition: var(--transition);
+      text-align: center;
+    }
+    .pcba-side-opt.selected { border-color: var(--primary); background: rgba(0,102,255,0.06); }
+    .pcba-side-opt:hover { border-color: var(--border-hover); }
+    .pcba-board-img { margin-bottom: 8px; }
+    .pcba-board-img svg { width: 100%; height: auto; max-height: 80px; }
+    .pcba-board-img.faded svg { opacity: 0.4; }
+    .pcba-side-label {
+      font-size: 13px; color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .pcba-radio {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid var(--border-hover); display: inline-block; flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .pcba-radio.selected {
+      border-color: var(--primary); background: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0,102,255,0.18);
+    }
+    /* NEW badge for stencil */
+    .spec-badge-new {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      background: #e53935; color: #fff; padding: 1px 5px;
+      border-radius: 4px; letter-spacing: .04em; vertical-align: middle;
+      margin-left: 3px;
+    }
+    .sopt.disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+
+    /* ── Addon toggle rows (PCB Assembly, Stencil) ── */
+    .addon-toggle-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      background: var(--dark-800);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-top: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .addon-toggle-row:hover { background: var(--dark-700); }
+    .addon-toggle-icon { flex-shrink: 0; }
+    .addon-toggle-info {
+      flex: 1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .addon-toggle-name {
+      font-size: 15px; font-weight: 600; color: var(--white); margin-right: 2px;
+    }
+    .addon-coupon-badge {
+      display: inline-block; background: #f57c00; color: #fff;
+      font-size: 9px; font-weight: 800; padding: 2px 6px;
+      border-radius: 3px; letter-spacing: .06em;
+    }
+    .addon-toggle-tagline { font-size: 12px; color: var(--text-secondary); }
+    /* iOS-style toggle switch */
+    .addon-toggle-sw { flex-shrink: 0; }
+    .addon-sw-track {
+      display: inline-flex; align-items: center;
+      width: 42px; height: 24px; border-radius: 12px;
+      background: var(--dark-600); border: 1.5px solid var(--border);
+      transition: background 0.2s, border-color 0.2s;
+      position: relative; cursor: pointer;
+    }
+    .addon-sw-track.on {
+      background: var(--primary); border-color: var(--primary);
+    }
+    .addon-sw-thumb {
+      position: absolute; left: 2px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      transition: left 0.2s;
+    }
+    .addon-sw-track.on .addon-sw-thumb { left: 20px; }
+    /* Addon content wrapper — slight left indent to show it's nested */
+    .addon-content {
+      margin-top: 0;
+    }
+    /* Dark-themed textarea */
+    .form-textarea {
+      width: 100%; box-sizing: border-box;
+      padding: 10px 12px;
+      background: var(--dark-700);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.5;
+      resize: vertical;
+      transition: var(--transition);
+    }
+    .form-textarea::placeholder { color: var(--text-muted); }
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(0,102,255,0.18);
+    }
+    /* Custom qty stepper */
+    .qty-stepper {
+      display: inline-flex; align-items: center;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .qty-stepper button {
+      width: 32px; height: 36px;
+      background: var(--dark-700); border: none;
+      color: var(--text-secondary); font-size: 16px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .qty-stepper button:hover { background: var(--dark-600); color: var(--white); }
+    .qty-stepper input {
+      width: 52px; height: 36px; border: none;
+      border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+      background: var(--dark-800); color: var(--text);
+      text-align: center; font-size: 14px; font-family: var(--font-mono);
+    }
+    .qty-stepper input:focus { outline: none; background: var(--dark-700); }
+    .qty-stepper input::-webkit-outer-spin-button,
+    .qty-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    /* Thickness custom dropdown */
+    .thick-custom-wrap {
+      display: none; margin-top: 8px;
+    }
+    .thick-custom-wrap.show { display: flex; align-items: center; gap: 8px; }
     /* Charge breakdown */
     .charge-rows { margin-bottom: 12px; }
     .charge-item {
@@ -1309,7 +1543,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       .nav-links { display: none; }
       .nav-cta-btn { display: none; }
       .mobile-toggle { display: block; }
-      .mobile-menu { top: 110px; }
+      .mobile-menu { top: 72px; }
 
       .hero {
         padding: 3rem 1.25rem;
@@ -1372,45 +1606,72 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body>
 
 <!-- ══════════════════════ SERVICE NAV ══════════════════════ -->
-<div class="service-nav">
-  <div class="service-nav-inner">
-    <a href="index.html" class="service-nav-tab">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      <span>PCB Design</span>
-    </a>
-    <a href="manufacturing.html" class="service-nav-tab active" aria-current="page">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 00-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-      <span>PCB Manufacturing</span>
-    </a>
-    <a href="store.html" class="service-nav-tab">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      <span>Store</span>
-    </a>
-  </div>
-</div>
-
 <!-- ══════════════════════ NAVBAR ══════════════════════ -->
-<nav class="navbar">
+<nav class="navbar" id="navbar">
   <div class="nav-inner">
     <a class="nav-brand" href="index.html">
       <img src="Logo/navbar_logo.png" alt="ElectroTrical" loading="lazy">
     </a>
-    <div class="nav-links nav-links-center">
-      <button class="nav-link" onclick="document.querySelector('#services').scrollIntoView({behavior:'smooth'})">Services</button>
-      <button class="nav-link" onclick="document.querySelector('#how').scrollIntoView({behavior:'smooth'})">How It Works</button>
-      <button class="nav-link" onclick="document.querySelector('#faq').scrollIntoView({behavior:'smooth'})">FAQ</button>
-      <button class="nav-link" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">Contact</button>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <!-- Services Dropdown -->
+      <div class="nav-dropdown" id="servicesDropdown">
+        <button class="nav-link nav-dropdown-trigger" onclick="document.getElementById('servicesDropdown').classList.toggle('open')" aria-haspopup="true">
+          Services
+          <svg class="dd-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a class="nav-dropdown-item" href="pcb-design.html">
+            <div class="nav-dropdown-item-icon" style="background:rgba(0,102,255,0.15);">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h2m2 0h2m2 0h2"/><path d="M7 11h5"/></svg>
+            </div>
+            <div class="nav-dropdown-item-text">
+              <span class="nav-dropdown-item-title">PCB Layout Design</span>
+              <span class="nav-dropdown-item-sub">Full layout from schematic</span>
+            </div>
+          </a>
+          <div class="nav-dropdown-divider"></div>
+          <a class="nav-dropdown-item" href="manufacturing.html" style="background:rgba(0,212,255,0.06);">
+            <div class="nav-dropdown-item-icon" style="background:rgba(0,212,255,0.12);">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 00-4 0v2"/><circle cx="12" cy="14" r="3"/></svg>
+            </div>
+            <div class="nav-dropdown-item-text">
+              <span class="nav-dropdown-item-title">PCB Manufacturing</span>
+              <span class="nav-dropdown-item-sub">Instant online quote &amp; order</span>
+            </div>
+          </a>
+        </div>
+      </div>
+      <a class="nav-link" href="store.html">Store</a>
+      <a class="nav-link" href="index.html#contact">Contact</a>
+      <button class="cart-btn" onclick="openCart()" aria-label="Cart">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+      <a class="nav-link" href="dashboard.html" style="color:var(--cyan);display:inline-flex;align-items:center;gap:5px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Account
+      </a>
     </div>
-    <div class="nav-links-right" style="display:flex;align-items:center;gap:8px;">
-      <a class="nav-cta-btn" href="#configurator">Get Quote →</a>
-      <button class="mobile-toggle" onclick="document.querySelector('.mobile-menu').classList.toggle('open')" style="display:none;">☰</button>
-    </div>
+    <button class="mobile-toggle" id="mobileToggle" onclick="toggleMfgMobile()" aria-label="Toggle menu">
+      <svg id="menu-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+      <svg id="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+        <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+      </svg>
+    </button>
   </div>
-  <div class="mobile-menu">
-    <button class="nav-link" onclick="document.querySelector('#services').scrollIntoView({behavior:'smooth'}); this.parentElement.classList.remove('open')">Services</button>
-    <button class="nav-link" onclick="document.querySelector('#how').scrollIntoView({behavior:'smooth'}); this.parentElement.classList.remove('open')">How It Works</button>
-    <button class="nav-link" onclick="document.querySelector('#faq').scrollIntoView({behavior:'smooth'}); this.parentElement.classList.remove('open')">FAQ</button>
-    <a class="nav-cta-btn" href="#configurator" onclick="this.parentElement.classList.remove('open')">Get Quote →</a>
+  <div class="mobile-menu" id="mfgMobileMenu">
+    <a class="nav-link" href="index.html" onclick="closeMfgMobile()">Home</a>
+    <span class="nav-link" style="font-weight:600;color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:8px 16px 4px;cursor:default;">Services</span>
+    <div class="mobile-submenu">
+      <a href="pcb-design.html" onclick="closeMfgMobile()">📐 &nbsp;PCB Layout Design</a>
+      <a href="manufacturing.html" onclick="closeMfgMobile()">🏭 &nbsp;PCB Manufacturing</a>
+    </div>
+    <a class="nav-link" href="store.html" onclick="closeMfgMobile()">Store</a>
+    <a class="nav-link" href="index.html#contact" onclick="closeMfgMobile()">Contact</a>
+    <a class="nav-link" href="dashboard.html" onclick="closeMfgMobile()" style="color:var(--cyan);">My Account</a>
   </div>
 </nav>
 
@@ -1441,11 +1702,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div id="configurator" class="configurator-card">
       <h3 class="config-title">PCB Configurator</h3>
 
-      <div class="config-tabs">
-        <button class="config-tab active" data-tab="pcb" onclick="switchTab(this, 'pcb')">PCB</button>
-        <button class="config-tab" data-tab="pcba" onclick="switchTab(this, 'pcba')">PCBA</button>
-        <button class="config-tab" data-tab="stencil" onclick="switchTab(this, 'stencil')">Stencil</button>
-      </div>
+      <!-- ══ PCB TAB ══ -->
+      <div id="tab-pcb">
 
       <!-- Upload Zone — wrapped in label for reliable file picker -->
       <label for="fileInput" id="uploadZone" class="upload-zone" style="cursor:pointer; display:block;">
@@ -1490,6 +1748,84 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <input type="hidden" id="impedance"     value="no">
       <input type="hidden" id="remove-num"    value="no">
       <input type="hidden" id="confirm-file"  value="no">
+      <!-- High-spec / Advanced hidden inputs -->
+      <input type="hidden" id="via-plating"   value="hec">
+      <input type="hidden" id="min-via"       value="0.3">
+      <input type="hidden" id="outline-tol"   value="regular">
+      <input type="hidden" id="pcb-mark"      value="num">
+      <input type="hidden" id="elec-test"     value="flying">
+      <input type="hidden" id="edge-plating"  value="no">
+      <input type="hidden" id="blind-slots"   value="no">
+      <input type="hidden" id="ul-mark"       value="no">
+      <input type="hidden" id="sm-exp"        value="spec">
+      <input type="hidden" id="hole-cu"       value="20">
+      <!-- PCBA hidden inputs -->
+      <input type="hidden" id="asm-side"        value="both">
+      <input type="hidden" id="edge-rails"      value="no">
+      <input type="hidden" id="confirm-parts"   value="no">
+      <input type="hidden" id="stencil-storage" value="no">
+      <input type="hidden" id="fixture-storage" value="no">
+      <input type="hidden" id="parts-sel"       value="turnkey">
+      <input type="hidden" id="framework"       value="no">
+      <input type="hidden" id="step-stencil"    value="no">
+      <input type="hidden" id="nano-coating"    value="no">
+      <input type="hidden" id="package-box"     value="standard">
+      <!-- Stencil hidden inputs -->
+      <input type="hidden" id="stencil-side"    value="top">
+      <input type="hidden" id="stencil-dims"    value="380x280">
+      <input type="hidden" id="stencil-thick"   value="auto">
+      <input type="hidden" id="stencil-process" value="laser">
+      <input type="hidden" id="polish"          value="no">
+      <input type="hidden" id="fiducials"       value="no">
+      <input type="hidden" id="stencil-confirm" value="no">
+      <input type="hidden" id="engrave"         value="no">
+      <!-- New spec hidden inputs -->
+      <input type="hidden" id="product-type"    value="consumer">
+      <input type="hidden" id="diff-design"     value="1">
+      <input type="hidden" id="material"        value="fr4-tg135">
+      <input type="hidden" id="kelvin-test"     value="no">
+      <input type="hidden" id="paper-pcbs"      value="no">
+      <input type="hidden" id="appearance"      value="ipc2">
+      <input type="hidden" id="silk-tech"       value="inkjet">
+      <input type="hidden" id="inspection"      value="no">
+
+      <!-- ── PRODUCT TYPE (above all sections) ── -->
+      <div class="product-type-row" id="product-type-section">
+        <div class="pt-label">Product Type</div>
+        <div class="pt-cards" id="grp-product-type">
+
+          <button class="pt-card active" data-val="consumer" onclick="pickProductType(this)">
+            <span class="pt-icon">🖥️</span>
+            <span class="pt-name">Consumer &amp; Industrial</span>
+            <span class="pt-desc">Standard specs, cost-optimised</span>
+          </button>
+
+          <button class="pt-card" data-val="medical" onclick="pickProductType(this)">
+            <span class="pt-icon">🏥</span>
+            <span class="pt-name">Medical</span>
+            <span class="pt-desc">LeadFree, ENIG, IPC Class 2</span>
+          </button>
+
+          <button class="pt-card" data-val="automotive" onclick="pickProductType(this)">
+            <span class="pt-icon">🚗</span>
+            <span class="pt-name">Automotive</span>
+            <span class="pt-desc">LeadFree, TG140+, tight tol.</span>
+          </button>
+
+          <button class="pt-card" data-val="aerospace" onclick="pickProductType(this)">
+            <span class="pt-icon">✈️</span>
+            <span class="pt-name">Aerospace</span>
+            <span class="pt-desc">ENIG, 2oz Cu, Precision</span>
+          </button>
+
+          <button class="pt-card" data-val="space" onclick="pickProductType(this)">
+            <span class="pt-icon">🚀</span>
+            <span class="pt-name">Space Missions</span>
+            <span class="pt-desc">ENEPIG, Cu-Filled, max-rel.</span>
+          </button>
+
+        </div>
+      </div>
 
       <!-- ── SECTION 1: Basic ── -->
       <div style="margin-bottom:4px;">
@@ -1548,16 +1884,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           </div>
         </div>
 
-        <!-- Delivery Format -->
-        <div class="spec-row">
-          <div class="spec-lbl">Delivery Format</div>
-          <div class="spec-opts" id="grp-delivery">
-            <button class="sopt active" data-val="single"   onclick="pickSpec('delivery',this)">Single PCB</button>
-            <button class="sopt"        data-val="panel-jlc" onclick="pickSpec('delivery',this)">Panel by Us</button>
-            <button class="sopt"        data-val="panel-cust" onclick="pickSpec('delivery',this)">Panel by Customer</button>
-          </div>
-        </div>
-
       </div>
 
       <!-- ── SECTION 2: PCB Specifications (collapsible) ── -->
@@ -1567,6 +1893,29 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <span class="spec-section-arrow">▼</span>
         </div>
         <div class="spec-section-body">
+
+          <!-- Different Design -->
+          <div class="spec-row">
+            <div class="spec-lbl">Different Design</div>
+            <div class="spec-opts" id="grp-diff-design">
+              <button class="sopt active" data-val="1" onclick="pickSpec('diff-design',this)">1</button>
+              <button class="sopt"        data-val="2" onclick="pickSpec('diff-design',this)">2</button>
+              <button class="sopt"        data-val="3" onclick="pickSpec('diff-design',this)">3</button>
+              <button class="sopt"        data-val="4" onclick="pickSpec('diff-design',this)">4</button>
+              <input type="number" class="qty-inp" id="diff-design-custom" min="1" max="20" placeholder="Custom"
+                onchange="document.getElementById('diff-design').value=this.value; calcPCB();" style="width:72px;">
+            </div>
+          </div>
+
+          <!-- Delivery Format -->
+          <div class="spec-row">
+            <div class="spec-lbl">Delivery Format</div>
+            <div class="spec-opts" id="grp-delivery">
+              <button class="sopt active" data-val="single"     onclick="pickSpec('delivery',this)">Single PCB</button>
+              <button class="sopt"        data-val="panel-cust" onclick="pickSpec('delivery',this)">Panel by Customer</button>
+              <button class="sopt"        data-val="panel-jlc"  onclick="pickSpec('delivery',this)">Panel by Us</button>
+            </div>
+          </div>
 
           <!-- PCB Thickness -->
           <div class="spec-row">
@@ -1627,13 +1976,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             </div>
           </div>
 
-          <!-- Outer Copper Weight -->
+          <!-- Material Type -->
           <div class="spec-row">
-            <div class="spec-lbl">Outer Copper</div>
-            <div class="spec-opts" id="grp-copper">
-              <button class="sopt active" data-val="1oz" onclick="pickSpec('copper',this)">1 oz</button>
-              <button class="sopt"        data-val="2oz" onclick="pickSpec('copper',this)">2 oz</button>
-              <button class="sopt"        data-val="3oz" onclick="pickSpec('copper',this)">3 oz</button>
+            <div class="spec-lbl">Material Type</div>
+            <div class="spec-opts" id="grp-material" style="flex-wrap:wrap;">
+              <button class="sopt active" data-val="fr4-tg135"  onclick="pickSpec('material',this)">FR4 TG135</button>
+              <button class="sopt"        data-val="kb6164"     onclick="pickSpec('material',this)">KB6164 – TG135 <span class="spec-surcharge">+$3</span></button>
+              <button class="sopt"        data-val="np140f"     onclick="pickSpec('material',this)">Nan Ya NP-140F <span class="spec-surcharge">+$5</span></button>
+              <button class="sopt"        data-val="s1141-tg140" onclick="pickSpec('material',this)">S1141 TG140 <span class="spec-surcharge">+$8</span></button>
+              <button class="sopt"        data-val="s1000h-tg155" onclick="pickSpec('material',this)">S1000H TG155 <span class="spec-surcharge">+$12</span></button>
             </div>
           </div>
 
@@ -1662,15 +2013,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           </div>
 
           <!-- Via Covering -->
-          <div class="spec-row">
+          <div class="spec-row" style="align-items:flex-start;">
             <div class="spec-lbl">Via Covering</div>
-            <div class="spec-opts" id="grp-via">
-              <button class="sopt active" data-val="tented"   onclick="pickSpec('via',this)">Tented</button>
-              <button class="sopt"        data-val="untented" onclick="pickSpec('via',this)">Untented</button>
-              <button class="sopt"        data-val="plugged"  onclick="pickSpec('via',this)">Plugged</button>
-              <button class="sopt"        data-val="epoxy"    onclick="pickSpec('via',this)">Epoxy Filled</button>
-              <button class="sopt"        data-val="copper"   onclick="pickSpec('via',this)">Copper Filled</button>
+            <div class="spec-opts" id="grp-via" style="flex-wrap:wrap;">
+              <button class="sopt active" data-val="tented"   onclick="pickSpec('via',this); showViaPlating(false)">Tented</button>
+              <button class="sopt"        data-val="untented" onclick="pickSpec('via',this); showViaPlating(false)">Untented</button>
+              <button class="sopt"        data-val="plugged"  onclick="pickSpec('via',this); showViaPlating(false)">Plugged <span class="spec-surcharge">+$8</span></button>
+              <button class="sopt"        data-val="epoxy"    onclick="pickSpec('via',this); showViaPlating(true)">Epoxy Filled &amp; Capped <span class="spec-surcharge">+$20</span></button>
+              <button class="sopt"        data-val="copper"   onclick="pickSpec('via',this); showViaPlating(true)">Copper paste Filled &amp; Capped <span class="spec-surcharge">+$35</span></button>
             </div>
+          </div>
+
+          <!-- Via Plating Method — shown only when Epoxy/Copper-paste filled is selected -->
+          <div class="spec-row" id="row-via-plating" style="display:none;">
+            <div class="spec-lbl">Via Plating Method</div>
+            <div class="spec-opts" id="grp-via-plating">
+              <button class="sopt disabled" data-val="not-spec">Not Specified</button>
+              <button class="sopt disabled" data-val="cond-adh">Conductive Adhesive</button>
+              <button class="sopt active"   data-val="hec" onclick="pickSpec('via-plating',this)">Horizontal Electroless Copper Plating</button>
+            </div>
+          </div>
+          <div id="via-plating-note" style="display:none; font-size:11px; color:var(--text-muted); margin:-6px 0 10px 110px; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:4px;">
+            Epoxy or copper-paste filled vias require Horizontal Electroless Copper Plating.
           </div>
 
           <!-- Build Time / Lead Time -->
@@ -1686,30 +2050,75 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div><!-- /spec-section-body -->
       </div><!-- /spec-section PCB Specs -->
 
-      <!-- ── SECTION 3: Advanced Options (collapsible, closed by default) ── -->
+      <!-- ── SECTION 3: High-spec Options (collapsible, closed by default) ── -->
       <div class="spec-section">
         <div class="spec-section-hdr collapsed" onclick="toggleSection(this)">
-          <h4>Advanced Options</h4>
+          <h4>High-spec Options</h4>
           <span class="spec-section-arrow">▼</span>
         </div>
         <div class="spec-section-body hidden">
 
-          <!-- Min Hole Size -->
+          <!-- Outer Copper Weight (extended) -->
           <div class="spec-row">
-            <div class="spec-lbl">Min Hole Size</div>
-            <div class="spec-opts" id="grp-min-hole">
-              <button class="sopt active" data-val="0.3"  onclick="pickSpec('min-hole',this)">≥ 0.3mm</button>
-              <button class="sopt"        data-val="0.25" onclick="pickSpec('min-hole',this)">0.25mm</button>
-              <button class="sopt"        data-val="0.2"  onclick="pickSpec('min-hole',this)">0.2mm</button>
+            <div class="spec-lbl">Outer Copper Weight</div>
+            <div class="spec-opts" id="grp-copper-hs">
+              <button class="sopt active" data-val="1oz"  onclick="pickSpec('copper',this)">1 oz</button>
+              <button class="sopt"        data-val="2oz"  onclick="pickSpec('copper',this)">2 oz</button>
+              <button class="sopt"        data-val="3oz"  onclick="pickSpec('copper',this)">3 oz <span class="spec-surcharge">+surcharge</span></button>
+              <button class="sopt disabled" data-val="2.5oz" title="Requires Conductive Adhesive">2.5 oz</button>
+              <button class="sopt disabled" data-val="3.5oz" title="Requires Conductive Adhesive">3.5 oz</button>
+              <button class="sopt disabled" data-val="4.5oz" title="Requires Conductive Adhesive">4.5 oz</button>
+            </div>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin:-4px 0 12px 0; padding:7px 12px 7px 120px; background:rgba(251,191,36,0.06); border-left:2px solid rgba(251,191,36,0.3); border-radius:0 6px 6px 0;">
+            ⚠️ Outer layer copper ≥ 2.5 oz requires Conductive Adhesive filling.
+          </div>
+
+          <!-- Min Via Hole Size -->
+          <div class="spec-row">
+            <div class="spec-lbl">Min Via Hole Size</div>
+            <div class="spec-opts" id="grp-min-via">
+              <button class="sopt active" data-val="0.3" onclick="pickSpec('min-via',this)">0.3mm/(0.4/0.45mm)</button>
+              <button class="sopt"        data-val="0.25" onclick="pickSpec('min-via',this)">0.25mm/(0.35/0.4mm)</button>
+              <button class="sopt"        data-val="0.2"  onclick="pickSpec('min-via',this)">0.2mm/(0.3/0.35mm)</button>
+              <button class="sopt"        data-val="0.15" onclick="pickSpec('min-via',this)">0.15mm/(0.25/0.3mm)</button>
             </div>
           </div>
 
-          <!-- Impedance Control -->
+          <!-- Board Outline Tolerance -->
           <div class="spec-row">
-            <div class="spec-lbl">Impedance Control</div>
-            <div class="spec-opts" id="grp-impedance">
-              <button class="sopt active" data-val="no"  onclick="pickSpec('impedance',this)">No</button>
-              <button class="sopt"        data-val="yes" onclick="pickSpec('impedance',this)">Yes <span style="opacity:.6;font-size:10px;">free</span></button>
+            <div class="spec-lbl">Board Outline Tolerance</div>
+            <div class="spec-opts" id="grp-outline-tol">
+              <button class="sopt active" data-val="regular"   onclick="pickSpec('outline-tol',this)">±0.2mm (Regular)</button>
+              <button class="sopt"        data-val="precision" onclick="pickSpec('outline-tol',this)">±0.1mm (Precision)</button>
+            </div>
+          </div>
+
+          <!-- Confirm Production File -->
+          <div class="spec-row">
+            <div class="spec-lbl">Confirm Production</div>
+            <div class="spec-opts" id="grp-confirm-file">
+              <button class="sopt active" data-val="no"  onclick="pickSpec('confirm-file',this)">No</button>
+              <button class="sopt"        data-val="yes" onclick="pickSpec('confirm-file',this)">Yes <span style="opacity:.6;font-size:10px;">free</span></button>
+            </div>
+          </div>
+
+          <!-- Mark on PCB -->
+          <div class="spec-row">
+            <div class="spec-lbl">Mark on PCB</div>
+            <div class="spec-opts" id="grp-pcb-mark">
+              <button class="sopt"        data-val="remove"   onclick="pickSpec('pcb-mark',this)">Remove Mark <span class="spec-surcharge">+$1.50</span></button>
+              <button class="sopt"        data-val="num-pos"  onclick="pickSpec('pcb-mark',this)">Order Number (Specify Position)</button>
+              <button class="sopt"        data-val="barcode"  onclick="pickSpec('pcb-mark',this)">2D Barcode (Serial Number)</button>
+              <button class="sopt active" data-val="num"      onclick="pickSpec('pcb-mark',this)">Order Number</button>
+            </div>
+          </div>
+
+          <!-- Electrical Test -->
+          <div class="spec-row">
+            <div class="spec-lbl">Electrical Test</div>
+            <div class="spec-opts" id="grp-elec-test">
+              <button class="sopt active" data-val="flying" onclick="pickSpec('elec-test',this)">Flying Probe Fully Test</button>
             </div>
           </div>
 
@@ -1731,29 +2140,516 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             </div>
           </div>
 
-          <!-- Remove Order Number -->
+          <!-- Edge Plating -->
           <div class="spec-row">
-            <div class="spec-lbl">Remove Order #</div>
-            <div class="spec-opts" id="grp-remove-num">
-              <button class="sopt active" data-val="no"  onclick="pickSpec('remove-num',this)">No</button>
-              <button class="sopt"        data-val="yes" onclick="pickSpec('remove-num',this)">Yes <span class="spec-surcharge">+$1.50</span></button>
+            <div class="spec-lbl">Edge Plating</div>
+            <div class="spec-opts" id="grp-edge-plating">
+              <button class="sopt active" data-val="no"  onclick="pickSpec('edge-plating',this)">No</button>
+              <button class="sopt disabled" data-val="yes">Yes</button>
             </div>
           </div>
 
-          <!-- Confirm Production File -->
+          <!-- Blind Slots -->
           <div class="spec-row">
-            <div class="spec-lbl">Confirm Production</div>
-            <div class="spec-opts" id="grp-confirm-file">
-              <button class="sopt active" data-val="no"  onclick="pickSpec('confirm-file',this)">No</button>
-              <button class="sopt"        data-val="yes" onclick="pickSpec('confirm-file',this)">Yes <span style="opacity:.6;font-size:10px;">free</span></button>
+            <div class="spec-lbl">Blind Slots</div>
+            <div class="spec-opts" id="grp-blind-slots">
+              <button class="sopt active" data-val="no"  onclick="pickSpec('blind-slots',this)">No</button>
+              <button class="sopt"        data-val="yes" onclick="pickSpec('blind-slots',this)">Yes</button>
+            </div>
+          </div>
+
+          <!-- UL Marking -->
+          <div class="spec-row">
+            <div class="spec-lbl">UL Marking</div>
+            <div class="spec-opts" id="grp-ul-mark">
+              <button class="sopt active"  data-val="no"      onclick="pickSpec('ul-mark',this)">No</button>
+              <button class="sopt disabled" data-val="any-pos">Yes (Any Position)</button>
+              <button class="sopt disabled" data-val="spec-pos">Yes (Specify Position)</button>
+            </div>
+          </div>
+
+        </div><!-- /spec-section-body -->
+      </div><!-- /spec-section High-spec -->
+
+
+      <!-- ── SECTION 4: Advanced Options (collapsible, closed by default) ── -->
+      <div class="spec-section">
+        <div class="spec-section-hdr collapsed" onclick="toggleSection(this)">
+          <h4>Advanced Options</h4>
+          <span class="spec-section-arrow">▼</span>
+        </div>
+        <div class="spec-section-body hidden">
+
+          <!-- 4-Wire Kelvin Test -->
+          <div class="spec-row">
+            <div class="spec-lbl">4-Wire Kelvin Test</div>
+            <div class="spec-opts" id="grp-kelvin-test">
+              <button class="sopt active" data-val="no"  onclick="pickSpec('kelvin-test',this)">No</button>
+              <button class="sopt"        data-val="yes" onclick="pickSpec('kelvin-test',this)">Yes <span class="spec-surcharge">+$5</span></button>
+            </div>
+          </div>
+
+          <!-- Paper between PCBs -->
+          <div class="spec-row">
+            <div class="spec-lbl">Paper between PCBs</div>
+            <div class="spec-opts" id="grp-paper-pcbs">
+              <button class="sopt active" data-val="no"  onclick="pickSpec('paper-pcbs',this)">No</button>
+              <button class="sopt disabled" data-val="yes">Yes</button>
+            </div>
+          </div>
+
+          <!-- Appearance Quality -->
+          <div class="spec-row">
+            <div class="spec-lbl">Appearance Quality</div>
+            <div class="spec-opts" id="grp-appearance">
+              <button class="sopt active" data-val="ipc2"    onclick="pickSpec('appearance',this)">IPC Class 2 Standard</button>
+              <button class="sopt"        data-val="superb"  onclick="pickSpec('appearance',this)">Superb Quality <span class="spec-surcharge">+$10</span></button>
+            </div>
+          </div>
+
+          <!-- Silkscreen Technology -->
+          <div class="spec-row" style="align-items:flex-start;">
+            <div class="spec-lbl">Silkscreen Tech</div>
+            <div class="spec-opts" id="grp-silk-tech" style="flex-wrap:wrap;">
+              <button class="sopt active" data-val="inkjet"   onclick="pickSpec('silk-tech',this)">Ink-jet / Screen Printing</button>
+              <button class="sopt"        data-val="hi-prec"  onclick="pickSpec('silk-tech',this)">High-precision Printing <span class="spec-surcharge">+$3</span></button>
+              <button class="sopt disabled" data-val="easyeda">EasyEDA Multi-color</button>
+              <button class="sopt disabled" data-val="hd-exp">HD Exposure Silkscreen</button>
+            </div>
+          </div>
+
+          <!-- Package Box -->
+          <div class="spec-row">
+            <div class="spec-lbl">Package Box</div>
+            <div class="spec-opts" id="grp-package-box">
+              <button class="sopt active" data-val="logo"  onclick="pickSpec('package-box',this)">With Company Logo</button>
+              <button class="sopt"        data-val="blank" onclick="pickSpec('package-box',this)">Blank Box</button>
+            </div>
+          </div>
+
+          <!-- Inspection Report -->
+          <div class="spec-row" style="align-items:flex-start;">
+            <div class="spec-lbl">Inspection Report</div>
+            <div class="spec-opts" id="grp-inspection" style="flex-wrap:wrap;">
+              <button class="sopt active" data-val="no"       onclick="pickSpec('inspection',this)">No</button>
+              <button class="sopt"        data-val="final"    onclick="pickSpec('inspection',this)">Final Inspection Report <span class="spec-surcharge">+$8</span></button>
+              <button class="sopt"        data-val="elec"     onclick="pickSpec('inspection',this)">Electrical Test Report <span class="spec-surcharge">+$5</span></button>
+              <button class="sopt disabled" data-val="rohs">ROHS Test Report</button>
+            </div>
+          </div>
+
+          <!-- Min Hole Size -->
+          <div class="spec-row">
+            <div class="spec-lbl">Min Hole Size</div>
+            <div class="spec-opts" id="grp-min-hole">
+              <button class="sopt active" data-val="0.3"  onclick="pickSpec('min-hole',this)">≥ 0.3mm</button>
+              <button class="sopt"        data-val="0.25" onclick="pickSpec('min-hole',this)">0.25mm</button>
+              <button class="sopt"        data-val="0.2"  onclick="pickSpec('min-hole',this)">0.2mm</button>
+            </div>
+          </div>
+
+          <!-- Solder Mask Expansion -->
+          <div class="spec-row">
+            <div class="spec-lbl">Solder Mask Expansion</div>
+            <div class="spec-opts" id="grp-sm-exp">
+              <button class="sopt active" data-val="spec" onclick="pickSpec('sm-exp',this)">As per the Gerber</button>
+              <button class="sopt"        data-val="0.1"  onclick="pickSpec('sm-exp',this)">0.1mm</button>
+              <button class="sopt"        data-val="0.2"  onclick="pickSpec('sm-exp',this)">0.2mm</button>
+            </div>
+          </div>
+
+          <!-- Hole Copper -->
+          <div class="spec-row">
+            <div class="spec-lbl">Hole Copper</div>
+            <div class="spec-opts" id="grp-hole-cu">
+              <button class="sopt active" data-val="20" onclick="pickSpec('hole-cu',this)">20 µm</button>
+              <button class="sopt"        data-val="25" onclick="pickSpec('hole-cu',this)">25 µm</button>
+            </div>
+          </div>
+
+          <!-- PCB Remark -->
+          <div class="spec-row" style="align-items:flex-start;">
+            <div class="spec-lbl">PCB Remark</div>
+            <div style="flex:1;">
+              <textarea class="form-textarea" placeholder="Any special instructions for your PCB..." style="min-height:70px; width:100%;"></textarea>
             </div>
           </div>
 
         </div><!-- /spec-section-body -->
       </div><!-- /spec-section Advanced -->
 
-      <!-- CTA Button -->
-      <button class="config-cta" style="margin-top:16px; display:none;" onclick="submitRFQ()">Submit Manufacturing RFQ →</button>
+      </div><!-- /tab-pcb -->
+
+      <!-- ══ PCB Assembly Addon Toggle ══ -->
+      <div class="addon-toggle-row" onclick="toggleAddon('pcba')">
+        <div class="addon-toggle-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+            <rect x="2" y="2" width="36" height="36" rx="5" fill="#1a7a3c"/>
+            <rect x="8" y="8" width="10" height="7" rx="1.5" fill="#ddb84e" opacity="0.9"/>
+            <rect x="22" y="8" width="10" height="7" rx="1.5" fill="#ddb84e" opacity="0.9"/>
+            <rect x="8" y="18" width="24" height="3" rx="1" fill="#2a9a50"/>
+            <rect x="8" y="25" width="10" height="7" rx="1.5" fill="#ddb84e" opacity="0.9"/>
+            <rect x="22" y="25" width="10" height="7" rx="1.5" fill="#ddb84e" opacity="0.9"/>
+          </svg>
+        </div>
+        <div class="addon-toggle-info">
+          <span class="addon-toggle-name">PCB Assembly</span>
+          <span class="addon-toggle-tagline">Order PCB Assembly together with PCB</span>
+        </div>
+        <div class="addon-toggle-sw" id="sw-pcba">
+          <span class="addon-sw-track" id="sw-track-pcba"><span class="addon-sw-thumb"></span></span>
+        </div>
+      </div>
+
+      <!-- ══ PCBA TAB ══ -->
+      <div class="addon-content" id="tab-pcba" style="display:none;">
+
+        <!-- PCBA Specs -->
+        <div class="spec-rows">
+
+          <div class="spec-row">
+            <div class="spec-lbl">Assembly Side</div>
+            <div class="spec-opts" id="grp-asm-side">
+              <button class="sopt active" data-val="both"   onclick="pickSpec('asm-side',this)">Both Sides</button>
+              <button class="sopt"        data-val="top"    onclick="pickSpec('asm-side',this)">Top Side</button>
+              <button class="sopt"        data-val="bottom" onclick="pickSpec('asm-side',this)">Bottom Side</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">PCBA Qty</div>
+            <div class="spec-opts" style="display:flex; align-items:center; gap:10px;">
+              <div class="qty-stepper">
+                <button type="button" onclick="stepQty('pcba-qty',-1)">−</button>
+                <input type="number" id="pcba-qty" value="5" min="2" max="1000" oninput="calcPCBA()">
+                <button type="button" onclick="stepQty('pcba-qty',1)">+</button>
+              </div>
+              <span style="font-size:12px; color:var(--text-muted);">Qty: 2 – 1000</span>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Edge Rails / Fiducials</div>
+            <div class="spec-opts" id="grp-edge-rails">
+              <button class="sopt active" data-val="jlcpcb" onclick="pickSpec('edge-rails',this)">Added by Us</button>
+              <button class="sopt" data-val="customer" onclick="pickSpec('edge-rails',this)">Added by Customer</button>
+            </div>
+          </div>
+          <div id="edge-rail-note" style="margin:-8px 0 12px; padding:10px 14px; background:rgba(0,102,255,0.06); border-radius:var(--radius-sm); font-size:12px; color:var(--text-secondary); line-height:1.6;">
+            Adding 5mm edge rails on shorter sides may slightly increase board dimensions.
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Confirm Parts Placement</div>
+            <div class="spec-opts" id="grp-confirm-parts">
+              <button class="sopt active" data-val="no" onclick="pickSpec('confirm-parts',this)">No</button>
+              <button class="sopt" data-val="yes" onclick="pickSpec('confirm-parts',this)">Yes</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Stencil Storage</div>
+            <div class="spec-opts" id="grp-stencil-storage">
+              <button class="sopt active" data-val="no" onclick="pickSpec('stencil-storage',this)">No</button>
+              <button class="sopt" data-val="yes" onclick="pickSpec('stencil-storage',this)">Yes</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Fixture Storage</div>
+            <div class="spec-opts" id="grp-fixture-storage">
+              <button class="sopt active" data-val="no" onclick="pickSpec('fixture-storage',this)">No</button>
+              <button class="sopt" data-val="yes" onclick="pickSpec('fixture-storage',this)">Yes</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Parts Selection</div>
+            <div class="spec-opts" id="grp-parts-sel">
+              <button class="sopt active" data-val="customer" onclick="pickSpec('parts-sel',this)">By Customer</button>
+              <button class="sopt" data-val="us" onclick="pickSpec('parts-sel',this)">By Us</button>
+            </div>
+          </div>
+
+        </div><!-- /spec-rows -->
+
+        <!-- Advanced Options (collapsible) -->
+        <div class="spec-section" style="margin-top:16px;">
+          <div class="spec-section-hdr collapsed" onclick="toggleSection(this)">
+            <h4>Advanced Options</h4>
+            <span class="spec-section-arrow">▼</span>
+          </div>
+          <div class="spec-section-body hidden">
+            <div class="adv-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; padding-top:12px;">
+              <div class="form-group">
+                <label class="form-label">Bake Components</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Photo Confirmation</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Board Cleaning</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Conformal Coating (cleaning included)</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Packaging</label>
+                <select class="form-select">
+                  <option>Antistatic bubble film</option><option>Vacuum pack</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Special Stencil</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Depanel &amp; Edge Rail Before Delivery</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Solder Paste</label>
+                <select class="form-select">
+                  <option>High temp.</option><option>Low temp.</option><option>Standard</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Flying Probe Test</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nitrogen Reflow Soldering</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Function Test</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Photo Confirmation</label>
+                <select class="form-select">
+                  <option>No</option><option>Yes</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+              <label class="form-label">PCBA Remark</label>
+              <textarea class="form-textarea" placeholder="Any special instructions..." style="min-height:70px;"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab-pcba -->
+
+      <!-- ══ Stencil Addon Toggle ══ -->
+      <div class="addon-toggle-row" onclick="toggleAddon('stencil')">
+        <div class="addon-toggle-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+            <rect x="2" y="2" width="36" height="36" rx="5" fill="#3a3a4a"/>
+            <rect x="6" y="6" width="28" height="28" rx="3" fill="none" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3 2"/>
+            <rect x="10" y="10" width="8" height="6" rx="1" fill="#888"/>
+            <rect x="22" y="10" width="8" height="6" rx="1" fill="#888"/>
+            <rect x="10" y="24" width="8" height="6" rx="1" fill="#888"/>
+            <rect x="22" y="24" width="8" height="6" rx="1" fill="#888"/>
+          </svg>
+        </div>
+        <div class="addon-toggle-info">
+          <span class="addon-toggle-name">Stencil</span>
+          <span class="addon-toggle-tagline" style="color:var(--text-secondary);">Order together with PCB &nbsp;·&nbsp; <span style="color:var(--primary);">Stencil Order Guide ›</span></span>
+        </div>
+        <div class="addon-toggle-sw" id="sw-stencil">
+          <span class="addon-sw-track" id="sw-track-stencil"><span class="addon-sw-thumb"></span></span>
+        </div>
+      </div>
+
+      <!-- ══ STENCIL TAB ══ -->
+      <div class="addon-content" id="tab-stencil" style="display:none;">
+
+        <div class="spec-rows">
+
+          <div class="spec-row">
+            <div class="spec-lbl">Framework</div>
+            <div class="spec-opts" id="grp-framework">
+              <button class="sopt active" data-val="no" onclick="pickSpec('framework',this)">No</button>
+              <button class="sopt" data-val="yes" onclick="pickSpec('framework',this)">Yes</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Step Stencil</div>
+            <div class="spec-opts" id="grp-step-stencil">
+              <button class="sopt active" data-val="no" onclick="pickSpec('step-stencil',this)">No</button>
+              <button class="sopt disabled" data-val="yes" disabled>Yes</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Nano-Coating <span class="spec-badge-new">NEW</span></div>
+            <div class="spec-opts" id="grp-nano-coating">
+              <button class="sopt active" data-val="no" onclick="pickSpec('nano-coating',this)">No</button>
+              <button class="sopt" data-val="yes" onclick="pickSpec('nano-coating',this)">Yes</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Stencil Side</div>
+            <div class="spec-opts" id="grp-stencil-side">
+              <button class="sopt active" data-val="top" onclick="pickSpec('stencil-side',this)">Top Only</button>
+              <button class="sopt" data-val="bottom" onclick="pickSpec('stencil-side',this)">Bottom Only</button>
+              <button class="sopt" data-val="both-single" onclick="pickSpec('stencil-side',this)">Top+Bottom (Single)</button>
+              <button class="sopt" data-val="both-sep" onclick="pickSpec('stencil-side',this)">Top+Bottom (Separate)</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Dimensions</div>
+            <div style="display:flex; flex-direction:column; gap:8px; flex:1;">
+              <div class="spec-opts" id="grp-stencil-dims">
+                <button class="sopt active" data-val="standard" onclick="pickSpec('stencil-dims',this); document.getElementById('stencil-custom-dims').style.display='none'; document.getElementById('stencil-size-select').style.display='';">Standard Size</button>
+                <button class="sopt" data-val="custom" onclick="pickSpec('stencil-dims',this); document.getElementById('stencil-custom-dims').style.display='flex'; document.getElementById('stencil-size-select').style.display='none';">Custom Size</button>
+              </div>
+              <select class="form-select" id="stencil-size-select" style="max-width:380px;">
+                <option value="380x280" data-price="7.11" data-weight="0.8">380×280mm (Valid Area 360×200mm, $7.11, 0.8 kg)</option>
+                <option value="420x320" data-price="12.45" data-weight="1.1">420×320mm (Valid Area 400×240mm, $12.45, 1.1 kg)</option>
+                <option value="450x350" data-price="16.00" data-weight="1.4">450×350mm (Valid Area 420×270mm, $16.00, 1.4 kg)</option>
+                <option value="460x460" data-price="19.56" data-weight="2.0">460×460mm (Valid Area 380×430mm, $19.56, 2.0 kg)</option>
+                <option value="520x420" data-price="21.26" data-weight="1.9">520×420mm (Valid Area 490×340mm, $21.26, 1.9 kg)</option>
+                <option value="600x600" data-price="25.35" data-weight="3.3">600×600mm (Valid Area 520×560mm, $25.35, 3.3 kg)</option>
+                <option value="700x600" data-price="27.98" data-weight="3.6">700×600mm (Valid Area 650×580mm, $27.98, 3.6 kg)</option>
+              </select>
+              <!-- Custom size inputs -->
+              <div id="stencil-custom-dims" style="display:none; align-items:center; gap:8px; margin-top:4px;">
+                <input type="number" placeholder="W (mm)" min="100" max="800"
+                  style="width:90px; background:var(--dark-700); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:var(--radius-sm); font-size:13px; text-align:center;">
+                <span style="color:var(--text-muted);">×</span>
+                <input type="number" placeholder="H (mm)" min="100" max="800"
+                  style="width:90px; background:var(--dark-700); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:var(--radius-sm); font-size:13px; text-align:center;">
+                <span style="font-size:12px; color:var(--text-muted);">mm</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Stencil Qty</div>
+            <div class="spec-opts">
+              <div class="qty-stepper">
+                <button type="button" onclick="stepQty('stencil-qty',-1)">−</button>
+                <input type="number" id="stencil-qty" value="1" min="1" max="50">
+                <button type="button" onclick="stepQty('stencil-qty',1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="spec-row" style="flex-wrap:wrap; row-gap:8px;">
+            <div class="spec-lbl">Thickness</div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+              <div class="spec-opts" id="grp-stencil-thick">
+                <button class="sopt active" data-val="auto" onclick="pickSpec('stencil-thick',this); document.getElementById('thick-custom-wrap').classList.remove('show');">Select by Us</button>
+                <button class="sopt" data-val="customer" onclick="pickSpec('stencil-thick',this); document.getElementById('thick-custom-wrap').classList.add('show');">Select by Customer</button>
+              </div>
+              <div class="thick-custom-wrap" id="thick-custom-wrap">
+                <select class="form-select" id="stencil-thick-val" style="max-width:220px;">
+                  <option value="0.1">0.1 mm ($0.00)</option>
+                  <option value="0.12">0.12 mm ($0.00)</option>
+                  <option value="0.13">0.13 mm ($0.00)</option>
+                  <option value="0.15">0.15 mm ($0.00)</option>
+                  <option value="0.18">0.18 mm ($0.00)</option>
+                  <option value="0.2">0.2 mm ($0.00)</option>
+                  <option value="0.08">0.08 mm ($1.63)</option>
+                  <option value="0.05">0.05 mm ($4.89)</option>
+                </select>
+                <span style="font-size:12px; color:var(--text-muted);">mm</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Stencil Process Type</div>
+            <div class="spec-opts" id="grp-stencil-process">
+              <button class="sopt active" data-val="solder" onclick="pickSpec('stencil-process',this)">Solder Paste Stencil</button>
+              <button class="sopt" data-val="red-glue" onclick="pickSpec('stencil-process',this)">Red Glue Stencil</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Polishing Process</div>
+            <div class="spec-opts" id="grp-polish">
+              <button class="sopt active" data-val="sanding" onclick="pickSpec('polish',this)">Sanding</button>
+              <button class="sopt" data-val="etching" onclick="pickSpec('polish',this)">Etching</button>
+              <button class="sopt" data-val="electropolishing" onclick="pickSpec('polish',this)">Electropolishing</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Fiducials</div>
+            <div class="spec-opts" id="grp-fiducials">
+              <button class="sopt active" data-val="none" onclick="pickSpec('fiducials',this)">No Fiducial</button>
+              <button class="sopt" data-val="etched-through" onclick="pickSpec('fiducials',this)">Etched Through</button>
+              <button class="sopt" data-val="etched-half" onclick="pickSpec('fiducials',this)">Etched Half into Board</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Confirm Production File</div>
+            <div class="spec-opts" id="grp-stencil-confirm">
+              <button class="sopt active" data-val="no" onclick="pickSpec('stencil-confirm',this)">No</button>
+              <button class="sopt" data-val="yes" onclick="pickSpec('stencil-confirm',this)">Yes</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Engrave Text</div>
+            <div class="spec-opts" id="grp-engrave">
+              <button class="sopt active" data-val="no" onclick="pickSpec('engrave',this)">No</button>
+              <button class="sopt" data-val="yes" onclick="pickSpec('engrave',this)">Yes</button>
+            </div>
+          </div>
+
+          <div class="spec-row">
+            <div class="spec-lbl">Package Box</div>
+            <div class="spec-opts" id="grp-package-box">
+              <button class="sopt active" data-val="logo" onclick="pickSpec('package-box',this)">With Our Logo</button>
+              <button class="sopt" data-val="blank" onclick="pickSpec('package-box',this)">Blank Box</button>
+            </div>
+          </div>
+
+          <div class="spec-row" style="align-items:flex-start;">
+            <div class="spec-lbl">Stencil Remark</div>
+            <div style="flex:1;">
+              <textarea class="form-textarea" placeholder="Any special instructions for your stencil..." style="min-height:70px; width:100%;"></textarea>
+            </div>
+          </div>
+
+        </div><!-- /spec-rows -->
+
+        <div style="margin-top:4px; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm); font-size:12px; color:var(--text-muted); line-height:1.7;">
+          <div>① Stencil aperture openings follow our standard by default. Leave a remark for 1:1 paste layer match.</div>
+          <div>② For SMT stencil orders, please review our stencil design guidelines.</div>
+        </div>
+
+      </div><!-- /tab-stencil -->
 
       </div><!-- /configurator-card -->
     </div><!-- /quote-main -->
@@ -1773,9 +2669,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <div class="qs-charge-item"><span class="qs-charge-name">Copper Weight</span><span class="qs-charge-val" id="chargeCopper">$0.00</span></div>
           <div class="qs-charge-item"><span class="qs-charge-name">PCB Thickness</span><span class="qs-charge-val" id="chargeThick">$0.00</span></div>
           <div class="qs-charge-item"><span class="qs-charge-name">Solder Mask Color</span><span class="qs-charge-val" id="chargeColor">$0.00</span></div>
-          <div class="qs-charge-item"><span class="qs-charge-name">Via Covering</span><span class="qs-charge-val" id="chargeVia">$0.00</span></div>
+          <div class="qs-charge-item" id="row-chargeVia" style="display:none;"><span class="qs-charge-name">Via Covering</span><span class="qs-charge-val" id="chargeVia">$0.00</span></div>
           <div class="qs-charge-item" id="row-chargeSpecial" style="display:none;"><span class="qs-charge-name">Special Features</span><span class="qs-charge-val" id="chargeSpecial">$0.00</span></div>
           <div class="qs-charge-item"><span class="qs-charge-name">Lead Time</span><span class="qs-charge-val" id="chargeBuild">$0.00</span></div>
+          <div class="qs-charge-item" id="row-chargePCBA" style="display:none;">
+            <span class="qs-charge-name" style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#4d8eff;"></span>PCB Assembly</span>
+            <span class="qs-charge-val" id="chargePCBA">TBD</span>
+          </div>
+          <div class="qs-charge-item" id="row-chargeStencil" style="display:none;">
+            <span class="qs-charge-name" style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#a78bfa;"></span>Stencil</span>
+            <span class="qs-charge-val" id="chargeStencil">TBD</span>
+          </div>
         </div>
         <div class="qs-total-row">
           <span class="qs-total-label">Calculated Price</span>
@@ -1783,29 +2687,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
       </div>
 
-      <!-- Selected Specs Summary -->
-      <div class="qs-panel">
-        <div class="qs-panel-hdr">Selected Specs</div>
-        <div class="qs-panel-body" id="specSummary">
-          <div class="qs-spec-item"><span class="qs-spec-key">Layers</span><span class="qs-spec-val" id="ss-layers">2-Layer</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Dimensions</span><span class="qs-spec-val" id="ss-dims">100 × 100 mm</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Quantity</span><span class="qs-spec-val" id="ss-qty">5 pcs</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Delivery</span><span class="qs-spec-val" id="ss-delivery">Single PCB</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Thickness</span><span class="qs-spec-val" id="ss-thick">1.6 mm</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Color</span><span class="qs-spec-val" id="ss-color">Green</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Silkscreen</span><span class="qs-spec-val" id="ss-silk">White</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Outer Cu</span><span class="qs-spec-val" id="ss-copper">1 oz</span></div>
-          <div class="qs-spec-item" id="row-ss-inner-copper" style="display:none;"><span class="qs-spec-key">Inner Cu</span><span class="qs-spec-val" id="ss-inner-copper">0.5 oz</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Surface</span><span class="qs-spec-val" id="ss-surf">HASL (Lead)</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Via Covering</span><span class="qs-spec-val" id="ss-via">Tented</span></div>
-          <div class="qs-spec-item"><span class="qs-spec-key">Lead Time</span><span class="qs-spec-val" id="ss-build">Standard (10-14d)</span></div>
-          <div class="qs-spec-item" id="row-ss-adv" style="display:none;"><span class="qs-spec-key">Options</span><span class="qs-spec-val" id="ss-adv">—</span></div>
-        </div>
-      </div>
-
       <!-- Submit -->
       <button class="config-cta" onclick="submitRFQ()" style="width:100%; font-size:14px; padding:14px;">
-        Submit Manufacturing RFQ →
+        Submit Manufacturing RFQ
       </button>
       <p style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:10px; line-height:1.5;">
         Additional charges may apply for special cases.<br>Final price confirmed by our team.
@@ -1815,7 +2699,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </div><!-- /quote-layout -->
 
   <!-- SERVICES SECTION -->
-  <section id="services" class="section-pad reveal">
+  <section id="services" class="section-pad reveal" style="display:none;">
     <div class="container">
       <div class="section-header">
         <div class="section-eyebrow">MANUFACTURING SERVICES</div>
@@ -1859,7 +2743,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </section>
 
   <!-- HOW IT WORKS -->
-  <section id="how" class="section-pad reveal">
+  <section id="how" class="section-pad reveal" style="display:none;">
     <div class="container">
       <div class="section-header">
         <div class="section-eyebrow">MANUFACTURING PROCESS</div>
@@ -1893,7 +2777,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </section>
 
   <!-- STATS SECTION -->
-  <section class="section-pad reveal">
+  <section class="section-pad reveal" style="display:none;">
     <div class="container">
       <div class="stats-bar">
         <div class="stat-item">
@@ -1921,7 +2805,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </section>
 
   <!-- PARTNERS SECTION -->
-  <section id="partners" class="section-pad reveal">
+  <section id="partners" class="section-pad reveal" style="display:none;">
     <div class="container">
       <div class="section-header">
         <div class="section-eyebrow">OUR PARTNERS</div>
@@ -1966,7 +2850,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </section>
 
   <!-- FAQ SECTION -->
-  <section id="faq" class="section-pad reveal">
+  <section id="faq" class="section-pad reveal" style="display:none;">
     <div class="container">
       <div class="section-header">
         <div class="section-eyebrow">FREQUENTLY ASKED QUESTIONS</div>
@@ -2018,7 +2902,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </section>
 
   <!-- CTA BANNER -->
-  <section class="cta-banner reveal">
+  <section class="cta-banner reveal" style="display:none;">
     <div class="container">
       <h2 class="cta-title">Ready to Manufacture Your PCB?</h2>
       <p class="cta-desc">Upload your Gerber files, configure your specs, and get an instant quote. Our partners ship worldwide with unmatched speed and quality.</p>
@@ -2067,12 +2951,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <a class="footer-link" href="index.html#why">About Us</a>
         <a class="footer-link" href="index.html#portfolio">Portfolio</a>
         <a class="footer-link" href="#how">How It Works</a>
+        <a class="footer-link" href="#services">Our Services</a>
       </div>
       <div>
         <div class="footer-heading">Support</div>
         <a class="footer-link" href="#configurator">Get a Quote</a>
         <a class="footer-link" href="#faq">FAQ</a>
-        <a class="footer-link" href="index.html#contact">Contact Us</a>
+        <a class="footer-link" href="#contact">Contact Us</a>
+        <a class="footer-link" href="dashboard.html" style="display:inline-flex;align-items:center;gap:5px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          My Account
+        </a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -2186,6 +3075,39 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       background:rgba(10,21,32,.88); border-top:1px solid rgba(255,255,255,.07);
       display:flex; align-items:center; padding:0 12px; font-size:11px; color:#6B8BA4; gap:14px; }
 
+/* ── Cart ── */
+.cart-btn{position:relative;background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:8px;border-radius:8px;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;}
+.cart-btn:hover{color:var(--white);background:rgba(255,255,255,0.05);}
+.cart-badge{position:absolute;top:2px;right:2px;background:var(--primary);color:#fff;font-size:10px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--dark);opacity:0;transform:scale(0);transition:all .2s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.cart-badge.visible{opacity:1;transform:scale(1);}
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1998;opacity:0;pointer-events:none;transition:opacity .3s ease;backdrop-filter:blur(4px);}
+.cart-overlay.open{opacity:1;pointer-events:all;}
+.cart-drawer{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:100vw;background:#0F1424;border-left:1px solid rgba(255,255,255,0.08);z-index:1999;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
+.cart-drawer.open{transform:translateX(0);}
+.cart-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.cart-drawer-title{font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:9px;}
+.cart-close-btn{background:none;border:none;color:#8B95B0;cursor:pointer;padding:6px;border-radius:8px;transition:var(--transition);display:flex;align-items:center;}
+.cart-close-btn:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.cart-items{flex:1;overflow-y:auto;padding:1rem 1.5rem;display:flex;flex-direction:column;gap:10px;}
+.cart-items::-webkit-scrollbar{width:4px;}.cart-items::-webkit-scrollbar-thumb{background:rgba(0,102,255,0.3);border-radius:4px;}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;color:#8B95B0;gap:14px;padding:2rem;}
+.cart-empty svg{opacity:.2;}.cart-empty h3{font-size:17px;font-weight:700;color:#E8ECF4;}.cart-empty p{font-size:13px;line-height:1.5;}
+.cart-empty-btn{margin-top:8px;background:rgba(0,102,255,0.12);border:1px solid rgba(0,102,255,0.3);color:#3388FF;font-family:inherit;font-size:13px;font-weight:600;padding:9px 20px;border-radius:20px;cursor:pointer;}
+.cart-item{display:flex;align-items:center;gap:12px;background:#151B2E;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px;}
+.cart-item-icon{width:40px;height:40px;border-radius:8px;background:rgba(0,102,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#3388FF;}
+.cart-item-info{flex:1;min-width:0;}.cart-item-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.cart-item-price{font-size:12px;color:#8B95B0;margin-top:2px;}
+.cart-item-controls{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.qty-btn{width:26px;height:26px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.05);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition);}
+.qty-btn:hover{background:rgba(0,102,255,0.15);border-color:#0066FF;}
+.qty-value{font-size:13px;font-weight:700;color:#fff;min-width:20px;text-align:center;}
+.cart-item-remove{background:none;border:none;color:#5A6380;cursor:pointer;padding:4px;border-radius:6px;transition:var(--transition);display:flex;align-items:center;margin-left:2px;}
+.cart-item-remove:hover{color:#FF453A;background:rgba(255,69,58,0.1);}
+.cart-footer{padding:1.25rem 1.5rem;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;background:#0F1424;}
+.cart-subtotal{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.cart-subtotal-label{font-size:13px;color:#8B95B0;font-weight:500;}.cart-subtotal-value{font-size:22px;font-weight:800;color:#fff;}
+.btn-checkout{width:100%;background:linear-gradient(135deg,#0066FF,#0052cc);color:#fff;border:none;font-family:inherit;font-size:15px;font-weight:700;padding:14px;border-radius:12px;cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-checkout:hover{background:linear-gradient(135deg,#3388FF,#0066FF);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,102,255,0.35);}
+.cart-note{font-size:11px;color:#5A6380;text-align:center;margin-top:10px;line-height:1.5;}
 </style>
 
   <!-- OVERLAY HTML -->
@@ -2297,10 +3219,123 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     else navbar.classList.remove('scrolled');
   });
 
-  // Tab switching
-  function switchTab(el, tab) {
-    document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
+  // Mobile nav toggle
+  function toggleMfgMobile() {
+    const menu = document.getElementById('mfgMobileMenu');
+    const menuIcon = document.getElementById('menu-icon');
+    const closeIcon = document.getElementById('close-icon');
+    if (!menu) return;
+    menu.classList.toggle('open');
+    if (menuIcon) menuIcon.style.display = menu.classList.contains('open') ? 'none' : 'block';
+    if (closeIcon) closeIcon.style.display = menu.classList.contains('open') ? 'block' : 'none';
+  }
+  function closeMfgMobile() {
+    const menu = document.getElementById('mfgMobileMenu');
+    const menuIcon = document.getElementById('menu-icon');
+    const closeIcon = document.getElementById('close-icon');
+    if (menu) menu.classList.remove('open');
+    if (menuIcon) menuIcon.style.display = 'block';
+    if (closeIcon) closeIcon.style.display = 'none';
+  }
+  // Close services dropdown on outside click
+  document.addEventListener('click', e => {
+    const dd = document.getElementById('servicesDropdown');
+    if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+  });
+
+  // Sticky sidebar — 3-state: normal → fixed → anchored-to-bottom
+  // Key: capture sidebar's exact pixel left-offset while it is still in normal
+  // grid flow, then reuse that fixed `left` value so there is zero horizontal shift.
+  (function() {
+    var sidebar = document.querySelector('.quote-sidebar');
+    var layout  = document.querySelector('.quote-layout');
+    if (!sidebar || !layout) return;
+    layout.style.position = 'relative';
+    var NAV_H   = 110; // service-nav(38) + main-nav(72)
+    var PADDING = 24;  // breathing room at bottom
+    var cachedLeft = null; // captured while sidebar is in normal grid flow
+
+    function captureSidebarLeft() {
+      // getBoundingClientRect().left gives the exact viewport x — use that as
+      // CSS left when fixed so the sidebar never shifts horizontally.
+      cachedLeft = sidebar.getBoundingClientRect().left;
+    }
+
+    function updateSidebar() {
+      if (window.innerWidth <= 900) {
+        sidebar.classList.remove('is-fixed', 'is-bottom');
+        sidebar.style.left = '';
+        return;
+      }
+      var layoutRect = layout.getBoundingClientRect();
+      var sidebarH   = sidebar.offsetHeight;
+
+      if (layoutRect.top > NAV_H) {
+        // ① Normal flow — sidebar scrolls with page
+        sidebar.classList.remove('is-fixed', 'is-bottom');
+        sidebar.style.left = '';
+        // Always refresh the cached position while in normal flow
+        captureSidebarLeft();
+
+      } else if (layoutRect.bottom >= sidebarH + NAV_H + PADDING) {
+        // ② Fixed — pin to viewport top, using the captured left so it
+        //    never shifts left/right relative to its natural column position
+        if (cachedLeft === null) captureSidebarLeft();
+        sidebar.classList.add('is-fixed');
+        sidebar.classList.remove('is-bottom');
+        sidebar.style.left = cachedLeft + 'px';
+
+      } else {
+        // ③ Bottom-anchored — sidebar stays at the foot of the layout container
+        sidebar.classList.remove('is-fixed');
+        sidebar.classList.add('is-bottom');
+        sidebar.style.left = '';
+      }
+    }
+
+    window.addEventListener('scroll', updateSidebar, {passive: true});
+    window.addEventListener('resize', function() {
+      // Invalidate cache so we re-measure after any layout reflow
+      sidebar.classList.remove('is-fixed', 'is-bottom');
+      sidebar.style.left = '';
+      captureSidebarLeft();
+      updateSidebar();
+    });
+    updateSidebar();
+  })();
+
+  // Qty stepper helper
+  function stepQty(id, delta) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var v = parseInt(el.value) || parseInt(el.min) || 1;
+    var mn = parseInt(el.min) || 1;
+    var mx = parseInt(el.max) || 9999;
+    el.value = Math.max(mn, Math.min(mx, v + delta));
+    el.dispatchEvent(new Event('input'));
+  }
+
+  // Addon toggle (PCB Assembly / Stencil)
+  var addonState = { pcba: false, stencil: false };
+  function toggleAddon(name) {
+    addonState[name] = !addonState[name];
+    var on = addonState[name];
+    var panel = document.getElementById('tab-' + name);
+    var track = document.getElementById('sw-track-' + name);
+    if (panel) panel.style.display = on ? '' : 'none';
+    if (track) track.classList.toggle('on', on);
+    // Show/hide sidebar pricing row
+    var capName = name.charAt(0).toUpperCase() + name.slice(1);
+    var sideRow = document.getElementById('row-charge' + capName);
+    if (sideRow) sideRow.style.display = on ? '' : 'none';
+    var ssRow = document.getElementById('row-ss-' + name);
+    if (ssRow) ssRow.style.display = on ? '' : 'none';
+    // Refresh sticky after layout changes
+    setTimeout(function(){ window.dispatchEvent(new Event('scroll')); }, 50);
+  }
+
+  function selectAssemblySide(side) {
+    // No-op — kept for any legacy references; Assembly Side uses pickSpec buttons directly
   }
 
   // Color swatch selection
@@ -2410,6 +3445,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 2oz adds roughly $10/dm² for the order (material + process)
   const COPPER_RATE_DM2 = { '1oz': 0, '2oz': 10.0, '3oz': 25.0 };
 
+  // ── Material type surcharge (flat adder) ──────────────────────────────
+  const MATERIAL_ADDER = {
+    'fr4-tg135': 0, 'kb6164': 3.0, 'np140f': 5.0,
+    's1141-tg140': 8.0, 's1000h-tg155': 12.0,
+  };
+  const MATERIAL_LABEL = {
+    'fr4-tg135':'FR4 TG135','kb6164':'KB6164–TG135','np140f':'Nan Ya NP-140F',
+    's1141-tg140':'S1141 TG140','s1000h-tg155':'S1000H TG155',
+  };
+
   // ── Thickness surcharge (non-standard thickness = tooling/material extra) ─
   const THICK_ADDER = {
     '0.4': 18.0, '0.6': 9.0, '0.8': 3.5, '1.0': 1.5,
@@ -2455,12 +3500,121 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     'single':'Single PCB', 'panel-jlc':'Panel by Us', 'panel-cust':'Panel by Customer',
   };
 
+  // ── Product Type auto-spec presets ────────────────────────────────────
+  // Each preset defines which hidden-input values to force and which button
+  // groups to visually update.
+  const PRODUCT_PRESETS = {
+    consumer: {
+      surface: 'hasl',    copper: '1oz',    material: 'fr4-tg135',
+      via: 'tented',      buildtime: 'standard', 'outline-tol': 'regular',
+      appearance: 'ipc2', inspection: 'no',
+    },
+    medical: {
+      surface: 'hasl-lf', copper: '1oz',    material: 'fr4-tg135',
+      via: 'tented',      buildtime: 'standard', 'outline-tol': 'regular',
+      appearance: 'ipc2', inspection: 'final',
+    },
+    automotive: {
+      surface: 'hasl-lf', copper: '2oz',    material: 's1141-tg140',
+      via: 'tented',      buildtime: 'standard', 'outline-tol': 'precision',
+      appearance: 'ipc2', inspection: 'elec',
+    },
+    aerospace: {
+      surface: 'enig',    copper: '2oz',    material: 's1141-tg140',
+      via: 'plugged',     buildtime: 'express',  'outline-tol': 'precision',
+      appearance: 'superb', inspection: 'final',
+    },
+    space: {
+      surface: 'enepig',  copper: '3oz',    material: 's1000h-tg155',
+      via: 'copper',      buildtime: 'express',  'outline-tol': 'precision',
+      appearance: 'superb', inspection: 'elec',
+    },
+  };
+
+  // Map hidden-input ID → the button group container ID
+  const SPEC_GROUP_MAP = {
+    surface:       'grp-surface',
+    copper:        'grp-copper-hs',   // high-spec group is the canonical one now
+    material:      'grp-material',
+    via:           'grp-via',
+    buildtime:     'grp-buildtime',
+    'outline-tol': 'grp-outline-tol',
+    appearance:    'grp-appearance',
+    inspection:    'grp-inspection',
+  };
+
+  function pickProductType(btn) {
+    // Mark card active
+    document.querySelectorAll('.pt-card').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    const val = btn.dataset.val;
+    document.getElementById('product-type').value = val;
+
+    const preset = PRODUCT_PRESETS[val];
+    if (!preset) { calcPCB(); return; }
+
+    Object.entries(preset).forEach(([hiddenId, newVal]) => {
+      // Update hidden input
+      const inp = document.getElementById(hiddenId);
+      if (inp) inp.value = newVal;
+
+      // Update the matching button group visually
+      const grpId = SPEC_GROUP_MAP[hiddenId];
+      if (!grpId) return;
+      const grp = document.getElementById(grpId);
+      if (!grp) return;
+      grp.querySelectorAll('.sopt').forEach(b => {
+        b.classList.toggle('active', b.dataset.val === newVal);
+      });
+
+      // Via covering also needs to sync the basic group (grp-via)
+      if (hiddenId === 'via') {
+        const basicGrp = document.getElementById('grp-via');
+        if (basicGrp) basicGrp.querySelectorAll('.sopt').forEach(b => {
+          b.classList.toggle('active', b.dataset.val === newVal);
+        });
+      }
+      // Copper also needs to sync the basic group (grp-copper)
+      if (hiddenId === 'copper') {
+        const basicGrp = document.getElementById('grp-copper-hs');
+        if (basicGrp) basicGrp.querySelectorAll('.sopt').forEach(b => {
+          b.classList.toggle('active', b.dataset.val === newVal);
+        });
+      }
+    });
+
+    // Show a brief "specs auto-set" toast
+    showPresetToast(val);
+    onLayersChange();
+    calcPCB();
+  }
+
+  function showPresetToast(typeVal) {
+    let el = document.getElementById('preset-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'preset-toast';
+      el.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);' +
+        'background:rgba(16,185,129,0.92);color:#fff;font-size:12px;font-weight:600;' +
+        'padding:8px 18px;border-radius:20px;z-index:9999;pointer-events:none;' +
+        'opacity:0;transition:opacity .25s;white-space:nowrap;';
+      document.body.appendChild(el);
+    }
+    const names = {consumer:'Consumer/Industrial',medical:'Medical',
+      automotive:'Automotive',aerospace:'Aerospace',space:'Space Missions'};
+    el.textContent = '✓ Specs auto-set for ' + (names[typeVal] || typeVal);
+    el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = '0'; }, 2200);
+  }
+
   // ── Button-group spec pickers ──────────────────────────────────────────
   function pickSpec(hiddenId, btn) {
     const grp = btn.closest('.spec-opts');
-    grp.querySelectorAll('.sopt').forEach(b => b.classList.remove('active'));
+    if (grp) grp.querySelectorAll('.sopt').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById(hiddenId).value = btn.dataset.val;
+    const el = document.getElementById(hiddenId);
+    if (el) el.value = btn.dataset.val;
     if (hiddenId === 'layers') onLayersChange();
     calcPCB();
   }
@@ -2492,6 +3646,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     body.classList.toggle('hidden');
   }
 
+  // Show/hide Via Plating Method row (only relevant for filled vias)
+  function showViaPlating(show) {
+    const row  = document.getElementById('row-via-plating');
+    const note = document.getElementById('via-plating-note');
+    if (row)  row.style.display  = show ? '' : 'none';
+    if (note) note.style.display = show ? '' : 'none';
+  }
+
   // Show/hide inner copper row for 4L+ boards
   function onLayersChange() {
     const layers = parseInt(document.getElementById('layers').value) || 2;
@@ -2517,9 +3679,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const delivery= gv('delivery')   || 'single';
     const silk    = gv('silk')       || 'white';
     const innerCu = gv('inner-copper') || '0.5oz';
-    const goldF   = gv('gold-finger') === 'yes';
-    const castH   = gv('cast-holes')  === 'yes';
-    const removeN = gv('remove-num')  === 'yes';
+    const goldF      = gv('gold-finger')  === 'yes';
+    const castH      = gv('cast-holes')   === 'yes';
+    const removeN    = gv('pcb-mark')     === 'remove';  // "Remove Mark" = remove order# ($1.50)
+    const edgePlate  = gv('edge-plating') === 'yes';
+    const blindSlots = gv('blind-slots')  === 'yes';
+    const precTol    = gv('outline-tol')  === 'precision';
+    const minVia     = parseFloat(gv('min-via') || '0.3');
+    const material   = gv('material')    || 'fr4-tg135';
+    const kelvinTest = gv('kelvin-test') === 'yes';
+    const superb     = gv('appearance')  === 'superb';
+    const silkHiPrec = gv('silk-tech')   === 'hi-prec';
+    const inspection = gv('inspection')  || 'no';
 
     const colorBtn = document.querySelector('#grp-color .csopt.active');
     const colorKey = colorBtn ? colorBtn.dataset.color : 'green';
@@ -2552,9 +3723,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // ── 7. Special features (flat adders) ─────────────────────────────
     let specialCost = 0;
     const specialItems = [];
-    if (goldF)   { specialCost += 10.0; specialItems.push('Gold Fingers'); }
-    if (castH)   { specialCost += 12.0; specialItems.push('Castellated'); }
-    if (removeN) { specialCost += 1.50; specialItems.push('Remove Order#'); }
+    if (goldF)      { specialCost += 10.0; specialItems.push('Gold Fingers'); }
+    if (castH)      { specialCost += 12.0; specialItems.push('Castellated'); }
+    if (removeN)    { specialCost +=  1.50; specialItems.push('Remove Order#'); }
+    if (edgePlate)  { specialCost += 25.0; specialItems.push('Edge Plating'); }
+    if (blindSlots) { specialCost += 10.0; specialItems.push('Blind Slots'); }
+    if (precTol)    { specialCost +=  3.0; specialItems.push('Precision Tolerance'); }
+    // Min via hole surcharge: smaller vias require tighter process control
+    if (minVia <= 0.15)      { specialCost += 8.0; specialItems.push('Min Via 0.15mm'); }
+    else if (minVia <= 0.2)  { specialCost += 4.0; specialItems.push('Min Via 0.20mm'); }
+    else if (minVia <= 0.25) { specialCost += 2.0; specialItems.push('Min Via 0.25mm'); }
+    // Material surcharge
+    const materialCost = MATERIAL_ADDER[material] || 0;
+    if (materialCost > 0) { specialCost += materialCost; specialItems.push(MATERIAL_LABEL[material]); }
+    // Quality / testing surcharges
+    if (kelvinTest)   { specialCost +=  5.0; specialItems.push('4-Wire Kelvin Test'); }
+    if (superb)       { specialCost += 10.0; specialItems.push('Superb Quality'); }
+    if (silkHiPrec)   { specialCost +=  3.0; specialItems.push('Hi-prec Silkscreen'); }
+    if (inspection === 'final') { specialCost += 8.0; specialItems.push('Final Inspection Report'); }
+    else if (inspection === 'elec') { specialCost += 5.0; specialItems.push('Electrical Test Report'); }
 
     // ── 8. Lead time surcharge ─────────────────────────────────────────
     const buildCost = BUILD_ADDER[build] || 0;
@@ -2571,7 +3758,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if ($('chargeCopper')) $('chargeCopper').textContent = fmt(copperCost);
     if ($('chargeThick'))  $('chargeThick').textContent  = fmt(thickCost);
     if ($('chargeColor'))  $('chargeColor').textContent  = fmt(colorCost);
-    if ($('chargeVia'))    $('chargeVia').textContent    = fmt(viaCost);
+    if ($('chargeVia')) {
+      $('chargeVia').textContent = fmt(viaCost);
+      const viaChgRow = $('row-chargeVia');
+      if (viaChgRow) viaChgRow.style.display = viaCost > 0 ? '' : 'none';
+    }
     if ($('chargeBuild'))  $('chargeBuild').textContent  = fmt(buildCost);
     if ($('chargeSpecial')) {
       $('chargeSpecial').textContent = fmt(specialCost);
@@ -2580,18 +3771,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     if ($('totalPrice')) $('totalPrice').textContent = fmt(total);
 
-    // ── Update sidebar spec summary ────────────────────────────────────
+    // ── Update sidebar spec summary (major specs only) ────────────────
     if ($('ss-layers'))   $('ss-layers').textContent   = layers + '-Layer';
     if ($('ss-dims'))     $('ss-dims').textContent     = w.toFixed(0) + ' × ' + h.toFixed(0) + ' mm';
     if ($('ss-qty'))      $('ss-qty').textContent      = qty + ' pcs';
-    if ($('ss-delivery')) $('ss-delivery').textContent = DELIVERY_LABEL[delivery] || delivery;
     if ($('ss-thick'))    $('ss-thick').textContent    = THICK_LABEL[thick] || thick + ' mm';
     if ($('ss-color'))    $('ss-color').textContent    = COLOR_LABEL[colorKey] || colorKey;
-    if ($('ss-silk'))     $('ss-silk').textContent     = silk.charAt(0).toUpperCase() + silk.slice(1);
     if ($('ss-copper'))   $('ss-copper').textContent   = copper.replace('oz',' oz');
     if ($('ss-inner-copper')) $('ss-inner-copper').textContent = innerCu.replace('oz',' oz');
     if ($('ss-surf'))     $('ss-surf').textContent     = FINISH_LABEL[surface] || surface;
+    // Via Covering — only show when non-standard (plugged / filled)
+    const viaRow = $('row-ss-via');
+    const isNonStdVia = via !== 'tented' && via !== 'untented';
     if ($('ss-via'))      $('ss-via').textContent      = VIA_LABEL[via] || via;
+    if (viaRow)           viaRow.style.display          = isNonStdVia ? '' : 'none';
     if ($('ss-build'))    $('ss-build').textContent    = BUILD_LABEL[build] || build;
     if ($('ss-adv')) {
       const advRow = $('row-ss-adv');
@@ -2903,6 +4096,24 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         await processSingleGerber(file.name, text);
       }
       if (titleEl) titleEl.innerHTML = `<strong>✓ ${file.name}</strong>`;
+      // Clear any Gerber-required error state
+      const zone = document.getElementById('uploadZone');
+      if (zone) { zone.style.borderColor = ''; zone.style.boxShadow = ''; }
+      const errEl = document.getElementById('gerber-required-msg');
+      if (errEl) errEl.remove();
+      // Read file as base64 so dashboard can offer a download link
+      try {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          window._etGerberFileData = {
+            name: file.name,
+            size: file.size,
+            type: file.type || (file.name.toLowerCase().endsWith('.zip') ? 'application/zip' : 'application/octet-stream'),
+            dataUrl: e.target.result
+          };
+        };
+        reader.readAsDataURL(file);
+      } catch(e) { console.warn('Could not read Gerber as base64:', e); }
     } catch (err) {
       console.error('Upload error:', err);
       if (titleEl) titleEl.innerHTML = `<strong style="color:#ff6b6b;">⚠ Error: ${err.message}</strong>`;
@@ -4580,30 +5791,222 @@ void main(){
   // ════════════════════════════════════════════════════════════════════════════
 
   function submitRFQ() {
-    const rfq = {
-      id: 'MFG-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random()*9000),
-      type: 'manufacturing',
-      createdAt: new Date().toISOString(),
-      status: 'pending',
-      specs: {
-        boardType: document.querySelector('.config-tab.active')?.dataset.tab || 'pcb',
-        layers: document.getElementById('layers')?.value,
-        quantity: document.getElementById('quantity')?.value,
-        width: document.getElementById('dimW')?.value,
-        height: document.getElementById('dimH')?.value,
-        thickness: document.getElementById('thickness')?.value,
-        copper: document.getElementById('copper')?.value,
-        surface: document.getElementById('surface')?.value,
-        buildTime: document.getElementById('buildtime')?.value,
-        soldermask: document.querySelector('.color-swatch.selected')?.dataset.color || 'green',
-      },
-      estimatedPrice: parseFloat(document.getElementById('totalPrice')?.textContent?.replace('$','')) || 0,
+    const gv = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+    // ── Gerber file required ──────────────────────────────────────────────────
+    const hasGerber = !!window._etGerberFile || (function(){
+      const fi = document.getElementById('fileInput');
+      return fi && fi.files && fi.files.length > 0;
+    })();
+    if (!hasGerber) {
+      const zone = document.getElementById('uploadZone');
+      if (zone) {
+        zone.style.borderColor = '#ef4444';
+        zone.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.2)';
+        zone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { zone.style.borderColor = ''; zone.style.boxShadow = ''; }, 3500);
+      }
+      let errEl = document.getElementById('gerber-required-msg');
+      if (!errEl) {
+        errEl = document.createElement('div');
+        errEl.id = 'gerber-required-msg';
+        errEl.style.cssText = 'color:#ef4444;font-size:13px;font-weight:600;text-align:center;margin-top:8px;padding:8px;background:rgba(239,68,68,0.08);border-radius:8px;border:1px solid rgba(239,68,68,0.25);';
+        if (zone && zone.parentNode) zone.parentNode.insertBefore(errEl, zone.nextSibling);
+      }
+      errEl.textContent = '⚠ Please upload your Gerber files before submitting.';
+      setTimeout(() => { const e = document.getElementById('gerber-required-msg'); if (e) e.textContent = ''; }, 4000);
+      return;
+    }
+    const prevErr = document.getElementById('gerber-required-msg');
+    if (prevErr) prevErr.remove();
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── Collect ALL spec values ───────────────────────────────
+    const layers   = gv('layers')    || '2';
+    const qty      = gv('quantity')  || '5';
+    const w        = document.getElementById('dimW')?.value || '100';
+    const h        = document.getElementById('dimH')?.value || '100';
+    const thick    = gv('thickness') || '1.6';
+    const copper   = gv('copper')    || '1oz';
+    const surface  = gv('surface')   || 'hasl';
+    const build    = gv('buildtime') || 'standard';
+    const via      = gv('via')       || 'tented';
+    const material = gv('material')  || 'fr4-tg135';
+    const colorBtn = document.querySelector('#grp-color .csopt.active');
+    const color    = colorBtn ? colorBtn.dataset.color : 'green';
+    const total    = parseFloat(document.getElementById('totalPrice')?.textContent?.replace('$','')) || 0;
+
+    // Get product type from pt-cards selection
+    const ptActive = document.querySelector('#grp-product-type .pt-card.active');
+    const productType = ptActive ? (ptActive.dataset.val || gv('product-type')) : gv('product-type');
+
+    // Build comprehensive specs object with ALL hidden inputs
+    const allSpecs = {
+      // Core
+      layers,
+      quantity:     qty,
+      width: w, height: h,
+      thickness:    thick,
+      copper,
+      innerCopper:  gv('inner-copper'),
+      surface,
+      buildtime:    build,
+      via,
+      material,
+      color,
+      silk:         gv('silk'),
+      delivery:     gv('delivery'),
+      diffDesign:   gv('diff-design'),
+      productType,
+      // Advanced PCB
+      minHole:      gv('min-hole'),
+      goldFinger:   gv('gold-finger'),
+      castHoles:    gv('cast-holes'),
+      impedance:    gv('impedance'),
+      removeNum:    gv('remove-num'),
+      confirmFile:  gv('confirm-file'),
+      viaPlating:   gv('via-plating'),
+      minVia:       gv('min-via'),
+      outlineTol:   gv('outline-tol'),
+      pcbMark:      gv('pcb-mark'),
+      elecTest:     gv('elec-test'),
+      edgePlating:  gv('edge-plating'),
+      blindSlots:   gv('blind-slots'),
+      ulMark:       gv('ul-mark'),
+      smExp:        gv('sm-exp'),
+      holeCu:       gv('hole-cu'),
+      kelvinTest:   gv('kelvin-test'),
+      paperPcbs:    gv('paper-pcbs'),
+      appearance:   gv('appearance'),
+      silkTech:     gv('silk-tech'),
+      inspection:   gv('inspection'),
+      // PCBA
+      pcbaEnabled:  typeof addonState !== 'undefined' && addonState.pcba,
+      asmSide:      gv('asm-side'),
+      edgeRails:    gv('edge-rails'),
+      confirmParts: gv('confirm-parts'),
+      stencilStorage: gv('stencil-storage'),
+      fixtureStorage: gv('fixture-storage'),
+      partsSel:     gv('parts-sel'),
+      framework:    gv('framework'),
+      stepStencil:  gv('step-stencil'),
+      nanoCoating:  gv('nano-coating'),
+      packageBox:   gv('package-box'),
+      // Stencil
+      stencilEnabled: typeof addonState !== 'undefined' && addonState.stencil,
+      stencilSide:  gv('stencil-side'),
+      stencilDims:  gv('stencil-dims'),
+      stencilThick: gv('stencil-thick'),
+      stencilProcess: gv('stencil-process'),
+      polish:       gv('polish'),
+      fiducials:    gv('fiducials'),
+      stencilConfirm: gv('stencil-confirm'),
+      engrave:      gv('engrave'),
+      // Gerber file info
+      gerberFileName: window._etGerberFileData ? window._etGerberFileData.name : null,
+      gerberFileSize: window._etGerberFileData ? window._etGerberFileData.size : null,
     };
-    const rfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
-    rfqs.push(rfq);
-    localStorage.setItem('electrotrical_mfg_requests', JSON.stringify(rfqs));
-    alert('RFQ submitted! Reference ID: ' + rfq.id);
+
+    // Assemble quote-request object compatible with dashboard's handleQuoteSubmission()
+    const quoteData = {
+      serviceType:  'manufacturing',
+      serviceLabel: 'PCB Manufacturing',
+
+      // Top-level fields (for backward compat)
+      layers,
+      layersLabel:  layers + '-Layer',
+      quantity:     qty,
+      width: w, height: h,
+      sizeLabel:    w + ' × ' + h + ' mm',
+      thickness:    thick,
+      thicknessLabel: thick + ' mm',
+      copper,
+      surface,
+      via,
+      material,
+      color,
+      turnaround:      build,
+      turnaroundLabel: build === 'rush' ? 'Rush (2-3d)' : build === 'express' ? 'Express (5-7d)' : 'Standard (10-14d)',
+      pcbaEnabled:    allSpecs.pcbaEnabled,
+      stencilEnabled: allSpecs.stencilEnabled,
+      base:  total,
+      total: total,
+
+      // Full spec map — everything the admin needs
+      specs: allSpecs,
+
+      // Gerber file (base64 data URL for dashboard download)
+      gerberFile: window._etGerberFileData ? {
+        name:    window._etGerberFileData.name,
+        size:    window._etGerberFileData.size,
+        type:    window._etGerberFileData.type,
+        dataUrl: window._etGerberFileData.dataUrl
+      } : null,
+
+      attachedFiles: [],
+    };
+
+    // Store Gerber separately (can be several MB as base64 — keep quoteData lean)
+    if (window._etGerberFileData && window._etGerberFileData.dataUrl) {
+      try {
+        localStorage.setItem('electrotrical_gerber_pending', JSON.stringify(window._etGerberFileData));
+      } catch(e) {
+        console.warn('Gerber too large for localStorage, will be skipped:', e);
+      }
+      // Don't include dataUrl in quoteData — reference only
+      quoteData.gerberFile = {
+        name: window._etGerberFileData.name,
+        size: window._etGerberFileData.size,
+        type: window._etGerberFileData.type,
+        dataUrl: null   // dashboard will pull from electrotrical_gerber_pending
+      };
+    }
+
+    // Persist for the dashboard to pick up on load
+    try {
+      localStorage.setItem('electrotrical_quote_request', JSON.stringify(quoteData));
+    } catch(e) {
+      alert('Could not save your request (storage full). Please clear your browser storage and try again.');
+      console.error('localStorage setItem failed:', e);
+      return;
+    }
+
+    // Navigate to dashboard — handleQuoteSubmission() will process the pending request
+    window.location.href = 'dashboard.html';
   }
+</script>
+
+<!-- Cart Overlay -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<!-- Cart Drawer -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <div class="cart-drawer-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3388FF" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+      Your Cart
+    </div>
+    <button class="cart-close-btn" onclick="closeCart()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-subtotal"><span class="cart-subtotal-label">Subtotal</span><span class="cart-subtotal-value" id="cartSubtotal">$0.00</span></div>
+    <button class="btn-checkout" onclick="window.location.href='store.html'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+      View Cart &amp; Checkout
+    </button>
+    <p class="cart-note">Go to the store to add more items or submit your order inquiry.</p>
+  </div>
+</div>
+<script>
+const CART_KEY='electrotrical_cart';
+function getCart(){try{return JSON.parse(localStorage.getItem(CART_KEY))||[];}catch{return[];}}
+function updateCartBadge(){const t=getCart().reduce((s,i)=>s+i.qty,0);const b=document.getElementById('cartBadge');if(!b)return;b.textContent=t;b.classList.toggle('visible',t>0);}
+function openCart(){document.getElementById('cartDrawer').classList.add('open');document.getElementById('cartOverlay').classList.add('open');document.body.style.overflow='hidden';renderCartDrawer();}
+function closeCart(){document.getElementById('cartDrawer').classList.remove('open');document.getElementById('cartOverlay').classList.remove('open');document.body.style.overflow='';}
+function changeQty(id,delta){const cart=getCart();const item=cart.find(i=>i.id===id);if(!item)return;item.qty+=delta;if(item.qty<=0){localStorage.setItem(CART_KEY,JSON.stringify(cart.filter(i=>i.id!==id)));}else{localStorage.setItem(CART_KEY,JSON.stringify(cart));}updateCartBadge();renderCartDrawer();}
+function removeFromCart(id){localStorage.setItem(CART_KEY,JSON.stringify(getCart().filter(i=>i.id!==id)));updateCartBadge();renderCartDrawer();}
+function renderCartDrawer(){const cart=getCart();const c=document.getElementById('cartItems');const f=document.getElementById('cartFooter');const s=document.getElementById('cartSubtotal');if(!c)return;if(!cart.length){c.innerHTML='<div class="cart-empty"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg><h3>Your cart is empty</h3><p>Visit the Store to add components.</p><button class="cart-empty-btn" onclick="window.location.href=\'store.html\'">Go to Store</button></div>';if(f)f.style.display='none';return;}c.innerHTML=cart.map(item=>`<div class="cart-item"><div class="cart-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="10" rx="2"/><circle cx="12" cy="12" r="2"/></svg></div><div class="cart-item-info"><div class="cart-item-name" title="${item.name}">${item.name}</div><div class="cart-item-price">$${item.price.toFixed(2)} each · $${(item.price*item.qty).toFixed(2)}</div></div><div class="cart-item-controls"><button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button><span class="qty-value">${item.qty}</span><button class="qty-btn" onclick="changeQty(${item.id},1)">+</button></div><button class="cart-item-remove" onclick="removeFromCart(${item.id})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div>`).join('');const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);if(s)s.textContent='$'+sub.toFixed(2);if(f)f.style.display='block';}
+updateCartBadge();
 </script>
 
 </body>

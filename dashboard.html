@@ -103,7 +103,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .navbar {
-  position: fixed; top: 38px; left: 0; right: 0; z-index: 1000;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   background: rgba(10, 14, 26, 0.92);
   backdrop-filter: blur(20px) saturate(1.5);
   border-bottom: 1px solid var(--border);
@@ -162,7 +162,7 @@ a { color: inherit; text-decoration: none; }
 
 .auth-container {
   max-width: 440px; margin: 0 auto;
-  padding: 9.5rem 2rem 4rem; /* extra for service-nav */
+  padding: 6rem 2rem 4rem;
 }
 .auth-card {
   background: var(--dark-800);
@@ -314,7 +314,7 @@ input[type=number].price-input::-webkit-inner-spin-button {
    DASHBOARD LAYOUT
    ══════════════════════════════════════════ */
 .dashboard {
-  padding: 7.5rem 2rem 4rem; /* extra for service-nav */
+  padding: 6rem 2rem 4rem;
   max-width: 1200px; margin: 0 auto;
 }
 .dash-header {
@@ -1485,6 +1485,39 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
   .auth-card { padding: 1.75rem; }
   .detail-card { padding: 1rem; }
 }
+/* ── Cart ── */
+.cart-btn{position:relative;background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:8px;border-radius:8px;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;}
+.cart-btn:hover{color:var(--white);background:rgba(255,255,255,0.05);}
+.cart-badge{position:absolute;top:2px;right:2px;background:var(--primary);color:#fff;font-size:10px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--dark);opacity:0;transform:scale(0);transition:all .2s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.cart-badge.visible{opacity:1;transform:scale(1);}
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1998;opacity:0;pointer-events:none;transition:opacity .3s ease;backdrop-filter:blur(4px);}
+.cart-overlay.open{opacity:1;pointer-events:all;}
+.cart-drawer{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:100vw;background:#0F1424;border-left:1px solid rgba(255,255,255,0.08);z-index:1999;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
+.cart-drawer.open{transform:translateX(0);}
+.cart-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.cart-drawer-title{font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:9px;}
+.cart-close-btn{background:none;border:none;color:#8B95B0;cursor:pointer;padding:6px;border-radius:8px;transition:var(--transition);display:flex;align-items:center;}
+.cart-close-btn:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.cart-items{flex:1;overflow-y:auto;padding:1rem 1.5rem;display:flex;flex-direction:column;gap:10px;}
+.cart-items::-webkit-scrollbar{width:4px;}.cart-items::-webkit-scrollbar-thumb{background:rgba(0,102,255,0.3);border-radius:4px;}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;color:#8B95B0;gap:14px;padding:2rem;}
+.cart-empty svg{opacity:.2;}.cart-empty h3{font-size:17px;font-weight:700;color:#E8ECF4;}.cart-empty p{font-size:13px;line-height:1.5;}
+.cart-empty-btn{margin-top:8px;background:rgba(0,102,255,0.12);border:1px solid rgba(0,102,255,0.3);color:#3388FF;font-family:inherit;font-size:13px;font-weight:600;padding:9px 20px;border-radius:20px;cursor:pointer;}
+.cart-item{display:flex;align-items:center;gap:12px;background:#151B2E;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px;}
+.cart-item-icon{width:40px;height:40px;border-radius:8px;background:rgba(0,102,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#3388FF;}
+.cart-item-info{flex:1;min-width:0;}.cart-item-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.cart-item-price{font-size:12px;color:#8B95B0;margin-top:2px;}
+.cart-item-controls{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.qty-btn{width:26px;height:26px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.05);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition);}
+.qty-btn:hover{background:rgba(0,102,255,0.15);border-color:#0066FF;}
+.qty-value{font-size:13px;font-weight:700;color:#fff;min-width:20px;text-align:center;}
+.cart-item-remove{background:none;border:none;color:#5A6380;cursor:pointer;padding:4px;border-radius:6px;transition:var(--transition);display:flex;align-items:center;margin-left:2px;}
+.cart-item-remove:hover{color:#FF453A;background:rgba(255,69,58,0.1);}
+.cart-footer{padding:1.25rem 1.5rem;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;background:#0F1424;}
+.cart-subtotal{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.cart-subtotal-label{font-size:13px;color:#8B95B0;font-weight:500;}.cart-subtotal-value{font-size:22px;font-weight:800;color:#fff;}
+.btn-checkout{width:100%;background:linear-gradient(135deg,#0066FF,#0052cc);color:#fff;border:none;font-family:inherit;font-size:15px;font-weight:700;padding:14px;border-radius:12px;cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-checkout:hover{background:linear-gradient(135deg,#3388FF,#0066FF);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,102,255,0.35);}
+.cart-note{font-size:11px;color:#5A6380;text-align:center;margin-top:10px;line-height:1.5;}
 </style>
 <!-- Google Analytics — replace G-XXXXXXXXXX with your Measurement ID and uncomment to activate -->
 <!--
@@ -1508,24 +1541,6 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- ══════════════════════ SERVICE NAV ══════════════════════ -->
-<div class="service-nav" role="navigation" aria-label="Service navigation">
-  <div class="service-nav-inner">
-    <a href="index.html" class="service-nav-tab">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      <span>PCB Design</span>
-    </a>
-    <a href="manufacturing.html" class="service-nav-tab">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 00-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-      <span>PCB Manufacturing</span>
-    </a>
-    <a href="store.html" class="service-nav-tab">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      <span>Store</span>
-    </a>
-  </div>
-</div>
-
 <!-- ══════════════════════ NAVBAR ══════════════════════ -->
 <nav class="navbar">
   <div class="nav-inner">
@@ -1537,6 +1552,10 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
       <a class="nav-link active" href="dashboard.html">Dashboard</a>
     </div>
     <div class="nav-user" id="navUser" style="display:none;">
+      <button class="cart-btn" onclick="openCart()" aria-label="Cart">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
       <div style="position:relative;">
         <button class="notif-bell" onclick="toggleNotifications(event)" aria-label="Notifications">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -1678,10 +1697,12 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
     <div class="dash-tabs-wrap">
     <div class="dash-tabs" id="mainDashTabs">
       <button class="dash-tab" onclick="switchMainTab('summary')" id="summaryTab" style="display:none;">Summary</button>
-      <button class="dash-tab" onclick="switchMainTab('quotes')" id="quotesTab">Quotes <span id="quoteBadge" style="display:none;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;"></span></button>
-      <button class="dash-tab" onclick="switchMainTab('projects')" id="projectsTab">Projects</button>
+      <button class="dash-tab" onclick="switchMainTab('pcbdesign')" id="pcbdesignTab">
+        PCB Design
+        <span id="quoteBadge" style="display:none;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;"></span>
+      </button>
       <button class="dash-tab" onclick="switchMainTab('mfgOrders')" id="mfgOrdersTab">
-        Manufacturing
+        PCB Manufacturing
         <span id="mfgBadge" style="display:none;background:var(--cyan);color:#000;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;"></span>
       </button>
       <button class="dash-tab" onclick="switchMainTab('storeOrders')" id="storeOrdersTab">
@@ -1696,8 +1717,13 @@ html::-webkit-scrollbar-thumb:hover { background: rgba(0,102,255,0.65); }
     <!-- Projects List -->
     <div id="projectsList"></div>
 
-    <!-- Quote Requests (Admin) / My Quotes (Customer) -->
+    <!-- Quote Requests (Admin) / My Quotes (Customer) — top of PCB Design tab -->
     <div id="quoteRequestsSection" style="display:none;"></div>
+
+    <!-- Divider between Quotes and Projects within PCB Design tab -->
+    <div id="pcbdesign-divider" style="display:none; margin:28px 0 20px; border-top:1px solid rgba(255,255,255,0.07); position:relative;">
+      <span style="position:absolute;top:-11px;left:0;background:var(--dark-900);padding:0 14px 0 0;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;">Active Projects</span>
+    </div>
 
     <!-- Manufacturing RFQ Orders -->
     <div id="mfgOrdersSection" style="display:none;"></div>
@@ -2575,33 +2601,34 @@ function renderDashboard() {
     : designer
     ? 'View all projects and upload your design work for customer review'
     : 'Manage your PCB design orders and track progress';
-  document.getElementById('newQuoteBtn').style.display = (admin || designer) ? 'none' : 'inline-flex';
+  document.getElementById('newQuoteBtn').style.display = 'none'; // button moved into PCB Design tab section
   // Show Users + Summary tabs only for admin
   const usersTab = document.getElementById('usersTab');
   if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
   const summaryTabEl = document.getElementById('summaryTab');
   if (summaryTabEl) summaryTabEl.style.display = admin ? 'inline-flex' : 'none';
-  // Quotes tab: admin sees all, designer hidden, customer sees own
-  const quotesTabEl = document.getElementById('quotesTab');
-  if (quotesTabEl) quotesTabEl.style.display = designer ? 'none' : 'inline-flex';
+  const pcbdesignTabEl = document.getElementById('pcbdesignTab');
+  if (pcbdesignTabEl) pcbdesignTabEl.style.display = 'inline-flex';
 
   // Update quotes badge count
   updateQuoteBadge();
 
   document.getElementById('projectDetail').style.display = 'none';
-  // Only force projectsList visible if the Projects tab is actually active
+  // Only force sections visible if PCB Design tab is already active
   const activeTab = document.querySelector('#mainDashTabs .dash-tab.active');
   const activeTabId = activeTab ? activeTab.id : null;
-  // For admin: default landing is Summary; for customer: Projects
+  // For admin: default landing is Summary; for customer/designer: PCB Design tab
   if (!activeTab) {
     if (admin) {
       switchMainTab('summary');
       return;
     } else {
-      document.getElementById('projectsList').style.display = 'block';
+      switchMainTab('pcbdesign');
+      return;
     }
-  } else if (activeTabId === 'projectsTab' || (!activeTabId && !admin)) {
+  } else if (activeTabId === 'pcbdesignTab') {
     document.getElementById('projectsList').style.display = 'block';
+    document.getElementById('quoteRequestsSection').style.display = 'block';
   }
 
   // ── Data integrity: deduplicate + repair projects ─────────────────────────
@@ -2679,7 +2706,7 @@ function renderDashboard() {
         </div>
         <div class="projects-empty-title">No active projects</div>
         <div class="projects-empty-desc">Projects will appear here once customers submit quote requests and complete payment. Check the Quotes tab for pending requests.</div>
-        <button class="btn btn-secondary btn-sm" onclick="switchMainTab('quotes')">View Quote Requests</button>
+        <button class="btn btn-secondary btn-sm" onclick="switchMainTab('pcbdesign')">View Quote Requests</button>
       </div>` : `
       <div class="projects-empty">
         <div class="projects-empty-icon">
@@ -2762,6 +2789,10 @@ function openProject(projectId) {
   }
 
   document.getElementById('projectsList').style.display = 'none';
+  // Hide quotes and divider so they don't bleed through the project detail view
+  document.getElementById('quoteRequestsSection').style.display = 'none';
+  const dividerEl = document.getElementById('pcbdesign-divider');
+  if (dividerEl) dividerEl.style.display = 'none';
   const detail = document.getElementById('projectDetail');
   detail.style.display = 'block';
 
@@ -3141,7 +3172,7 @@ function goToQuoteCalculator() {
     showToast('Quote requests are for customers only.', 'warning');
     return;
   }
-  window.location.href = 'index.html#quote';
+  window.location.href = 'pcb-design.html';
 }
 
 function closeModal(id) {
@@ -3836,7 +3867,10 @@ function updateQuoteBadge() {
   const mfgBadge = document.getElementById('mfgBadge');
   if (mfgBadge) {
     const rfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
-    const mfgCount = rfqs.filter(r => r.status === 'pending' && (user.superAdmin || user.role === 'admin' || r.userId === user.id)).length;
+    const isAdminUser = user.superAdmin || user.role === 'admin';
+    const mfgCount = isAdminUser
+      ? rfqs.filter(r => ['pending','reviewing','paid'].includes(r.status)).length
+      : rfqs.filter(r => r.userId === user.id && r.status === 'quoted').length;
     mfgBadge.textContent = mfgCount;
     mfgBadge.style.display = mfgCount > 0 ? 'inline' : 'none';
   }
@@ -3854,31 +3888,37 @@ function updateQuoteBadge() {
 }
 
 function switchMainTab(tab) {
+  // Aliases: legacy 'quotes' and 'projects' calls both go to the combined PCB Design tab
+  if (tab === 'quotes' || tab === 'projects') tab = 'pcbdesign';
+
   const tabs = document.querySelectorAll('#mainDashTabs .dash-tab');
   tabs.forEach(t => t.classList.remove('active'));
 
-  // Hide all sections
-  document.getElementById('projectsList').style.display = 'none';
-  document.getElementById('quoteRequestsSection').style.display = 'none';
-  document.getElementById('usersSection').style.display = 'none';
-  document.getElementById('accountSection').style.display = 'none';
-  document.getElementById('summarySection').style.display = 'none';
-  document.getElementById('projectDetail').style.display = 'none';
+  // Hide all sections (null-safe)
+  const _hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+  _hide('projectsList');
+  _hide('quoteRequestsSection');
+  _hide('usersSection');
+  _hide('accountSection');
+  _hide('summarySection');
+  _hide('projectDetail');
   const mfgEl = document.getElementById('mfgOrdersSection');
   if (mfgEl) mfgEl.style.display = 'none';
   const storeEl = document.getElementById('storeOrdersSection');
   if (storeEl) storeEl.style.display = 'none';
 
-  if (tab === 'projects') {
-    const projectsTab = document.getElementById('projectsTab');
-    if (projectsTab) projectsTab.classList.add('active');
-    document.getElementById('projectsList').style.display = 'block';
-    renderDashboard();
-  } else if (tab === 'quotes') {
-    const quotesTabEl = document.getElementById('quotesTab');
-    if (quotesTabEl) quotesTabEl.classList.add('active');
+  // Show/hide the divider (only visible inside PCB Design tab)
+  const divider = document.getElementById('pcbdesign-divider');
+  if (divider) divider.style.display = (tab === 'pcbdesign') ? 'block' : 'none';
+
+  if (tab === 'pcbdesign') {
+    // Combined PCB Design tab — shows Quote Requests above, Projects below
+    const pcbTab = document.getElementById('pcbdesignTab');
+    if (pcbTab) pcbTab.classList.add('active');
     document.getElementById('quoteRequestsSection').style.display = 'block';
+    document.getElementById('projectsList').style.display = 'block';
     renderQuoteRequests();
+    renderDashboard();
     updateQuoteBadge();
   } else if (tab === 'mfgOrders') {
     const mfgTab = document.getElementById('mfgOrdersTab');
@@ -4199,7 +4239,7 @@ function renderSummary() {
           Share your website to get started.
         </p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn btn-primary btn-sm" onclick="switchMainTab('quotes')">View Quotes</button>
+          <button class="btn btn-primary btn-sm" onclick="switchMainTab('pcbdesign')">View Quotes</button>
           <a href="index.html" class="btn btn-secondary btn-sm">View Website</a>
         </div>
         <div style="margin-top:2.5rem;padding:1.25rem;background:var(--dark-800);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:left;">
@@ -5152,7 +5192,10 @@ function renderQuoteRequests() {
     return;
   }
 
-  let html = '';
+  let html = `<div style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <h2 style="font-size:20px;font-weight:700;color:var(--white);">PCB Design — Quote Requests</h2>
+    ${!isAdmin ? '<button class="btn btn-primary btn-sm" onclick="goToQuoteCalculator()">+ New Quote Request</button>' : ''}
+  </div>`;
   quotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   quotes.forEach(q => {
@@ -5238,7 +5281,7 @@ function renderQuoteRequests() {
             <span style="font-size:13px;color:var(--danger);">Quote declined${q.adminNotes ? ': ' + sanitizeInput(q.adminNotes) : ''}</span>
           ` : ''}
           ${q.status === 'paid' && q.projectId ? `
-            <button class="btn btn-primary btn-sm" onclick="switchMainTab('projects'); setTimeout(() => openProject('${q.projectId}'), 100);">View Project — ${q.projectId}</button>
+            <button class="btn btn-primary btn-sm" onclick="switchMainTab('pcbdesign'); setTimeout(() => openProject('${q.projectId}'), 100);">View Project — ${q.projectId}</button>
           ` : ''}
         </div>
       </div>
@@ -5473,77 +5516,153 @@ function handleQuoteSubmission() {
   const user = state.users.find(u => u.id === state.currentUser);
   if (!user) return;
 
-  // Create new quote request
-  const quoteId = 'QR-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000).padStart(3, '0');
-  if (!state.quoteRequests) state.quoteRequests = [];
+  // PCB Design quotes go into state.quoteRequests; Manufacturing RFQs go to separate storage
+  if (quoteData.serviceType !== 'manufacturing') {
+    const quoteId = 'QR-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000).padStart(3, '0');
+    if (!state.quoteRequests) state.quoteRequests = [];
 
-  state.quoteRequests.push({
-    id: quoteId,
-    customerId: user.id,
-    customerName: user.firstName + ' ' + user.lastName,
-    customerEmail: user.email,
-    specs: {
-      serviceType: quoteData.serviceType || 'design',
-      serviceLabel: quoteData.serviceLabel || 'PCB Layout Design',
-      pcbType: quoteData.pcbType || 'rigid',
-      pcbTypeLabel: quoteData.pcbTypeLabel || 'Regular Rigid PCB',
-      layers: quoteData.layers,
-      layersLabel: quoteData.layersLabel,
-      complexity: quoteData.complexity,
-      complexityLabel: quoteData.complexityLabel,
-      size: quoteData.size,
-      sizeLabel: quoteData.sizeLabel,
-      sides: quoteData.sides || 'both',
-      sidesLabel: quoteData.sidesLabel || 'Both sides',
-      special: quoteData.special,
-      specialLabel: quoteData.specialLabel,
-      turnaround: quoteData.turnaround,
-      turnaroundLabel: quoteData.turnaroundLabel,
-      turnMult: quoteData.turnMult,
-      deliveryFormats: quoteData.deliveryFormats || ['Source document', 'Gerber files'],
-      base: quoteData.base
-    },
-    estimatedTotal: quoteData.total,
-    adminPrice: null,
-    adminNotes: '',
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-    reviewedAt: null,
-    attachedFiles: quoteData.attachedFiles || []
-  });
+    state.quoteRequests.push({
+      id: quoteId,
+      customerId: user.id,
+      customerName: user.firstName + ' ' + user.lastName,
+      customerEmail: user.email,
+      specs: {
+        serviceType: quoteData.serviceType || 'design',
+        serviceLabel: quoteData.serviceLabel || 'PCB Layout Design',
+        pcbType: quoteData.pcbType || 'rigid',
+        pcbTypeLabel: quoteData.pcbTypeLabel || 'Regular Rigid PCB',
+        layers: quoteData.layers,
+        layersLabel: quoteData.layersLabel,
+        complexity: quoteData.complexity,
+        complexityLabel: quoteData.complexityLabel,
+        size: quoteData.size,
+        sizeLabel: quoteData.sizeLabel,
+        sides: quoteData.sides || 'both',
+        sidesLabel: quoteData.sidesLabel || 'Both sides',
+        special: quoteData.special,
+        specialLabel: quoteData.specialLabel,
+        turnaround: quoteData.turnaround,
+        turnaroundLabel: quoteData.turnaroundLabel,
+        turnMult: quoteData.turnMult,
+        deliveryFormats: quoteData.deliveryFormats || ['Source document', 'Gerber files'],
+        base: quoteData.base
+      },
+      estimatedTotal: quoteData.total,
+      adminPrice: null,
+      adminNotes: '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      reviewedAt: null,
+      attachedFiles: quoteData.attachedFiles || []
+    });
 
-  // Notify admin
-  if (!state.notifications) state.notifications = [];
-  state.notifications.push({
-    id: 'notif-' + Date.now(),
-    userId: 'admin-001',
-    type: 'new_quote',
-    title: 'New Quote Request',
-    message: user.firstName + ' ' + user.lastName + ' submitted a quote request (' + quoteId + ') for $' + quoteData.total + ' estimated.',
-    quoteId: quoteId,
-    read: false,
-    createdAt: new Date().toISOString()
-  });
+    // Notify admin
+    if (!state.notifications) state.notifications = [];
+    state.notifications.push({
+      id: 'notif-' + Date.now(),
+      userId: 'admin-001',
+      type: 'new_quote',
+      title: 'New Quote Request',
+      message: user.firstName + ' ' + user.lastName + ' submitted a quote request (' + quoteId + ') for $' + quoteData.total + ' estimated.',
+      quoteId: quoteId,
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+  }
 
-  saveState(state);
   localStorage.removeItem('electrotrical_quote_request');
 
-  showToast('Quote request submitted! We\'ll review it shortly.', 'success');
-
-  // Set up dashboard UI basics first, then switch to Quotes tab
+  // Set up dashboard UI basics
   const admin = isAdmin();
   document.getElementById('adminBar').style.display = admin ? 'flex' : 'none';
   document.getElementById('dashTitle').textContent = admin ? 'All Projects' : 'My Projects';
   document.getElementById('dashSubtitle').textContent = admin
     ? 'Manage all customer projects, upload designs, and track milestones'
     : 'Manage your PCB design orders and track progress';
-  const submittingUser = state.users.find(u => u.id === state.currentUser);
-  document.getElementById('newQuoteBtn').style.display = (submittingUser && submittingUser.role === 'customer') ? 'inline-flex' : 'none';
+  document.getElementById('newQuoteBtn').style.display = 'none';
   const usersTab = document.getElementById('usersTab');
   if (usersTab) usersTab.style.display = admin ? 'inline-flex' : 'none';
+  const summaryTabEl = document.getElementById('summaryTab');
+  if (summaryTabEl) summaryTabEl.style.display = admin ? 'inline-flex' : 'none';
+  const pcbdesignTabEl = document.getElementById('pcbdesignTab');
+  if (pcbdesignTabEl) pcbdesignTabEl.style.display = 'inline-flex';
 
-  // Switch to Quotes tab
-  switchMainTab('quotes');
+  // Manufacturing RFQs go to the PCB Manufacturing tab (separate storage)
+  if (quoteData.serviceType === 'manufacturing') {
+    const rfqId = 'MFG-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000).padStart(3, '0');
+    const allRfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
+
+    // Move Gerber file data from the pending key to the permanent per-RFQ key
+    const pendingGerberStr = localStorage.getItem('electrotrical_gerber_pending');
+    if (pendingGerberStr) {
+      try {
+        localStorage.setItem('electrotrical_gerber_' + rfqId, pendingGerberStr);
+        localStorage.removeItem('electrotrical_gerber_pending');
+      } catch(e) { console.warn('Could not store Gerber for RFQ:', e); }
+    } else if (quoteData.gerberFile && quoteData.gerberFile.dataUrl) {
+      // Fallback: gerber was embedded in quoteData (old path)
+      try {
+        localStorage.setItem('electrotrical_gerber_' + rfqId, JSON.stringify({
+          name:    quoteData.gerberFile.name,
+          size:    quoteData.gerberFile.size,
+          type:    quoteData.gerberFile.type,
+          dataUrl: quoteData.gerberFile.dataUrl
+        }));
+      } catch(e) { console.warn('Gerber file too large for localStorage:', e); }
+    }
+
+    allRfqs.push({
+      id: rfqId,
+      userId: user.id,
+      customerName: user.firstName + ' ' + user.lastName,
+      customerEmail: user.email,
+      specs: Object.assign({
+        layers:          quoteData.layers,
+        boardType:       quoteData.material ? quoteData.material.toUpperCase().replace('FR4-TG','FR4 TG').replace('FR4','FR-4') : 'FR-4',
+        width:           quoteData.width,
+        height:          quoteData.height,
+        quantity:        quoteData.quantity,
+        surface:         quoteData.surface,
+        copper:          quoteData.copper,
+        thickness:       quoteData.thickness,
+        via:             quoteData.via,
+        color:           quoteData.color,
+        turnaround:      quoteData.turnaround,
+        pcba:            quoteData.pcbaEnabled,
+        stencil:         quoteData.stencilEnabled,
+        gerberFileName:  quoteData.gerberFile ? quoteData.gerberFile.name : null,
+        gerberFileSize:  quoteData.gerberFile ? quoteData.gerberFile.size : null
+      }, quoteData.specs || {}),
+      estimatedPrice: quoteData.total,
+      adminPrice: null,
+      adminNotes: '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      reviewedAt: null
+    });
+    localStorage.setItem('electrotrical_mfg_requests', JSON.stringify(allRfqs));
+
+    // Notify admin
+    if (!state.notifications) state.notifications = [];
+    state.notifications.push({
+      id: 'notif-' + Date.now(),
+      userId: 'admin-001',
+      type: 'new_mfg_rfq',
+      title: 'New Manufacturing RFQ',
+      message: user.firstName + ' ' + user.lastName + ' submitted a PCB manufacturing RFQ (' + rfqId + ') for $' + quoteData.total + ' estimated.',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    saveState(state);
+
+    showToast('Manufacturing RFQ submitted! We\'ll review it shortly.', 'success');
+    setTimeout(() => switchMainTab('mfgOrders'), 0);
+  } else {
+    // PCB Design quotes go to the PCB Design tab (state.quoteRequests)
+    saveState(state);
+    showToast('Quote request submitted! We\'ll review it shortly.', 'success');
+    switchMainTab('pcbdesign');
+  }
 }
 
 // ═══ SECURITY: Session Timeout (30 min inactivity) ═══
@@ -5624,7 +5743,7 @@ if (regEmailEl) {
       const detail = document.getElementById('projectDetail');
       if (detail && detail.style.display !== 'none') {
         detail.style.display = 'none';
-        switchMainTab('projects');
+        switchMainTab('pcbdesign');
       }
     }
   });
@@ -5659,7 +5778,11 @@ if (regEmailEl) {
   } else if (state.currentUser) {
     showView('dashboard');
     updateNav();
-    renderDashboard();
+    if (localStorage.getItem('electrotrical_quote_request')) {
+      handleQuoteSubmission();
+    } else {
+      renderDashboard();
+    }
   } else {
     showView('auth');
     updateNav();
@@ -6226,63 +6349,624 @@ function renderMfgOrders() {
   const el = document.getElementById('mfgOrdersSection');
   if (!el) return;
 
-  const statusColor = { pending:'var(--cyan)', reviewing:'var(--primary)', quoted:'var(--warning)', approved:'var(--success)', rejected:'var(--danger)' };
-  const statusLabel = { pending:'Pending Review', reviewing:'Under Review', quoted:'Quote Ready', approved:'Approved', rejected:'Rejected' };
-
   if (!rfqs.length) {
     el.innerHTML = `<div style="text-align:center;padding:4rem 2rem;">
       <div style="font-size:48px;margin-bottom:1rem;">🏭</div>
-      <h3 style="color:var(--white);margin-bottom:0.5rem;">No Manufacturing Requests</h3>
-      <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Submit a PCB manufacturing request to get started.</p>
-      <a href="manufacturing.html" class="btn btn-primary">Go to PCB Manufacturing →</a>
+      <h3 style="color:var(--white);margin-bottom:0.5rem;">No PCB Manufacturing Orders</h3>
+      <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Submit a PCB manufacturing RFQ to get started.</p>
+      <a href="manufacturing.html" class="btn btn-primary">+ New Manufacturing RFQ</a>
     </div>`;
     return;
   }
 
   let html = `<div style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-    <h2 style="font-size:20px;font-weight:700;color:var(--white);">Manufacturing RFQ Orders</h2>
+    <h2 style="font-size:20px;font-weight:700;color:var(--white);">PCB Manufacturing — Orders</h2>
     <a href="manufacturing.html" class="btn btn-primary btn-sm">+ New RFQ</a>
   </div>
-  <div style="display:flex;flex-direction:column;gap:12px;">`;
+  <div style="display:flex;flex-direction:column;gap:14px;">`;
 
   rfqs.slice().reverse().forEach(r => {
     const specs = r.specs || {};
-    const sc = statusColor[r.status] || 'var(--text-muted)';
-    const sl = statusLabel[r.status] || r.status;
-    html += `<div class="detail-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-          <span style="font-size:13px;font-weight:700;color:var(--white);font-family:var(--font-mono);">${r.id}</span>
-          <span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:${sc}22;color:${sc};border:1px solid ${sc}44;">${sl}</span>
+    const st = MFG_STATUS[r.status] || { label: r.status, color: 'var(--text-muted)' };
+    const isQuotedForCustomer = !isAdmin && r.status === 'quoted' && r.adminPrice;
+
+    const chip = (label, val) => val ? `<div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;">
+      <div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">${label}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--white);">${val}</div>
+    </div>` : '';
+
+    const surfaceMap = { hasl:'HASL', 'hasl-lf':'HASL-LF', enig:'ENIG', enepig:'ENEPIG', osp:'OSP' };
+    const turnMap    = { rush:'Rush', express:'Express', standard:'Standard' };
+    const colorMap   = { green:'Green', red:'Red', blue:'Blue', black:'Black', white:'White', yellow:'Yellow' };
+
+    const specChips = [
+      chip('Layers',    specs.layers ? specs.layers+'-Layer' : null),
+      chip('Size',      specs.width && specs.height ? `${specs.width}×${specs.height}mm` : null),
+      chip('Qty',       specs.quantity ? 'x'+specs.quantity : null),
+      chip('Material',  specs.boardType || null),
+      chip('Copper',    specs.copper ? specs.copper.replace('oz',' oz') : null),
+      chip('Surface',   specs.surface ? (surfaceMap[specs.surface]||specs.surface.toUpperCase()) : null),
+      chip('Lead Time', specs.turnaround ? (turnMap[specs.turnaround]||specs.turnaround) : null),
+    ].join('');
+
+    const addOns = [specs.pcba && 'PCBA', specs.stencil && 'Stencil'].filter(Boolean);
+
+    // Border highlight for quoted (awaiting payment)
+    const cardBorder = isQuotedForCustomer ? 'border-color:rgba(245,158,11,0.5);' : '';
+
+    html += `<div class="detail-card" style="padding:1.5rem;cursor:pointer;transition:var(--transition);${cardBorder}"
+        onclick="openMfgRFQ('${r.id}')"
+        onmouseenter="this.style.borderColor='rgba(0,212,255,0.35)'"
+        onmouseleave="this.style.borderColor='${isQuotedForCustomer ? 'rgba(245,158,11,0.5)' : ''}'">
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+            <span style="font-size:14px;font-weight:700;color:var(--white);font-family:var(--font-mono);">${r.id}</span>
+            <span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:${st.color}22;color:${st.color};border:1px solid ${st.color}44;">${st.label}</span>
+            ${addOns.map(a=>`<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(139,92,246,0.12);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);">+${a}</span>`).join('')}
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);">${isAdmin ? r.customerName+' · '+r.customerEmail+' · ' : ''}${formatDate(r.createdAt)}</div>
         </div>
-        <div style="font-size:13px;color:var(--text-secondary);">
-          ${specs.layers ? `${specs.layers}-layer` : ''} ${specs.boardType || 'FR-4'} · ${specs.width || '?'}×${specs.height || '?'}mm · Qty ${specs.quantity || '?'}
-          ${specs.surface ? ` · ${specs.surface.toUpperCase()}` : ''}
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:22px;font-weight:800;color:${r.adminPrice ? 'var(--accent)' : 'var(--cyan)'};">$${Number(r.adminPrice||r.estimatedPrice||0).toFixed(2)}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${r.adminPrice ? 'Final Price' : 'Estimated'}</div>
         </div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${formatDate(r.createdAt)}</div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:22px;font-weight:700;color:var(--cyan);">$${(r.estimatedPrice || 0).toFixed(2)}</div>
-        <div style="font-size:11px;color:var(--text-muted);">Estimated</div>
-        ${isAdmin ? `<button onclick="updateMfgStatus('${r.id}')" class="btn btn-secondary btn-sm" style="margin-top:8px;">Update Status</button>` : ''}
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;${isQuotedForCustomer?'margin-bottom:14px;':''}">
+        ${specChips}
       </div>
+
+      ${isQuotedForCustomer ? `<button class="btn btn-primary btn-sm" style="width:100%;" onclick="event.stopPropagation();openMfgRFQ('${r.id}')">
+        💳 &nbsp;Quote Ready — Review &amp; Pay $${Number(r.adminPrice).toLocaleString()}
+      </button>` : ''}
+
+      ${r.trackingNumber && !isAdmin ? `<div style="margin-top:10px;font-size:12px;color:var(--accent);">📦 Tracking: <strong>${sanitizeInput(r.trackingNumber)}</strong>${r.carrier?' via '+sanitizeInput(r.carrier):''}</div>` : ''}
     </div>`;
   });
+
   html += '</div>';
   el.innerHTML = html;
 }
 
-function updateMfgStatus(rfqId) {
-  const allRfqs = JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]');
-  const rfq = allRfqs.find(r => r.id === rfqId);
+// ══════════════════════════════════════════════════════════
+// MANUFACTURING RFQ — FULL WORKFLOW ENGINE
+// ══════════════════════════════════════════════════════════
+
+const MFG_STATUS = {
+  pending:       { label:'Pending Review',      color:'var(--cyan)',     step:0 },
+  reviewing:     { label:'Under Review',         color:'var(--primary)',  step:1 },
+  quoted:        { label:'Quote Ready',          color:'#f59e0b',        step:2 },
+  paid:          { label:'Payment Confirmed',    color:'var(--success)',  step:3 },
+  in_production: { label:'In Production',        color:'#6366f1',        step:4 },
+  quality_check: { label:'Quality Check',        color:'#8b5cf6',        step:5 },
+  shipped:       { label:'Shipped',              color:'var(--accent)',   step:6 },
+  completed:     { label:'Completed',            color:'#00E5A0',        step:7 },
+  rejected:      { label:'Rejected',             color:'var(--danger)',   step:-1 },
+  cancelled:     { label:'Cancelled',            color:'var(--text-muted)', step:-1 },
+};
+const MFG_TIMELINE_STEPS = [
+  { key:'pending',       label:'Submitted' },
+  { key:'reviewing',     label:'Reviewing' },
+  { key:'quoted',        label:'Quote Sent' },
+  { key:'paid',          label:'Payment' },
+  { key:'in_production', label:'Production' },
+  { key:'quality_check', label:'QC' },
+  { key:'shipped',       label:'Shipped' },
+  { key:'completed',     label:'Done' },
+];
+
+function getMfgRfqs() { return JSON.parse(localStorage.getItem('electrotrical_mfg_requests') || '[]'); }
+function saveMfgRfqs(list) { localStorage.setItem('electrotrical_mfg_requests', JSON.stringify(list)); }
+
+function updateMfgStatus(rfqId) { /* legacy stub — replaced by workflow */ }
+
+function _mfgNotify(userId, title, message) {
+  const s = getState();
+  if (!s.notifications) s.notifications = [];
+  s.notifications.push({ id:'notif-'+Date.now(), userId, type:'mfg_update', title, message, read:false, createdAt:new Date().toISOString() });
+  saveState(s);
+}
+
+// ══════════════════════════════════════════════════════════
+// MANUFACTURING RFQ DETAIL MODAL
+// ══════════════════════════════════════════════════════════
+
+function openMfgRFQ(rfqId) {
+  const rfq = getMfgRfqs().find(r => r.id === rfqId);
   if (!rfq) return;
-  const statuses = ['pending','reviewing','quoted','approved','rejected'];
-  const curr = statuses.indexOf(rfq.status);
-  const next = statuses[(curr + 1) % statuses.length];
-  rfq.status = next;
-  localStorage.setItem('electrotrical_mfg_requests', JSON.stringify(allRfqs));
+
+  const user  = getCurrentUser();
+  const admin = user && (user.role === 'admin' || user.superAdmin);
+  const specs = rfq.specs || {};
+  const st    = MFG_STATUS[rfq.status] || { label: rfq.status, color: 'var(--text-muted)', step: 0 };
+  const date  = new Date(rfq.createdAt).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+
+  const surfaceLabels   = { hasl:'HASL (Leaded)', 'hasl-lf':'HASL (Lead-Free)', enig:'ENIG', enepig:'ENEPIG', osp:'OSP', immersion_silver:'Immersion Silver', immersion_tin:'Immersion Tin', hard_gold:'Hard Gold' };
+  const viaLabels       = { tented:'Tented', 'tented-covered':'Tented + Covered', epoxy:'Epoxy Filled', plugged:'Plugged', copper:'Copper Filled', none:'None' };
+  const turnLabels      = { rush:'Rush (2–3 days)', express:'Express (5–7 days)', standard:'Standard (10–14 days)' };
+  const colorMap        = { green:'Green', red:'Red', blue:'Blue', black:'Black', white:'White', yellow:'Yellow' };
+  const silkMap         = { white:'White', black:'Black', none:'None' };
+  const deliveryMap     = { single:'Single piece', panel:'Panel (V-cut)', panel_tab:'Panel (Tab-route)' };
+  const viaPlatingMap   = { hec:'Heavy Copper (HEC)', std:'Standard' };
+  const outlineTolMap   = { regular:'Regular (±0.2mm)', precision:'Precision (±0.1mm)' };
+  const pcbMarkMap      = { num:'Order Number', none:'No Mark', both:'Order Num + Barcode' };
+  const elecTestMap     = { flying:'Flying Probe', fixture:'Fixture', none:'No Test' };
+  const smExpMap        = { spec:'Per Specification', auto:'Auto Determined' };
+  const holeCuMap       = { '20':'20μm', '25':'25μm', '30':'30μm' };
+  const appearanceMap   = { ipc2:'IPC Class 2', ipc3:'IPC Class 3', standard:'Standard' };
+  const silkTechMap     = { inkjet:'Inkjet', screen:'Screen Print' };
+  const inspectionMap   = { no:'No', yes:'Yes – Report Included' };
+  const asmSideMap      = { top:'Top', bottom:'Bottom', both:'Both Sides' };
+  const partsSelMap     = { turnkey:'Turnkey', partial:'Partial Turnkey', consigned:'Consigned' };
+  const packageBoxMap   = { standard:'Standard', custom:'Custom Box', antistatic:'Anti-static Bag' };
+  const stencilDimsMap  = { '380x280':'380×280mm (Standard)', '420x420':'420×420mm', '584x584':'584×584mm (Large)' };
+  const stencilThickMap = { auto:'Auto (0.12–0.15mm)', '0.1':'0.10mm', '0.12':'0.12mm', '0.15':'0.15mm', '0.2':'0.20mm' };
+  const stencilProcMap  = { laser:'Laser Cut', etched:'Etched' };
+  const yesNo           = v => v === 'yes' ? 'Yes' : v === 'no' ? 'No' : (v || null);
+  const productTypeMap  = { consumer:'Consumer Electronics', industrial:'Industrial', medical:'Medical Grade', automotive:'Automotive', aerospace:'Aerospace' };
+
+  const gerberKey  = 'electrotrical_gerber_' + rfqId;
+  const hasGerber  = !!localStorage.getItem(gerberKey);
+  const gerberName = specs.gerberFileName || 'gerber_files.zip';
+  const gerberSize = specs.gerberFileSize ? (specs.gerberFileSize > 1048576 ? (specs.gerberFileSize/1048576).toFixed(1)+' MB' : Math.round(specs.gerberFileSize/1024)+' KB') : null;
+  const addOns     = [specs.pcba && 'PCB Assembly', specs.stencil && 'Stencil'].filter(Boolean);
+
+  const row = (lbl, val) => val ? `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;gap:12px;"><span style="font-size:12px;color:var(--text-muted);white-space:nowrap;">${lbl}</span><span style="font-size:13px;font-weight:600;color:var(--white);text-align:right;">${val}</span></div>` : '';
+
+  // ── Timeline ──────────────────────────────────────────────
+  const activeStep = st.step;
+  const isTerminal = rfq.status === 'rejected' || rfq.status === 'cancelled';
+  const timelineHtml = isTerminal ? '' : (() => {
+    return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;">` +
+      MFG_TIMELINE_STEPS.map((s, i) => {
+        const done   = activeStep > i;
+        const active = activeStep === i;
+        const col    = done ? '#00E5A0' : active ? st.color : 'var(--border)';
+        const tcol   = done || active ? (done ? '#00E5A0' : st.color) : 'var(--text-muted)';
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;width:100%;">
+            ${i > 0 ? `<div style="flex:1;height:2px;background:${done ? '#00E5A0' : 'var(--border)'};"></div>` : '<div style="flex:1;"></div>'}
+            <div style="width:22px;height:22px;border-radius:50%;background:${done ? '#00E5A0' : active ? st.color : 'var(--dark-700)'};border:2px solid ${col};display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;">
+              ${done ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : `<div style="width:6px;height:6px;border-radius:50%;background:${active ? st.color : 'transparent'};"></div>`}
+            </div>
+            ${i < MFG_TIMELINE_STEPS.length-1 ? `<div style="flex:1;height:2px;background:${done ? '#00E5A0' : 'var(--border)'};"></div>` : '<div style="flex:1;"></div>'}
+          </div>
+          <div style="font-size:9px;font-weight:600;color:${tcol};margin-top:5px;text-align:center;white-space:nowrap;">${s.label}</div>
+        </div>`;
+      }).join('') + `</div>`;
+  })();
+
+  // ── Status banner ─────────────────────────────────────────
+  const bannerHtml = `<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:var(--radius-md);background:${st.color}11;border:1px solid ${st.color}33;margin-bottom:16px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:${st.color};flex-shrink:0;"></span>
+    <span style="font-size:13px;font-weight:700;color:${st.color};">${st.label}</span>
+    <span style="margin-left:auto;font-size:13px;color:var(--text-muted);">${rfq.adminPrice ? `<strong style="color:var(--white);font-size:15px;">$${Number(rfq.adminPrice).toLocaleString()}</strong> final` : `<strong style="color:var(--white);">$${(rfq.estimatedPrice||0).toFixed(2)}</strong> estimated`}</span>
+  </div>`;
+
+  // ── Specs block (all sections) ────────────────────────────
+  const secHdr = title => `<div style="font-size:10px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;padding-top:14px;margin-bottom:2px;border-top:1px solid var(--border);">${title}</div>`;
+  const specsHtml = `<div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-md);padding:4px 16px;margin-bottom:14px;">
+    <div style="font-size:10px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;padding-top:12px;margin-bottom:2px;">Board Specifications</div>
+    ${row('Layers',             specs.layers ? specs.layers+'-Layer' : null)}
+    ${row('Board Size',         specs.width && specs.height ? specs.width+' × '+specs.height+' mm' : null)}
+    ${row('Quantity',           specs.quantity)}
+    ${row('Different Designs',  specs.diffDesign && specs.diffDesign !== '1' ? specs.diffDesign : null)}
+    ${row('Material',           specs.material ? (specs.material.replace('fr4-tg','FR4 TG').replace('fr4','FR-4').replace('-','').toUpperCase()) : (specs.boardType||null))}
+    ${row('Thickness',          specs.thickness ? specs.thickness+' mm' : null)}
+    ${row('Copper Weight',      specs.copper ? specs.copper.replace('oz',' oz') : null)}
+    ${row('Inner Copper',       specs.innerCopper ? specs.innerCopper.replace('oz',' oz') : null)}
+    ${row('Surface Finish',     specs.surface ? (surfaceLabels[specs.surface]||specs.surface.toUpperCase()) : null)}
+    ${row('Via Covering',       specs.via ? (viaLabels[specs.via]||specs.via) : null)}
+    ${row('Solder Mask Color',  specs.color ? (colorMap[specs.color]||specs.color) : null)}
+    ${row('Silkscreen Color',   specs.silk ? (silkMap[specs.silk]||specs.silk) : null)}
+    ${row('Delivery Format',    specs.delivery ? (deliveryMap[specs.delivery]||specs.delivery) : null)}
+    ${row('Turnaround',         specs.turnaround ? (turnLabels[specs.turnaround]||specs.turnaround) : (specs.buildtime ? (turnLabels[specs.buildtime]||specs.buildtime) : null))}
+    ${row('Product Type',       specs.productType ? (productTypeMap[specs.productType]||specs.productType) : null)}
+    ${secHdr('Advanced PCB Options')}
+    ${row('Min Hole Size',      specs.minHole ? specs.minHole+' mm' : null)}
+    ${row('Gold Finger',        specs.goldFinger ? yesNo(specs.goldFinger) : null)}
+    ${row('Castellated Holes',  specs.castHoles ? yesNo(specs.castHoles) : null)}
+    ${row('Impedance Control',  specs.impedance ? yesNo(specs.impedance) : null)}
+    ${row('Remove Order No.',   specs.removeNum ? yesNo(specs.removeNum) : null)}
+    ${row('Via Plating',        specs.viaPlating ? (viaPlatingMap[specs.viaPlating]||specs.viaPlating) : null)}
+    ${row('Min Via Diameter',   specs.minVia ? specs.minVia+' mm' : null)}
+    ${row('Outline Tolerance',  specs.outlineTol ? (outlineTolMap[specs.outlineTol]||specs.outlineTol) : null)}
+    ${row('PCB Marking',        specs.pcbMark ? (pcbMarkMap[specs.pcbMark]||specs.pcbMark) : null)}
+    ${row('Electrical Test',    specs.elecTest ? (elecTestMap[specs.elecTest]||specs.elecTest) : null)}
+    ${row('Edge Plating',       specs.edgePlating ? yesNo(specs.edgePlating) : null)}
+    ${row('Blind/Buried Slots', specs.blindSlots ? yesNo(specs.blindSlots) : null)}
+    ${row('UL Mark',            specs.ulMark ? yesNo(specs.ulMark) : null)}
+    ${row('Solder Mask Exp.',   specs.smExp ? (smExpMap[specs.smExp]||specs.smExp) : null)}
+    ${row('Hole Copper',        specs.holeCu ? (holeCuMap[specs.holeCu]||specs.holeCu+'μm') : null)}
+    ${row('Kelvin Test',        specs.kelvinTest ? yesNo(specs.kelvinTest) : null)}
+    ${row('Paper Between PCBs', specs.paperPcbs ? yesNo(specs.paperPcbs) : null)}
+    ${row('Appearance Class',   specs.appearance ? (appearanceMap[specs.appearance]||specs.appearance) : null)}
+    ${row('Silkscreen Tech',    specs.silkTech ? (silkTechMap[specs.silkTech]||specs.silkTech) : null)}
+    ${row('Inspection Report',  specs.inspection ? (inspectionMap[specs.inspection]||specs.inspection) : null)}
+    ${(specs.pcba || specs.pcbaEnabled) ? secHdr('PCB Assembly (PCBA)') : ''}
+    ${(specs.pcba || specs.pcbaEnabled) ? row('Assembly Side', specs.asmSide ? (asmSideMap[specs.asmSide]||specs.asmSide) : null) : ''}
+    ${(specs.pcba || specs.pcbaEnabled) ? row('Edge Rails', specs.edgeRails ? yesNo(specs.edgeRails) : null) : ''}
+    ${(specs.pcba || specs.pcbaEnabled) ? row('Parts Supply', specs.partsSel ? (partsSelMap[specs.partsSel]||specs.partsSel) : null) : ''}
+    ${(specs.pcba || specs.pcbaEnabled) ? row('Framework Removal', specs.framework ? yesNo(specs.framework) : null) : ''}
+    ${(specs.pcba || specs.pcbaEnabled) ? row('Step Stencil', specs.stepStencil ? yesNo(specs.stepStencil) : null) : ''}
+    ${(specs.pcba || specs.pcbaEnabled) ? row('Nano Coating', specs.nanoCoating ? yesNo(specs.nanoCoating) : null) : ''}
+    ${(specs.pcba || specs.pcbaEnabled) ? row('Package Box', specs.packageBox ? (packageBoxMap[specs.packageBox]||specs.packageBox) : null) : ''}
+    ${(specs.stencil || specs.stencilEnabled) ? secHdr('Stencil') : ''}
+    ${(specs.stencil || specs.stencilEnabled) ? row('Stencil Side', specs.stencilSide ? (specs.stencilSide.charAt(0).toUpperCase()+specs.stencilSide.slice(1)) : null) : ''}
+    ${(specs.stencil || specs.stencilEnabled) ? row('Stencil Dimensions', specs.stencilDims ? (stencilDimsMap[specs.stencilDims]||specs.stencilDims) : null) : ''}
+    ${(specs.stencil || specs.stencilEnabled) ? row('Stencil Thickness', specs.stencilThick ? (stencilThickMap[specs.stencilThick]||specs.stencilThick) : null) : ''}
+    ${(specs.stencil || specs.stencilEnabled) ? row('Stencil Process', specs.stencilProcess ? (stencilProcMap[specs.stencilProcess]||specs.stencilProcess) : null) : ''}
+    ${(specs.stencil || specs.stencilEnabled) ? row('Polish', specs.polish ? yesNo(specs.polish) : null) : ''}
+    ${(specs.stencil || specs.stencilEnabled) ? row('Fiducials', specs.fiducials ? yesNo(specs.fiducials) : null) : ''}
+    ${(specs.stencil || specs.stencilEnabled) ? row('Engrave', specs.engrave ? yesNo(specs.engrave) : null) : ''}
+    <div style="height:8px;"></div>
+  </div>`;
+
+  // ── Gerber file block ─────────────────────────────────────
+  const gerberHtml = `<div style="background:${hasGerber?'rgba(0,212,255,0.05)':'rgba(255,180,0,0.04)'};border:1px solid ${hasGerber?'rgba(0,212,255,0.2)':'rgba(255,180,0,0.2)'};border-radius:var(--radius-md);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+    <span style="font-size:20px;">🗜</span>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13px;font-weight:600;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${hasGerber ? sanitizeInput(gerberName) : 'No Gerber file stored'}</div>
+      ${gerberSize ? `<div style="font-size:11px;color:var(--text-muted);margin-top:1px;">${gerberSize}</div>` : ''}
+    </div>
+    ${hasGerber ? `<button class="btn btn-secondary btn-sm" onclick="downloadMfgGerber('${rfqId}');event.stopPropagation();">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px;vertical-align:-2px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download
+    </button>` : `<span style="font-size:11px;color:var(--warning);">⚠ Not available</span>`}
+  </div>`;
+
+  // ── Admin notes (customer view) ───────────────────────────
+  const adminNoteHtml = rfq.adminNotes ? `<div style="padding:12px 16px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:var(--radius-md);margin-bottom:16px;">
+    <div style="font-size:10px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Note from ElectroTrical</div>
+    <div style="font-size:13px;color:var(--text-secondary);">${sanitizeInput(rfq.adminNotes)}</div>
+  </div>` : '';
+
+  // ── Tracking info (customer view) ─────────────────────────
+  const trackingHtml = rfq.trackingNumber ? `<div style="padding:12px 16px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.2);border-radius:var(--radius-md);margin-bottom:16px;">
+    <div style="font-size:10px;font-weight:700;color:#00E5A0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">📦 Tracking Number</div>
+    <div style="font-size:15px;font-weight:700;color:var(--white);font-family:var(--font-mono);">${sanitizeInput(rfq.trackingNumber)}</div>
+    ${rfq.carrier ? `<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">${sanitizeInput(rfq.carrier)}</div>` : ''}
+  </div>` : '';
+
+  // ── Customer action (payment button when quoted) ──────────
+  const customerActionHtml = (!admin && rfq.status === 'quoted' && rfq.adminPrice) ? `
+    <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:var(--radius-lg);padding:20px;margin-bottom:4px;text-align:center;">
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">Your quote has been approved. Final price:</div>
+      <div style="font-size:36px;font-weight:800;color:#f59e0b;margin-bottom:16px;">$${Number(rfq.adminPrice).toLocaleString()}</div>
+      <button class="btn btn-primary" style="width:100%;font-size:16px;padding:14px;border-radius:var(--radius-md);" onclick="openMfgPayment('${rfqId}')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:8px;vertical-align:-3px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Proceed to Payment — $${Number(rfq.adminPrice).toLocaleString()}
+      </button>
+    </div>` : '';
+
+  // ── Post-paid customer message ────────────────────────────
+  const postPaidMsg = (!admin && ['paid','in_production','quality_check','shipped','completed'].includes(rfq.status)) ? `
+    <div style="padding:14px 16px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:var(--radius-md);margin-bottom:4px;text-align:center;">
+      <div style="font-size:22px;margin-bottom:6px;">${rfq.status==='completed'?'🎉':rfq.status==='shipped'?'🚚':rfq.status==='quality_check'?'🔬':'🏭'}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--white);">${rfq.status==='completed'?'Your boards are on their way — order complete!':rfq.status==='shipped'?'Your boards have been shipped!':rfq.status==='quality_check'?'Your boards are in quality inspection.':'Your boards are being manufactured.'}</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:5px;">We'll notify you as your order progresses.</div>
+    </div>` : '';
+
+  // ── ADMIN ACTIONS (status-dependent) ─────────────────────
+  let adminActionsHtml = '';
+  if (admin) {
+    const notesField = `<div class="form-group" style="margin-top:16px;">
+      <label class="form-label">Notes to Customer <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+      <textarea class="review-comment" id="mfg-review-notes" style="min-height:70px;">${rfq.adminNotes || ''}</textarea>
+    </div>`;
+
+    if (rfq.status === 'pending' || rfq.status === 'reviewing') {
+      adminActionsHtml = `<div style="border-top:1px solid var(--border);padding-top:20px;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;">Admin — Send Quote to Customer</div>
+        <div class="form-group">
+          <label class="form-label">Final Price (USD)</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;font-weight:700;color:var(--text-secondary);pointer-events:none;">$</span>
+            <input class="form-input" type="number" id="mfg-review-price" value="${rfq.adminPrice || rfq.estimatedPrice || ''}" min="0.01" step="0.01"
+              style="font-size:22px;font-weight:700;padding-left:28px;color:var(--white);background:var(--dark-700);border:2px solid var(--primary);height:54px;"
+              oninput="const p=document.getElementById('mfg-price-preview');if(p)p.textContent='$'+(+this.value||0).toLocaleString();">
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span class="form-hint" style="margin:0;">Customer estimate: <strong style="color:var(--white);">$${(rfq.estimatedPrice||0).toFixed(2)}</strong></span>
+            <span id="mfg-price-preview" style="font-size:14px;font-weight:700;color:var(--accent);">$${rfq.adminPrice ? Number(rfq.adminPrice).toLocaleString() : (rfq.estimatedPrice||0).toFixed(2)}</span>
+          </div>
+        </div>
+        ${notesField}
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button type="button" class="btn btn-primary" style="flex:2;" onclick="sendMfgQuote('${rfqId}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send Quote to Customer
+          </button>
+          <button type="button" class="btn btn-danger-outline" style="flex:1;" onclick="rejectMfgRFQ('${rfqId}')">Decline</button>
+        </div>
+      </div>`;
+
+    } else if (rfq.status === 'quoted') {
+      adminActionsHtml = `<div style="border-top:1px solid var(--border);padding-top:20px;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Admin — Awaiting Customer Payment</div>
+        <div style="padding:12px 16px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);margin-bottom:14px;">
+          Quote of <strong style="color:var(--white);">$${Number(rfq.adminPrice).toLocaleString()}</strong> was sent to the customer. Waiting for payment confirmation.
+        </div>
+        ${notesField}
+        <div style="display:flex;gap:10px;margin-top:12px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="saveMfgNotes('${rfqId}')">Save Notes</button>
+          <button type="button" class="btn btn-danger-outline" style="flex:1;" onclick="rejectMfgRFQ('${rfqId}')">Cancel RFQ</button>
+        </div>
+      </div>`;
+
+    } else if (rfq.status === 'paid') {
+      adminActionsHtml = `<div style="border-top:1px solid var(--border);padding-top:20px;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Admin — Payment Received</div>
+        <div style="padding:12px 16px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);margin-bottom:14px;">
+          Payment of <strong style="color:#00E5A0;">$${Number(rfq.adminPrice||rfq.estimatedPrice).toLocaleString()}</strong> confirmed. Ready to start production.
+        </div>
+        ${notesField}
+        <button type="button" class="btn btn-primary" style="width:100%;margin-top:4px;" onclick="advanceMfgStatus('${rfqId}','in_production')">
+          🏭 &nbsp;Start Production
+        </button>
+      </div>`;
+
+    } else if (rfq.status === 'in_production') {
+      adminActionsHtml = `<div style="border-top:1px solid var(--border);padding-top:20px;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Admin — Production Stage</div>
+        ${notesField}
+        <button type="button" class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="advanceMfgStatus('${rfqId}','quality_check')">
+          🔬 &nbsp;Move to Quality Check
+        </button>
+      </div>`;
+
+    } else if (rfq.status === 'quality_check') {
+      adminActionsHtml = `<div style="border-top:1px solid var(--border);padding-top:20px;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Admin — Quality Check Passed → Ship Order</div>
+        <div class="form-group">
+          <label class="form-label">Tracking Number</label>
+          <input class="form-input" type="text" id="mfg-tracking" value="${rfq.trackingNumber||''}" placeholder="e.g. 1Z999AA10123456784" style="font-family:var(--font-mono);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Carrier / Courier</label>
+          <input class="form-input" type="text" id="mfg-carrier" value="${rfq.carrier||''}" placeholder="e.g. DHL, FedEx, UPS, Aramex">
+        </div>
+        ${notesField}
+        <button type="button" class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="shipMfgOrder('${rfqId}')">
+          🚚 &nbsp;Mark as Shipped
+        </button>
+      </div>`;
+
+    } else if (rfq.status === 'shipped') {
+      adminActionsHtml = `<div style="border-top:1px solid var(--border);padding-top:20px;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Admin — Order Shipped</div>
+        ${notesField}
+        <button type="button" class="btn btn-success" style="width:100%;margin-top:12px;" onclick="advanceMfgStatus('${rfqId}','completed')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px;"><polyline points="20 6 9 17 4 12"/></svg>
+          Mark as Completed
+        </button>
+      </div>`;
+
+    } else if (rfq.status === 'completed') {
+      adminActionsHtml = `<div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;text-align:center;">
+        <div style="font-size:24px;margin-bottom:6px;">🎉</div>
+        <div style="font-size:14px;font-weight:600;color:var(--white);">Order Completed</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">This manufacturing order has been fulfilled.</div>
+      </div>`;
+    }
+  }
+
+  const modal = document.getElementById('newProjectModal');
+  modal.querySelector('.modal-title').textContent = rfqId;
+  modal.querySelector('.modal-sub').textContent = (admin ? rfq.customerName + ' · ' + rfq.customerEmail + ' · ' : '') + 'Submitted ' + date;
+  modal.querySelector('.modal form').innerHTML = timelineHtml + bannerHtml + specsHtml + gerberHtml + trackingHtml + adminNoteHtml + customerActionHtml + postPaidMsg + adminActionsHtml;
+  modal.classList.add('active');
+}
+
+// Admin: send quote to customer → status becomes 'quoted'
+function sendMfgQuote(rfqId) {
+  const priceEl = document.getElementById('mfg-review-price');
+  const notesEl = document.getElementById('mfg-review-notes');
+  const price   = parseFloat(priceEl ? priceEl.value : 0);
+  const notes   = notesEl ? notesEl.value.trim() : '';
+  if (!price || price < 0.01) { showToast('Please enter a valid price before sending.', 'warning'); return; }
+
+  const rfqs = getMfgRfqs();
+  const idx  = rfqs.findIndex(r => r.id === rfqId);
+  if (idx === -1) { showToast('RFQ not found.', 'warning'); return; }
+
+  rfqs[idx].adminPrice  = price;
+  rfqs[idx].adminNotes  = notes;
+  rfqs[idx].status      = 'quoted';
+  rfqs[idx].quotedAt    = new Date().toISOString();
+  saveMfgRfqs(rfqs);
+
+  _mfgNotify(rfqs[idx].userId,
+    'Manufacturing Quote Ready — ' + rfqId,
+    'Your PCB manufacturing quote is ready! Final price: $' + price.toLocaleString() + '. Log in to review and complete payment.' + (notes ? ' Note: ' + notes : ''));
+
+  closeModal('newProjectModal');
+  showToast('Quote of $' + price.toLocaleString() + ' sent to ' + rfqs[idx].customerName + '.', 'success');
   renderMfgOrders();
-  showToast(`RFQ ${rfqId} status updated to "${next}".`, 'success');
+}
+
+// Admin: reject / cancel
+function rejectMfgRFQ(rfqId) {
+  const notesEl = document.getElementById('mfg-review-notes');
+  const notes   = notesEl ? notesEl.value.trim() : '';
+
+  const rfqs = getMfgRfqs();
+  const idx  = rfqs.findIndex(r => r.id === rfqId);
+  if (idx === -1) { showToast('RFQ not found.', 'warning'); return; }
+
+  rfqs[idx].status     = 'rejected';
+  rfqs[idx].adminNotes = notes;
+  rfqs[idx].reviewedAt = new Date().toISOString();
+  saveMfgRfqs(rfqs);
+
+  _mfgNotify(rfqs[idx].userId,
+    'Manufacturing RFQ Declined — ' + rfqId,
+    'Your RFQ ' + rfqId + ' has been declined.' + (notes ? ' Reason: ' + notes : ''));
+
+  closeModal('newProjectModal');
+  showToast('RFQ ' + rfqId + ' declined.', 'warning');
+  renderMfgOrders();
+}
+
+// Admin: save notes without status change
+function saveMfgNotes(rfqId) {
+  const notesEl = document.getElementById('mfg-review-notes');
+  const notes   = notesEl ? notesEl.value.trim() : '';
+  const rfqs    = getMfgRfqs();
+  const idx     = rfqs.findIndex(r => r.id === rfqId);
+  if (idx === -1) return;
+  rfqs[idx].adminNotes = notes;
+  saveMfgRfqs(rfqs);
+  closeModal('newProjectModal');
+  showToast('Notes saved.', 'success');
+  renderMfgOrders();
+}
+
+// Admin: generic status advance (paid → in_production → quality_check → completed)
+function advanceMfgStatus(rfqId, newStatus) {
+  const notesEl = document.getElementById('mfg-review-notes');
+  const notes   = notesEl ? notesEl.value.trim() : '';
+  const rfqs    = getMfgRfqs();
+  const idx     = rfqs.findIndex(r => r.id === rfqId);
+  if (idx === -1) { showToast('RFQ not found.', 'warning'); return; }
+
+  rfqs[idx].status = newStatus;
+  if (notes) rfqs[idx].adminNotes = notes;
+  rfqs[idx][newStatus + 'At'] = new Date().toISOString();
+  saveMfgRfqs(rfqs);
+
+  const st = MFG_STATUS[newStatus] || { label: newStatus };
+  const msgs = {
+    in_production: 'Great news! Your PCB boards have entered production. We\'ll keep you updated.',
+    quality_check: 'Your boards have passed manufacturing and are now in quality inspection.',
+    completed:     'Your manufacturing order ' + rfqId + ' is now complete. Thank you for choosing ElectroTrical!'
+  };
+  _mfgNotify(rfqs[idx].userId, 'Order Update — ' + rfqId, msgs[newStatus] || 'Your order status is now: ' + st.label);
+
+  closeModal('newProjectModal');
+  showToast('Order ' + rfqId + ' → ' + st.label, 'success');
+  renderMfgOrders();
+}
+
+// Admin: mark as shipped with tracking info
+function shipMfgOrder(rfqId) {
+  const trackingEl = document.getElementById('mfg-tracking');
+  const carrierEl  = document.getElementById('mfg-carrier');
+  const notesEl    = document.getElementById('mfg-review-notes');
+  const tracking   = trackingEl ? trackingEl.value.trim() : '';
+  const carrier    = carrierEl  ? carrierEl.value.trim()  : '';
+  const notes      = notesEl    ? notesEl.value.trim()    : '';
+
+  const rfqs = getMfgRfqs();
+  const idx  = rfqs.findIndex(r => r.id === rfqId);
+  if (idx === -1) { showToast('RFQ not found.', 'warning'); return; }
+
+  rfqs[idx].status         = 'shipped';
+  rfqs[idx].trackingNumber = tracking;
+  rfqs[idx].carrier        = carrier;
+  if (notes) rfqs[idx].adminNotes = notes;
+  rfqs[idx].shippedAt      = new Date().toISOString();
+  saveMfgRfqs(rfqs);
+
+  const trackMsg = tracking ? ' Tracking: ' + tracking + (carrier ? ' via ' + carrier : '') + '.' : '';
+  _mfgNotify(rfqs[idx].userId, '📦 Your PCBs Have Been Shipped! — ' + rfqId,
+    'Your boards have passed quality check and have been shipped!' + trackMsg);
+
+  closeModal('newProjectModal');
+  showToast('Order ' + rfqId + ' marked as Shipped' + (tracking ? ' — tracking: ' + tracking : '') + '.', 'success');
+  renderMfgOrders();
+}
+
+// Customer: open payment confirmation modal
+function openMfgPayment(rfqId) {
+  const rfq = getMfgRfqs().find(r => r.id === rfqId);
+  if (!rfq || !rfq.adminPrice) return;
+
+  const modal = document.getElementById('newProjectModal');
+  modal.querySelector('.modal-title').textContent = 'Complete Payment';
+  modal.querySelector('.modal-sub').textContent   = rfqId + ' · PCB Manufacturing Order';
+  modal.querySelector('.modal form').innerHTML = `
+    <div style="text-align:center;padding:10px 0 20px;">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">Total Amount Due</div>
+      <div style="font-size:48px;font-weight:800;color:var(--white);line-height:1;">$${Number(rfq.adminPrice).toLocaleString()}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">PCB Manufacturing · ${(rfq.specs||{}).layers||'?'}-Layer · ${(rfq.specs||{}).quantity||'?'} pcs</div>
+    </div>
+
+    <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">Payment Details</div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">Card Number</label>
+        <input class="form-input" type="text" placeholder="4242 4242 4242 4242" maxlength="19"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/(.{4})/g,'$1 ').trim()" style="font-family:var(--font-mono);letter-spacing:2px;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Expiry</label>
+          <input class="form-input" type="text" placeholder="MM / YY" maxlength="7"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^(\d{2})(\d)/,'$1 / $2')">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">CVV</label>
+          <input class="form-input" type="password" placeholder="•••" maxlength="4">
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:10px 14px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:var(--radius-sm);margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--text-muted);">🔒 &nbsp;This is a demo environment. No real payment will be processed. Click below to simulate a successful payment.</div>
+    </div>
+
+    <button type="button" class="btn btn-primary" style="width:100%;font-size:16px;padding:15px;" id="mfg-pay-btn" onclick="confirmMfgPayment('${rfqId}')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:8px;vertical-align:-2px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Pay $${Number(rfq.adminPrice).toLocaleString()} Now
+    </button>
+    <button type="button" class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:13px;" onclick="openMfgRFQ('${rfqId}')">← Back to Quote</button>
+  `;
+}
+
+// Customer: confirm payment → status = 'paid'
+function confirmMfgPayment(rfqId) {
+  const btn = document.getElementById('mfg-pay-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Processing…'; }
+
+  setTimeout(() => {
+    const rfqs = getMfgRfqs();
+    const idx  = rfqs.findIndex(r => r.id === rfqId);
+    if (idx === -1) { showToast('Order not found.', 'warning'); return; }
+
+    rfqs[idx].status  = 'paid';
+    rfqs[idx].paidAt  = new Date().toISOString();
+    rfqs[idx].paidAmt = rfqs[idx].adminPrice;
+    saveMfgRfqs(rfqs);
+
+    // Notify admin
+    const state = getState();
+    const admin = (state.users || []).find(u => u.role === 'admin' || u.superAdmin);
+    if (admin) {
+      _mfgNotify(admin.id, 'Payment Received — ' + rfqId,
+        rfqs[idx].customerName + ' paid $' + Number(rfqs[idx].adminPrice).toLocaleString() + ' for manufacturing order ' + rfqId + '. Ready to start production.');
+    }
+
+    closeModal('newProjectModal');
+    showToast('Payment confirmed! Your manufacturing order is now in the queue. 🎉', 'success');
+    renderMfgOrders();
+  }, 1200);
+}
+
+function downloadMfgGerber(rfqId) {
+  const raw = localStorage.getItem('electrotrical_gerber_' + rfqId);
+  if (!raw) { showToast('Gerber file not available.', 'warning'); return; }
+  try {
+    const data = JSON.parse(raw);
+    const a = document.createElement('a');
+    a.href = data.dataUrl;
+    a.download = data.name || ('gerber_' + rfqId + '.zip');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('Downloading ' + a.download + '…', 'success');
+  } catch(e) { showToast('Could not download Gerber file.', 'warning'); }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -6406,6 +7090,39 @@ function updateStoreOrderStatus(orderId) {
 // Dynamic copyright year
 document.querySelectorAll('.js-year').forEach(el => el.textContent = new Date().getFullYear());
 
+</script>
+
+<!-- Cart Overlay -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<!-- Cart Drawer -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <div class="cart-drawer-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3388FF" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+      Your Cart
+    </div>
+    <button class="cart-close-btn" onclick="closeCart()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-subtotal"><span class="cart-subtotal-label">Subtotal</span><span class="cart-subtotal-value" id="cartSubtotal">$0.00</span></div>
+    <button class="btn-checkout" onclick="window.location.href='store.html'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+      View Cart &amp; Checkout
+    </button>
+    <p class="cart-note">Go to the store to add more items or submit your order inquiry.</p>
+  </div>
+</div>
+<script>
+const CART_KEY='electrotrical_cart';
+function getCart(){try{return JSON.parse(localStorage.getItem(CART_KEY))||[];}catch{return[];}}
+function updateCartBadge(){const t=getCart().reduce((s,i)=>s+i.qty,0);const b=document.getElementById('cartBadge');if(!b)return;b.textContent=t;b.classList.toggle('visible',t>0);}
+function openCart(){document.getElementById('cartDrawer').classList.add('open');document.getElementById('cartOverlay').classList.add('open');document.body.style.overflow='hidden';renderCartDrawer();}
+function closeCart(){document.getElementById('cartDrawer').classList.remove('open');document.getElementById('cartOverlay').classList.remove('open');document.body.style.overflow='';}
+function changeQty(id,delta){const cart=getCart();const item=cart.find(i=>i.id===id);if(!item)return;item.qty+=delta;if(item.qty<=0){localStorage.setItem(CART_KEY,JSON.stringify(cart.filter(i=>i.id!==id)));}else{localStorage.setItem(CART_KEY,JSON.stringify(cart));}updateCartBadge();renderCartDrawer();}
+function removeFromCart(id){localStorage.setItem(CART_KEY,JSON.stringify(getCart().filter(i=>i.id!==id)));updateCartBadge();renderCartDrawer();}
+function renderCartDrawer(){const cart=getCart();const c=document.getElementById('cartItems');const f=document.getElementById('cartFooter');const s=document.getElementById('cartSubtotal');if(!c)return;if(!cart.length){c.innerHTML='<div class="cart-empty"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg><h3>Your cart is empty</h3><p>Visit the Store to add components.</p><button class="cart-empty-btn" onclick="window.location.href=\'store.html\'">Go to Store</button></div>';if(f)f.style.display='none';return;}c.innerHTML=cart.map(item=>`<div class="cart-item"><div class="cart-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="10" rx="2"/><circle cx="12" cy="12" r="2"/></svg></div><div class="cart-item-info"><div class="cart-item-name" title="${item.name}">${item.name}</div><div class="cart-item-price">$${item.price.toFixed(2)} each · $${(item.price*item.qty).toFixed(2)}</div></div><div class="cart-item-controls"><button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button><span class="qty-value">${item.qty}</span><button class="qty-btn" onclick="changeQty(${item.id},1)">+</button></div><button class="cart-item-remove" onclick="removeFromCart(${item.id})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div>`).join('');const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);if(s)s.textContent='$'+sub.toFixed(2);if(f)f.style.display='block';}
+updateCartBadge();
 </script>
 </body>
 </html>
