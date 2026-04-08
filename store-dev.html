@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store — ElectroTrical PCB Components &amp; Kits</title>
+<meta name="description" content="Shop PCB components, development kits, and electronics modules from ElectroTrical. Quality parts for engineers and makers.">
+<meta name="author" content="ElectroTrical">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #0066FF; --primary-light: #3388FF; --primary-dark: #0044CC;
+  --cyan: #00D4FF; --accent: #00E5A0;
+  --dark: #0A0E1A; --dark-800: #0F1424; --dark-700: #151B2E; --dark-600: #1C2340;
+  --border: rgba(255,255,255,0.06); --border-subtle: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.12);
+  --text: #E8ECF4; --text-secondary: #8B95B0; --text-muted: #5A6380; --white: #FFFFFF;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px;
+  --shadow-lg: 0 16px 64px rgba(0,0,0,0.4);
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+html { scroll-behavior:smooth; -webkit-font-smoothing:antialiased; scrollbar-width:thin; scrollbar-color:rgba(0,102,255,0.35) rgba(10,15,30,0.5); overflow-x:hidden; }
+html::-webkit-scrollbar { width:6px; }
+html::-webkit-scrollbar-track { background:rgba(10,15,30,0.8); }
+html::-webkit-scrollbar-thumb { background:rgba(0,102,255,0.4); border-radius:6px; }
+body { font-family:var(--font-sans); background:var(--dark); color:var(--text); min-height:100vh; overflow-x:hidden; line-height:1.6; }
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+main { margin-top:72px; position:relative; z-index:1; }
+
+/* ── Navbar ── */
+.navbar { position:fixed; top:0; left:0; right:0; z-index:1000; width:100%; max-width:100vw; overflow-x:clip; background:rgba(10,14,26,0.85); backdrop-filter:blur(20px) saturate(1.5); -webkit-backdrop-filter:blur(20px) saturate(1.5); border-bottom:1px solid var(--border); transition:var(--transition); }
+.navbar.scrolled { background:rgba(10,14,26,0.97); box-shadow:0 4px 30px rgba(0,0,0,0.3); }
+.nav-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 2rem; height:72px; }
+.nav-brand { display:inline-flex; align-items:center; text-decoration:none; cursor:pointer; flex-shrink:0; }
+.nav-brand img { height:56px; width:auto; object-fit:contain; }
+.nav-links { display:flex; align-items:center; gap:4px; }
+.nav-link { background:none; border:none; color:var(--text-secondary); font-family:var(--font-sans); font-size:14px; font-weight:500; padding:8px 16px; border-radius:var(--radius-sm); cursor:pointer; transition:var(--transition); letter-spacing:.01em; text-decoration:none; display:inline-flex; align-items:center; gap:5px; }
+.nav-link:hover { color:var(--white); background:rgba(255,255,255,0.05); }
+.nav-link.active { color:var(--cyan); }
+
+.nav-dropdown { position:relative; display:inline-flex; }
+.nav-dropdown-menu { display:none; position:absolute; top:calc(100% + 8px); left:0; background:rgba(10,14,26,0.98); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; min-width:230px; padding:8px; z-index:1200; box-shadow:0 16px 48px rgba(0,0,0,0.5); animation:ddFade .15s ease; }
+@keyframes ddFade { from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)} }
+.nav-dropdown:hover .nav-dropdown-menu, .nav-dropdown.open .nav-dropdown-menu { display:block; }
+.nav-dropdown-item { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:8px; text-decoration:none; color:var(--text-secondary); font-size:14px; font-weight:500; transition:var(--transition); }
+.nav-dropdown-item:hover { background:rgba(0,102,255,0.1); color:var(--white); }
+.nav-dropdown-item-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.nav-dropdown-item-text { display:flex; flex-direction:column; }
+.nav-dropdown-item-title { font-weight:600; color:var(--white); font-size:13px; }
+.nav-dropdown-item-sub { font-size:11px; color:var(--text-muted); margin-top:1px; }
+.nav-dropdown-divider { height:1px; background:rgba(255,255,255,0.07); margin:6px 8px; }
+.nav-dropdown-trigger .dd-chevron { transition:transform .2s ease; }
+.nav-dropdown:hover .dd-chevron, .nav-dropdown.open .dd-chevron { transform:rotate(180deg); }
+
+.mobile-toggle { display:none; background:none; border:none; color:var(--text); cursor:pointer; padding:8px; }
+@media(max-width:768px){ .nav-links{display:none!important} .mobile-toggle{display:block!important} }
+.mobile-menu { display:none; position:fixed; top:72px; left:0; right:0; background:rgba(10,14,26,0.98); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:1rem; z-index:999; }
+.mobile-menu.open { display:block; }
+.mobile-menu .nav-link { display:block; width:100%; text-align:left; padding:12px 16px; font-size:16px; }
+.mobile-menu .mobile-submenu { padding-left:16px; border-left:2px solid rgba(0,102,255,0.3); margin:4px 16px 8px; display:flex; flex-direction:column; gap:2px; }
+.mobile-menu .mobile-submenu a { display:block; padding:8px 12px; font-size:14px; color:var(--text-secondary); text-decoration:none; border-radius:6px; transition:var(--transition); }
+.mobile-menu .mobile-submenu a:hover { color:var(--white); background:rgba(255,255,255,0.05); }
+
+/* ── Store Banner ── */
+.store-banner { background:linear-gradient(135deg,rgba(0,229,160,0.07) 0%,rgba(0,212,255,0.04) 100%); border-bottom:1px solid rgba(0,229,160,0.12); padding:3rem 2rem 2.5rem; text-align:center; position:relative; }
+.store-banner::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(0,229,160,0.1) 0%,transparent 65%); pointer-events:none; }
+.store-banner-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(0,229,160,0.1); border:1px solid rgba(0,229,160,0.25); color:var(--accent); font-size:12px; font-weight:600; padding:6px 14px; border-radius:20px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:1.25rem; }
+.store-banner-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.store-banner h1 { font-size:clamp(1.9rem,4.5vw,3rem); font-weight:800; color:var(--white); margin-bottom:.85rem; line-height:1.15; }
+.store-banner h1 .gradient { background:linear-gradient(135deg,var(--accent),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.store-banner-desc { font-size:16px; color:var(--text-secondary); max-width:540px; margin:0 auto 1.5rem; line-height:1.7; }
+.store-banner-pills { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+.store-banner-pill { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-secondary); font-size:12px; font-weight:500; padding:5px 14px; border-radius:20px; }
+
+/* ── Store Layout ── */
+.store-container { max-width:1200px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+.filter-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:2rem; }
+.filter-label { font-size:13px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+.filter-btn { background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text-secondary); font-family:var(--font-sans); font-size:13px; font-weight:500; padding:6px 16px; border-radius:20px; cursor:pointer; transition:var(--transition); }
+.filter-btn:hover { border-color:var(--primary); color:var(--primary-light); }
+.filter-btn.active { background:rgba(0,102,255,0.12); border-color:var(--primary); color:var(--primary-light); }
+.store-search { margin-left:auto; position:relative; }
+.store-search input { background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text); font-family:var(--font-sans); font-size:14px; padding:8px 14px 8px 36px; border-radius:var(--radius-sm); outline:none; transition:var(--transition); width:220px; }
+.store-search input:focus { border-color:var(--primary); background:rgba(0,102,255,0.06); }
+.store-search input::placeholder { color:var(--text-muted); }
+.store-search svg { position:absolute; left:11px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--text-muted); }
+
+.product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:1.5rem; }
+.product-card { background:var(--dark-800); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; transition:var(--transition); cursor:pointer; display:flex; flex-direction:column; }
+.product-card:hover { border-color:rgba(0,102,255,0.3); transform:translateY(-4px); box-shadow:0 16px 48px rgba(0,102,255,0.12); }
+.product-img { height:180px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.product-img svg { opacity:0.7; }
+.product-badge { position:absolute; top:12px; left:12px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:.04em; text-transform:uppercase; }
+.badge-new { background:rgba(0,229,160,0.15); color:var(--accent); border:1px solid rgba(0,229,160,0.3); }
+.badge-popular { background:rgba(255,153,0,0.12); color:#FF9900; border:1px solid rgba(255,153,0,0.3); }
+.badge-sale { background:rgba(255,69,58,0.12); color:#FF453A; border:1px solid rgba(255,69,58,0.3); }
+.product-body { padding:1.25rem; flex:1; display:flex; flex-direction:column; }
+.product-category { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem; }
+.product-name { font-size:16px; font-weight:700; color:var(--white); margin-bottom:.4rem; line-height:1.3; }
+.product-desc { font-size:13px; color:var(--text-secondary); line-height:1.5; flex:1; margin-bottom:1rem; }
+.product-footer { display:flex; align-items:center; justify-content:space-between; margin-top:auto; }
+.product-price { font-size:20px; font-weight:800; color:var(--white); }
+.product-price .currency { font-size:14px; font-weight:600; color:var(--text-secondary); vertical-align:top; margin-top:3px; display:inline-block; }
+.product-price .old-price { font-size:13px; font-weight:400; color:var(--text-muted); text-decoration:line-through; margin-right:4px; }
+.btn-add { background:var(--primary); color:var(--white); border:none; font-family:var(--font-sans); font-size:13px; font-weight:600; padding:8px 16px; border-radius:var(--radius-sm); cursor:pointer; transition:var(--transition); display:inline-flex; align-items:center; gap:5px; }
+.btn-add:hover { background:var(--primary-light); transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,102,255,0.4); }
+.no-results { grid-column:1/-1; text-align:center; padding:4rem 2rem; color:var(--text-secondary); }
+.no-results svg { margin:0 auto 1.5rem; opacity:.3; display:block; }
+.no-results h3 { font-size:22px; font-weight:700; color:var(--text); margin-bottom:.5rem; }
+
+.cart-toast { position:fixed; bottom:2rem; right:2rem; z-index:9999; background:var(--dark-700); border:1px solid rgba(0,229,160,0.3); color:var(--text); padding:14px 20px; border-radius:var(--radius-md); box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:10px; transform:translateY(100px); opacity:0; transition:all .35s cubic-bezier(.34,1.56,.64,1); font-size:14px; font-weight:500; }
+.cart-toast.show { transform:translateY(0); opacity:1; }
+.cart-toast-icon { color:var(--accent); flex-shrink:0; }
+
+/* Footer */
+.footer { background:var(--dark-800); border-top:1px solid var(--border); padding:3rem 2rem 1.5rem; }
+.footer-inner { max-width:1200px; margin:0 auto; }
+.footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:2.5rem; margin-bottom:2rem; }
+.footer-brand img { height:48px; width:auto; margin-bottom:1rem; }
+.footer-tagline { font-size:14px; color:var(--text-secondary); line-height:1.6; max-width:240px; }
+.footer-heading { font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:1rem; }
+.footer-links { display:flex; flex-direction:column; gap:8px; }
+.footer-link { color:var(--text-secondary); font-size:14px; text-decoration:none; transition:var(--transition); }
+.footer-link:hover { color:var(--white); }
+.footer-bottom { border-top:1px solid var(--border); padding-top:1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+.footer-copy { font-size:13px; color:var(--text-muted); }
+@media(max-width:900px){ .footer-grid{grid-template-columns:1fr 1fr;} }
+@media(max-width:580px){ .footer-grid{grid-template-columns:1fr;} .product-grid{grid-template-columns:1fr;} .store-search{margin-left:0;width:100%;} .store-search input{width:100%;} }
+
+/* ── Cart Icon ── */
+.cart-btn { position:relative; background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:8px; border-radius:var(--radius-sm); transition:var(--transition); display:inline-flex; align-items:center; justify-content:center; }
+.cart-btn:hover { color:var(--white); background:rgba(255,255,255,0.05); }
+.cart-badge { position:absolute; top:2px; right:2px; background:var(--primary); color:#fff; font-size:10px; font-weight:700; width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--dark); opacity:0; transform:scale(0); transition:all .2s cubic-bezier(.34,1.56,.64,1); pointer-events:none; }
+.cart-badge.visible { opacity:1; transform:scale(1); }
+/* ── Cart Overlay ── */
+.cart-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1998; opacity:0; pointer-events:none; transition:opacity .3s ease; backdrop-filter:blur(4px); }
+.cart-overlay.open { opacity:1; pointer-events:all; }
+/* ── Cart Drawer ── */
+.cart-drawer { position:fixed; top:0; right:0; bottom:0; width:400px; max-width:100vw; background:var(--dark-800); border-left:1px solid rgba(255,255,255,0.08); z-index:1999; transform:translateX(100%); transition:transform .35s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; }
+.cart-drawer.open { transform:translateX(0); }
+.cart-drawer-header { display:flex; align-items:center; justify-content:space-between; padding:1.25rem 1.5rem; border-bottom:1px solid var(--border); flex-shrink:0; }
+.cart-drawer-title { font-size:16px; font-weight:700; color:var(--white); display:flex; align-items:center; gap:9px; }
+.cart-close-btn { background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:6px; border-radius:8px; transition:var(--transition); display:flex; align-items:center; }
+.cart-close-btn:hover { color:var(--white); background:rgba(255,255,255,0.08); }
+.cart-items { flex:1; overflow-y:auto; padding:1rem 1.5rem; display:flex; flex-direction:column; gap:10px; }
+.cart-items::-webkit-scrollbar { width:4px; }
+.cart-items::-webkit-scrollbar-thumb { background:rgba(0,102,255,0.3); border-radius:4px; }
+.cart-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; color:var(--text-secondary); gap:14px; padding:2rem; }
+.cart-empty svg { opacity:.2; }
+.cart-empty h3 { font-size:17px; font-weight:700; color:var(--text); }
+.cart-empty p { font-size:13px; line-height:1.5; }
+.cart-empty-btn { margin-top:8px; background:rgba(0,102,255,0.12); border:1px solid rgba(0,102,255,0.3); color:var(--primary-light); font-family:var(--font-sans); font-size:13px; font-weight:600; padding:9px 20px; border-radius:20px; cursor:pointer; transition:var(--transition); }
+.cart-empty-btn:hover { background:rgba(0,102,255,0.2); }
+.cart-item { display:flex; align-items:center; gap:12px; background:var(--dark-700); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; transition:var(--transition); }
+.cart-item:hover { border-color:rgba(0,102,255,0.2); }
+.cart-item-icon { width:40px; height:40px; border-radius:8px; background:rgba(0,102,255,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--primary-light); }
+.cart-item-info { flex:1; min-width:0; }
+.cart-item-name { font-size:13px; font-weight:600; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cart-item-price { font-size:12px; color:var(--text-secondary); margin-top:2px; }
+.cart-item-controls { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+.qty-btn { width:26px; height:26px; border-radius:6px; border:1px solid var(--border); background:rgba(255,255,255,0.05); color:var(--white); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); line-height:1; }
+.qty-btn:hover { background:rgba(0,102,255,0.15); border-color:var(--primary); }
+.qty-value { font-size:13px; font-weight:700; color:var(--white); min-width:20px; text-align:center; }
+.cart-item-remove { background:none; border:none; color:var(--text-muted); cursor:pointer; padding:4px; border-radius:6px; transition:var(--transition); display:flex; align-items:center; margin-left:2px; }
+.cart-item-remove:hover { color:#FF453A; background:rgba(255,69,58,0.1); }
+.cart-footer { padding:1.25rem 1.5rem; border-top:1px solid var(--border); flex-shrink:0; background:var(--dark-800); }
+.cart-subtotal { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+.cart-subtotal-label { font-size:13px; color:var(--text-secondary); font-weight:500; }
+.cart-subtotal-value { font-size:22px; font-weight:800; color:var(--white); }
+.btn-checkout { width:100%; background:linear-gradient(135deg,var(--primary),#0052cc); color:#fff; border:none; font-family:var(--font-sans); font-size:15px; font-weight:700; padding:14px; border-radius:var(--radius-md); cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-checkout:hover { background:linear-gradient(135deg,var(--primary-light),var(--primary)); transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,102,255,0.35); }
+.cart-note { font-size:11px; color:var(--text-muted); text-align:center; margin-top:10px; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <img src="Logo/navbar_logo.png" alt="ElectroTrical" loading="lazy">
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <div class="nav-dropdown" id="servicesDropdown">
+        <button class="nav-link nav-dropdown-trigger" onclick="document.getElementById('servicesDropdown').classList.toggle('open')" aria-haspopup="true">
+          Services
+          <svg class="dd-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a class="nav-dropdown-item" href="pcb-design.html">
+            <div class="nav-dropdown-item-icon" style="background:rgba(0,102,255,0.15);">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h2m2 0h2m2 0h2"/><path d="M7 11h5"/></svg>
+            </div>
+            <div class="nav-dropdown-item-text">
+              <span class="nav-dropdown-item-title">PCB Layout Design</span>
+              <span class="nav-dropdown-item-sub">Full layout from schematic</span>
+            </div>
+          </a>
+          <div class="nav-dropdown-divider"></div>
+          <a class="nav-dropdown-item" href="manufacturing.html">
+            <div class="nav-dropdown-item-icon" style="background:rgba(0,212,255,0.12);">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 00-4 0v2"/><circle cx="12" cy="14" r="3"/></svg>
+            </div>
+            <div class="nav-dropdown-item-text">
+              <span class="nav-dropdown-item-title">PCB Manufacturing</span>
+              <span class="nav-dropdown-item-sub">Instant online quote &amp; order</span>
+            </div>
+          </a>
+        </div>
+      </div>
+      <a class="nav-link active" href="store.html">Store</a>
+      <a class="nav-link" href="index.html#contact">Contact</a>
+      <button class="cart-btn" onclick="openCart()" aria-label="Cart">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+      <a class="nav-link" href="dashboard.html" style="color:var(--cyan);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Account
+      </a>
+    </div>
+    <button class="mobile-toggle" id="mobileToggle" onclick="toggleMobile()" aria-label="Toggle menu">
+      <svg id="menu-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+      <svg id="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+        <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+      </svg>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a class="nav-link" href="index.html" onclick="closeMobile()">Home</a>
+    <span class="nav-link" style="font-weight:600;color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:8px 16px 4px;cursor:default;">Services</span>
+    <div class="mobile-submenu">
+      <a href="pcb-design.html" onclick="closeMobile()">&#x1F4D0; &nbsp;PCB Layout Design</a>
+      <a href="manufacturing.html" onclick="closeMobile()">&#x1F3ED; &nbsp;PCB Manufacturing</a>
+    </div>
+    <a class="nav-link active" href="store.html" onclick="closeMobile()">Store</a>
+    <a class="nav-link" href="index.html#contact" onclick="closeMobile()">Contact</a>
+    <a class="nav-link" href="dashboard.html" onclick="closeMobile()" style="color:var(--cyan);">My Account</a>
+  </div>
+</nav>
+
+<!-- ── Store Banner ── -->
+<main>
+  <div class="store-banner">
+    <div class="store-banner-badge">
+      <span class="store-banner-dot"></span>
+      ElectroTrical Store
+    </div>
+    <h1>PCB <span class="gradient">Components</span> &amp; Kits</h1>
+    <p class="store-banner-desc">Shop quality PCB components, development kits, and electronics modules — curated for engineers and makers.</p>
+    <div class="store-banner-pills">
+      <span class="store-banner-pill">&#10003; Worldwide Shipping</span>
+      <span class="store-banner-pill">&#10003; Quality Assured</span>
+      <span class="store-banner-pill">&#10003; Fast Dispatch</span>
+      <span class="store-banner-pill">&#10003; Bulk Discounts</span>
+    </div>
+  </div>
+
+  <!-- ── Store Body ── -->
+  <div class="store-container">
+    <div class="filter-bar">
+      <span class="filter-label">Filter:</span>
+      <button class="filter-btn active" onclick="filterProducts('all',this)">All</button>
+      <button class="filter-btn" onclick="filterProducts('mcu',this)">MCUs &amp; SoCs</button>
+      <button class="filter-btn" onclick="filterProducts('sensor',this)">Sensors</button>
+      <button class="filter-btn" onclick="filterProducts('power',this)">Power</button>
+      <button class="filter-btn" onclick="filterProducts('passive',this)">Passives</button>
+      <button class="filter-btn" onclick="filterProducts('kit',this)">Dev Kits</button>
+      <div class="store-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search products&#x2026;" oninput="searchProducts(this.value)">
+      </div>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+  </div>
+</main>
+
+<!-- Cart Overlay -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+
+<!-- Cart Drawer -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <div class="cart-drawer-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+      Your Cart
+    </div>
+    <button class="cart-close-btn" onclick="closeCart()" aria-label="Close cart">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-subtotal">
+      <span class="cart-subtotal-label">Subtotal</span>
+      <span class="cart-subtotal-value" id="cartSubtotal">$0.00</span>
+    </div>
+    <button class="btn-checkout" onclick="requestQuote()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Proceed to Checkout
+    </button>
+    <p class="cart-note">Secure checkout · Stripe · PayPal · Apple/Google Pay</p>
+  </div>
+</div>
+
+<!-- Cart Toast -->
+<div class="cart-toast" id="cartToast">
+  <svg class="cart-toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="cartToastMsg">Added to cart!</span>
+</div>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html"><img src="Logo/navbar_logo.png" alt="ElectroTrical" loading="lazy"></a>
+        <p class="footer-tagline">Professional PCB design and manufacturing services for engineers, startups, and enterprises.</p>
+      </div>
+      <div>
+        <div class="footer-heading">Services</div>
+        <div class="footer-links">
+          <a class="footer-link" href="pcb-design.html">PCB Layout Design</a>
+          <a class="footer-link" href="manufacturing.html">PCB Manufacturing</a>
+          <a class="footer-link" href="store.html">Component Store</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Company</div>
+        <div class="footer-links">
+          <a class="footer-link" href="index.html#process">Process</a>
+          <a class="footer-link" href="index.html#portfolio">Portfolio</a>
+          <a class="footer-link" href="index.html#why">Why Us</a>
+          <a class="footer-link" href="index.html#contact">Contact</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Account</div>
+        <div class="footer-links">
+          <a class="footer-link" href="dashboard.html">My Account</a>
+          <a class="footer-link" href="dashboard.html">My Orders</a>
+          <a class="footer-link" href="dashboard.html">Track Status</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">&#169; 2026 ElectroTrical. All rights reserved.</span>
+      <span class="footer-copy">Made with &#9825; for hardware engineers</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const products = [
+  { id:1, cat:'mcu', name:'ESP32-S3 Module', desc:'Dual-core Xtensa LX7 @ 240MHz, Wi-Fi 4, BLE 5.0, 8MB PSRAM. Ideal for IoT and edge AI.', price:8.50, badge:'popular', bg:'rgba(0,102,255,0.12)', stroke:'#3388FF', icon:'mcu' },
+  { id:2, cat:'sensor', name:'BME688 Environmental Sensor', desc:'Pressure, humidity, temperature & gas (VOC/NOx) detection. SPI/I2C, ultra-low power.', price:12.90, badge:'new', bg:'rgba(0,229,160,0.12)', stroke:'#00E5A0', icon:'sensor' },
+  { id:3, cat:'power', name:'LM2596 Buck Converter Module', desc:'3A step-down voltage regulator, 4V-40V input, adjustable 1.25V-37V output. On-board potentiometer.', price:3.20, badge:null, bg:'rgba(255,153,0,0.12)', stroke:'#FF9900', icon:'power' },
+  { id:4, cat:'passive', name:'SMD Resistor Kit 0402', desc:'Pre-sorted assortment of 1% precision resistors in 170 values. 5100 pcs total in labeled book.', price:18.00, badge:'popular', bg:'rgba(255,255,255,0.06)', stroke:'#8B95B0', icon:'passive' },
+  { id:5, cat:'kit', name:'STM32 Discovery Dev Kit', desc:'STM32F4 @ 168MHz, FPU, DSP, USB OTG HS/FS, 1MB Flash. Perfect for firmware development.', price:29.90, oldPrice:34.90, badge:'sale', bg:'rgba(0,212,255,0.12)', stroke:'#00D4FF', icon:'kit' },
+  { id:6, cat:'sensor', name:'ICM-42688-P IMU', desc:'6-axis (gyro + accel) MEMS IMU with 32kHz ODR. SPI/I2C. Ideal for drones and robotics.', price:9.75, badge:null, bg:'rgba(0,229,160,0.12)', stroke:'#00E5A0', icon:'sensor' },
+  { id:7, cat:'power', name:'TP4056 Li-Ion Charger Module', desc:'1A single-cell Li-ion/LiPo charger with over-discharge protection. USB-C input. Micro form factor.', price:1.80, badge:null, bg:'rgba(255,153,0,0.12)', stroke:'#FF9900', icon:'power' },
+  { id:8, cat:'kit', name:'RP2040 Microcontroller Kit', desc:'Raspberry Pi RP2040, dual ARM Cortex-M0+ @ 133MHz, 264KB SRAM. Breadboard-friendly pinout.', price:6.90, badge:'new', bg:'rgba(0,102,255,0.12)', stroke:'#3388FF', icon:'mcu' },
+  { id:9, cat:'passive', name:'MLCC Capacitor Kit 0805', desc:'30 common values from 10pF to 100uF. 3000 pcs. X7R/X5R dielectric. Stored in labelled book.', price:22.00, badge:null, bg:'rgba(255,255,255,0.06)', stroke:'#8B95B0', icon:'passive' },
+  { id:10, cat:'mcu', name:'nRF52840 BLE SoC Module', desc:'Nordic nRF52840 BLE 5.0 + Thread + Zigbee. 1MB Flash, 256KB RAM. FCC/CE certified.', price:14.50, badge:'new', bg:'rgba(0,102,255,0.12)', stroke:'#3388FF', icon:'mcu' },
+  { id:11, cat:'sensor', name:'VL53L1X ToF Distance Sensor', desc:'Time-of-flight laser ranging up to 4m. I2C interface. 940nm VCSEL, compact 2.4x2.4mm package.', price:7.30, badge:null, bg:'rgba(0,229,160,0.12)', stroke:'#00E5A0', icon:'sensor' },
+  { id:12, cat:'kit', name:'PCB Prototyping Bundle', desc:'Breadboards (x3), jumper wires, logic analyser, USB power supply & misc headers. Starter essential pack.', price:24.99, badge:'popular', bg:'rgba(0,212,255,0.12)', stroke:'#00D4FF', icon:'kit' },
+];
+
+const icons = {
+  mcu: '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M7 7V4M12 7V4M17 7V4M7 17v3M12 17v3M17 17v3"/><circle cx="12" cy="12" r="2"/></svg>',
+  sensor: '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+  power: '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  passive: '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="7" y="10" width="10" height="4" rx="1"/><line x1="2" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="22" y2="12"/></svg>',
+  kit: '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h4M6 12h8M6 16h6"/><circle cx="17" cy="8" r="1.5"/></svg>',
+};
+const catLabels = { mcu:'MCU / SoC', sensor:'Sensor', power:'Power', passive:'Passive', kit:'Dev Kit' };
+
+let activeFilter = 'all', searchQuery = '', toastTimer = null;
+
+/* ══════════════ CART SYSTEM ══════════════ */
+const CART_KEY = 'electrotrical_cart';
+
+function getCart() {
+  try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; }
+}
+function saveCart(cart) {
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  updateCartBadge();
+  renderCartDrawer();
+}
+function updateCartBadge() {
+  const total = getCart().reduce((s, i) => s + i.qty, 0);
+  const badge = document.getElementById('cartBadge');
+  if (!badge) return;
+  badge.textContent = total;
+  badge.classList.toggle('visible', total > 0);
+}
+function openCart() {
+  document.getElementById('cartDrawer').classList.add('open');
+  document.getElementById('cartOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderCartDrawer();
+}
+function closeCart() {
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function addToCart(id, name, price) {
+  const cart = getCart();
+  const existing = cart.find(i => i.id === id);
+  if (existing) { existing.qty++; } else { cart.push({ id, name, price, qty: 1 }); }
+  saveCart(cart);
+  showToast('✓  ' + name + ' added to cart');
+  const badge = document.getElementById('cartBadge');
+  if (badge) { badge.style.transform = 'scale(1.5)'; setTimeout(() => badge.style.transform = '', 250); }
+}
+function removeFromCart(id) { saveCart(getCart().filter(i => i.id !== id)); }
+function changeQty(id, delta) {
+  const cart = getCart();
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) { saveCart(cart.filter(i => i.id !== id)); return; }
+  saveCart(cart);
+}
+function renderCartDrawer() {
+  const cart = getCart();
+  const container = document.getElementById('cartItems');
+  const footer = document.getElementById('cartFooter');
+  const subtotalEl = document.getElementById('cartSubtotal');
+  if (!container) return;
+  if (!cart.length) {
+    container.innerHTML = `<div class="cart-empty">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.56L23 6H6"/></svg>
+      <h3>Your cart is empty</h3>
+      <p>Browse the store and add components to get started.</p>
+      <button class="cart-empty-btn" onclick="closeCart()">Continue Shopping</button>
+    </div>`;
+    if (footer) footer.style.display = 'none';
+    return;
+  }
+  container.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M7 7V4M12 7V4M17 7V4M7 17v3M12 17v3M17 17v3"/><circle cx="12" cy="12" r="2"/></svg>
+      </div>
+      <div class="cart-item-info">
+        <div class="cart-item-name" title="${item.name}">${item.name}</div>
+        <div class="cart-item-price">$${item.price.toFixed(2)} each · Total: $${(item.price * item.qty).toFixed(2)}</div>
+      </div>
+      <div class="cart-item-controls">
+        <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+        <span class="qty-value">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart(${item.id})" title="Remove item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>`).join('');
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  if (subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
+  if (footer) footer.style.display = 'block';
+}
+function requestQuote() {
+  closeCart();
+  window.location.href = 'checkout.html';
+}
+
+/* ══════════════ STORE LOGIC ══════════════ */
+function renderProducts() {
+  const grid = document.getElementById('productGrid');
+  const filtered = products.filter(p => {
+    const matchCat = activeFilter === 'all' || p.cat === activeFilter;
+    const matchQ = !searchQuery || p.name.toLowerCase().includes(searchQuery) || p.desc.toLowerCase().includes(searchQuery);
+    return matchCat && matchQ;
+  });
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="no-results"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h3>No products found</h3><p style="margin-top:.4rem">Try a different search or filter.</p></div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(p => {
+    const badge = p.badge ? `<span class="product-badge badge-${p.badge}">${p.badge}</span>` : '';
+    const oldP = p.oldPrice ? `<span class="old-price">$${p.oldPrice.toFixed(2)}</span>` : '';
+    return `<div class="product-card" onclick="window.location.href='product.html?id=${p.id}'" style="cursor:pointer;">
+      <div class="product-img" style="background:${p.bg};">
+        <div style="color:${p.stroke};">${icons[p.icon]||''}</div>
+        ${badge}
+      </div>
+      <div class="product-body">
+        <div class="product-category">${catLabels[p.cat]||p.cat}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-footer">
+          <div class="product-price">${oldP}<span class="currency">$</span>${p.price.toFixed(2)}</div>
+          <button class="btn-add" onclick="event.stopPropagation(); addToCart(${p.id}, '${p.name.replace(/'/g,"\\'")}', ${p.price})">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterProducts(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+function searchProducts(val) { searchQuery = val.toLowerCase().trim(); renderProducts(); }
+function showToast(msg) {
+  const t = document.getElementById('cartToast');
+  document.getElementById('cartToastMsg').textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function toggleMobile() {
+  const m = document.getElementById('mobileMenu'), mi = document.getElementById('menu-icon'), ci = document.getElementById('close-icon');
+  m.classList.toggle('open');
+  mi.style.display = m.classList.contains('open') ? 'none' : 'block';
+  ci.style.display = m.classList.contains('open') ? 'block' : 'none';
+}
+function closeMobile() {
+  const m = document.getElementById('mobileMenu'), mi = document.getElementById('menu-icon'), ci = document.getElementById('close-icon');
+  m.classList.remove('open');
+  if (mi) mi.style.display = 'block';
+  if (ci) ci.style.display = 'none';
+}
+document.addEventListener('click', e => {
+  const dd = document.getElementById('servicesDropdown');
+  if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+});
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+renderProducts();
+updateCartBadge();
+</script>
+</body>
+</html>
